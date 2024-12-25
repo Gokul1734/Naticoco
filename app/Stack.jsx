@@ -19,13 +19,13 @@ const Stack = createNativeStackNavigator();
 export default function StackNavigator() {
   return (
     <Stack.Navigator 
-      initialRouteName='MainTabs'
+      initialRouteName='Login'
       screenOptions={{
         headerShown: false,
         contentStyle: {
           backgroundColor: 'white',
         },
-        animation: 'fade',
+        animation: 'default',
       }}
     >
       <Stack.Screen 
@@ -58,12 +58,12 @@ export default function StackNavigator() {
       <Stack.Screen 
         name="Track" 
         component={TrackScreen}
-        options={{ headerShown: false,animation:'fade' }}
+        options={{ headerShown: false}}
       />
       <Stack.Screen 
         name="ItemDisplay" 
         component={ItemDisplay}
-        options={{ headerShown: false,animation:'fade' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="OTP" 

@@ -8,6 +8,7 @@ import { ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import axios from 'axios';
+import { useAuth } from './context/AuthContext';
 
 
 const API_URL = "http://localhost:3500/auth/login";
@@ -17,6 +18,7 @@ const API_URL = "http://localhost:3500/auth/login";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +52,7 @@ export default function LoginScreen() {
       console.log('Login response:', response.data);
 
       if (response.data.accessToken) {
-        // Store the token securely (you might want to use AsyncStorage or similar)
+        await login(response.data.user, response.data.accessToken);
         navigation.replace('MainTabs');
       } else {
         Alert.alert('Error', 'Invalid credentials');

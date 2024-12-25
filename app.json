@@ -3,7 +3,7 @@
     "name": "NatiCoco",
     "slug": "NatiCoco",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "potrait",
     "icon": "./assets/images/splash_icon.jpg",
     "splash": {
       "image": "./assets/images/splash_icon.jpg",

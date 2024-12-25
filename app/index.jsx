@@ -5,6 +5,7 @@ import StackNavigator from './Stack';
 import CustomSplashScreen from './components/SplashScreen';
 import { CartProvider } from './CustomerScreens/context/CartContext';
 import * as Font from 'expo-font';
+import { AuthProvider } from './context/AuthContext';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
@@ -43,8 +44,10 @@ export default function App() {
   }
 
   return (
+    <AuthProvider>
       <CartProvider>
         <StackNavigator />
       </CartProvider>
+    </AuthProvider>
   );
 }

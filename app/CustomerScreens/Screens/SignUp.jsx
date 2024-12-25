@@ -79,7 +79,7 @@ export default function SignUpScreen() {
         },
       });
       console.log('Response received:', response.data);
-      if (response.data) {
+      if (response.status == 200) {
         Alert.alert('Success', 'Verification code sent to your email');
         generateOTP();
       } else {

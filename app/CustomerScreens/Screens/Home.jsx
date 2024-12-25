@@ -21,6 +21,7 @@ import * as Location from 'expo-location';
 import mockFoodItems from '../../../Backend/Products.json';
 import { useCart } from '../context/CartContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from "../../context/AuthContext"
 
 
 const categories = [
@@ -97,7 +98,7 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) 
 
   return (
     <LinearGradient
-      colors={['#ffffff', '#fff5e6']}
+      colors={['#fff', '#fff5e6']}
       style={styles.headerGradient}
     >
       <View style={styles.headerContent}>
@@ -187,6 +188,7 @@ export default function HomeScreen() {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
   });
+  const {user} = useAuth();
 
   useEffect(() => {
     const onChange = ({ window }) => {
@@ -312,13 +314,13 @@ export default function HomeScreen() {
       style={styles.container}
       edges={['right', 'left']}
     >
+      <LinearGradient colors={['#ffff','#fff5e6']} style={styles.container}>
       <AnimatedHeader 
         address={address}
         cartCount={cartCount}
         navigation={navigation}
-        userName="John"
+        userName={user.name.split(" ")[0]}
       />
-      
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}
@@ -363,6 +365,7 @@ export default function HomeScreen() {
           />
         </View>
       </ScrollView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -545,8 +548,19 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingVertical: normalize(8),
     paddingHorizontal: normalize(16),
-    borderBottomLeftRadius: normalize(20),
-    borderBottomRightRadius: normalize(20),
+    borderBottomLeftRadius: normalize(40),
+    borderBottomRightRadius: normalize(40),
+    ...Platform.select({
+     ios: {
+       shadowColor: '#000',
+       shadowOffset: { width: 0, height: 2 },
+       shadowOpacity: 0.1,
+       shadowRadius: 4,
+     },
+     android: {
+       elevation: 3,
+     },
+   }),
   },
   headerContent: {
     gap: normalize(12),

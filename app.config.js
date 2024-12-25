@@ -1,5 +1,7 @@
 export default {
   expo: {
+    orientation: "portrait",
+    newArchEnabled: true,
     splash: {
       image: "./assets/images/splash_icon.jpg",
       resizeMode: "contain",
@@ -25,6 +27,7 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.gokul1734.NatiCoco"
-    }
+    },
+    scheme: "naticoco"
   }
 };

@@ -99,17 +99,14 @@ function CustomTabBar({ state, descriptors, navigation }) {
                 <AntDesign
                   name={getIcon()}
                   size={24}
-                  color={isFocused ? '#F8931F' : '#666'}
+                  color={isFocused ? '#ffff' : '#F8931F'}
                 />
               ) : (
                 <Ionicons
                   name={getIcon()}
                   size={24}
-                  color={isFocused ? '#F8931F' : '#666'}
+                  color={isFocused ? '#ffff' : '#F8931F'}
                 />
-              )}
-              {isFocused && (
-                <View style={styles.indicator} />
               )}
             </Animated.View>
           </TouchableOpacity>
@@ -120,6 +117,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
 }
 
 export default function TabNavigator() {
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -127,9 +125,10 @@ export default function TabNavigator() {
         tabBarStyle: { display: 'none' },
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
+      initialRouteName='Home'
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -138,24 +137,25 @@ export default function TabNavigator() {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: 'white', //#F8931F
     height: 70,
-    elevation: 8,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: -2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 3,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopRightRadius: 50,
+    borderTopLeftRadius: 50,
     position: 'absolute',
     bottom: 0,
-    width: width,
     paddingHorizontal: 10,
-    paddingBottom: Platform.OS === 'ios' ? 10 : 10,
-    paddingTop:20
+    // paddingBottom: Platform.OS === 'ios' ? 10 : 10,
+    width:width,
+    alignSelf:'center',
+    marginBottom: -8
   },
   tabItem: {
     flex: 1,
@@ -164,19 +164,11 @@ const styles = StyleSheet.create({
   },
   tabItemContainer: {
     padding: 10,
-    borderRadius: 20,
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabItemContainerActive: {
-    backgroundColor: 'rgba(248, 147, 31, 0.1)',
-  },
-  indicator: {
-    position: 'absolute',
-    bottom: -8,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
     backgroundColor: '#F8931F',
   },
 });

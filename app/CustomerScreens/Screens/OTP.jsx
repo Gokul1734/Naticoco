@@ -79,7 +79,7 @@ const OTP = () => {
 
       console.log('Verify response:', response.data);
       if (response.data.success) {
-        navigation.replace('MainTabs');
+        navigation.replace('Login');
       } else {
         Alert.alert('Error', response.data.message || 'Invalid verification code');
       }
@@ -118,7 +118,7 @@ const OTP = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Verify Your Email</Text>
       <Text style={styles.subtitle}>
-        Enter the verification code sent to{'\n'}{"kgokulpriyan@gmail.com"}
+        Enter the verification code sent to{'\n'}{email}
       </Text>
       
       <View style={styles.otpContainer}>
