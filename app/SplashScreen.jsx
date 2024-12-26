@@ -49,7 +49,7 @@ export default function CustomSplashScreen({ onFinish }) {
         ]}
       >
         <Image
-          source={require('../../assets/images/splash_icon.jpg')}
+          source={require('../assets/images/splash_icon.jpg')}
           style={styles.logo}
           resizeMode="contain"
         />

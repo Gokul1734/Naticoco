@@ -2,10 +2,11 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { View } from 'react-native';
 import StackNavigator from './Stack';
-import CustomSplashScreen from './components/SplashScreen';
+import CustomSplashScreen from './SplashScreen';
 import { CartProvider } from './CustomerScreens/context/CartContext';
 import * as Font from 'expo-font';
 import { AuthProvider } from './context/AuthContext';
+import { PaperProvider } from 'react-native-paper';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
@@ -44,10 +45,12 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <CartProvider>
-        <StackNavigator />
-      </CartProvider>
-    </AuthProvider>
+    <PaperProvider>
+      <AuthProvider>
+        <CartProvider>
+          <StackNavigator />
+        </CartProvider>
+      </AuthProvider>
+    </PaperProvider>
   );
 }

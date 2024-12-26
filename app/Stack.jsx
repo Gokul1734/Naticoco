@@ -14,6 +14,14 @@ import Address from "./CustomerScreens/Screens/MyAddresses"
 import MyAddresses from './CustomerScreens/Screens/MyAddresses';
 import FilteredItems from './CustomerScreens/Components/FilteredItems'
 
+//Admin Screens
+import ManageStore from './AdminScreens/ManageStore';
+import AdminHome from './AdminScreens/AdminHome';
+import UserManagement from './AdminScreens/ManageUser';
+import OrderAnalytics from './AdminScreens/OrderAnalytics';
+import DeliveryPartner from './AdminScreens/DeliveryPartner';
+import AddStore from './AdminScreens/AddStore';
+
 const Stack = createNativeStackNavigator();
 
 export default function StackNavigator() {
@@ -91,7 +99,38 @@ export default function StackNavigator() {
        component={FilteredItems}
        options={{ headerShown: false }}
       />
-      
+      <Stack.Screen 
+       name='AdminHome'
+       component={AdminHome}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='ManageStore'
+       component={ManageStore}
+       options={{
+         title: "Manage Stores"
+       }}
+      />
+      <Stack.Screen 
+       name='UserManagement'
+       component={UserManagement}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='OrderAnalytics'
+       component={OrderAnalytics}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='DeliveryPartners'
+       component={DeliveryPartner}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='AddStore'
+       component={AddStore}
+       options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 } 
