@@ -45,7 +45,7 @@ export default function TrackScreen() {
        {
          text: 'Yes',
          onPress: () => {
-          navigation.navigate('MainTabs');
+          navigation.navigate('StoreType');
           clearCart();
          },
          style: 'destructive',

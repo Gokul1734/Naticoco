@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const { OrderSchema } = require("./Ordermodels");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,8 +18,37 @@ const userSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  verified:{
-    type:Boolean,
+  memberSince: {
+    type: Date,
+    required: true,
+  },
+  address: {
+    type: Array,
+    items: {
+      id: { type: Number },
+      type: { type: Number },
+      tag: { type: String },
+      address: { type: String },
+      area: { type: String },
+      city: { type: String },
+      pincode: { type: Number },
+      location: {
+        type: Array,
+        items: {
+          longitude: { type: Number },
+          latitude: { type: Number },
+        },
+      },
+      isDefault: { type: Boolean },
+    },
+  },
+  ordersPlaced: {
+    type: Map,
+    of: OrderSchema,
+    required: false,
+  },
+  verified: {
+    type: Boolean,
   },
   otpToken: {
     type: String,
@@ -36,5 +66,5 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-const userModel = mongoose.model('UsersLogins', userSchema);
+const userModel = mongoose.model("UsersLogins", userSchema);
 module.exports = userModel;

@@ -10,9 +10,13 @@ import TrackScreen from './CustomerScreens/Screens/Track';
 import ItemDisplay from './CustomerScreens/Components/ItemDisplay';
 import OTP from './CustomerScreens/Screens/OTP';
 import MyOrders from "./CustomerScreens/Screens/MyOrders"
-import Address from "./CustomerScreens/Screens/MyAddresses"
+import Profile from "./CustomerScreens/Screens/Profile"
 import MyAddresses from './CustomerScreens/Screens/MyAddresses';
 import FilteredItems from './CustomerScreens/Components/FilteredItems'
+import Welcome from './CustomerScreens/Screens/Welcome';
+import Location from './CustomerScreens/Screens/Location';
+import StoreType from './CustomerScreens/Screens/StoreType';
+import CrispyHome from './CustomerScreens/Screens/CrispyHome';
 
 //Admin Screens
 import ManageStore from './AdminScreens/ManageStore';
@@ -129,6 +133,31 @@ export default function StackNavigator() {
       <Stack.Screen 
        name='AddStore'
        component={AddStore}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='Profile'
+       component={Profile}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='Welcome'
+       component={Welcome}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='Location'
+       component={Location}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='StoreType'
+       component={StoreType}
+       options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+       name='CrispyHome'
+       component={CrispyHome}
        options={{ headerShown: false }}
       />
     </Stack.Navigator>

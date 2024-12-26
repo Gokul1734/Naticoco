@@ -168,7 +168,8 @@ export default function SignUpScreen() {
 
         <TouchableOpacity 
           style={styles.loginButton}
-          onPress={() => navigation.navigate('Login')}
+          // onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate('Welcome')}
         >
           <Text style={styles.loginButtonText}>
             Already have an account? Login

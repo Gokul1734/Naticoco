@@ -4,7 +4,7 @@
     "name": "Nati Chicken",
     "description": "Fresh tomatoes, mozzarella, basil, and olive oil",
     "price": 180,
-    "image": "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800",
+    "image": "marinated.jpg",
     "category": "Naticoco",
     "quantity": "500 gms (2 pcs)",
     "bestSeller": true,
@@ -15,53 +15,98 @@
     "name": "Chicken Kebab",
     "description": "Beef patty with lettuce, tomato, cheese, and special sauce",
     "price": 240,
-    "image": "https://simshomekitchen.com/wp-content/uploads/2022/04/tandoori-skewers.png",
+    "image": "ChickenKebab.jpg",
     "category": "Marinated",
     "quantity": "500 gms (2 pcs)",
-    "newArrival": true
+    "newArrival": true,
+    "bestSeller": false
   },
   {
     "id": "3",
     "name": "Tandoori Chicken Tikka",
     "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing",
     "price": 250,
-    "image": "https://www.cubesnjuliennes.com/wp-content/uploads/2022/12/Tandoori-Chicken-Recipe.jpg",
+    "image": "tandoori.jpg",
     "category": "Marinated",
     "quantity": "300 gms (3-4 pcs)",
     "bestSeller": true,
     "newArrival": true
   },
   {
-   "id": "4",
-   "name": "Chicken Curry Cut (Without Bones)",
-   "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing without bones and skin without legs and skin without skin ",
-   "price": 150,
-   "image": "https://assets.tendercuts.in/product/P/R/c29674d0-7b6d-4a40-b0a7-2fed50369fd4.jpg",
-   "category": "Chicken",
-   "quantity": "1kg (10 pcs)",
-   "bestSeller": false,
-   "newArrival": true
- },
- {
-  "id": "5",
-  "name": "Chicken Curry Cut (Without Legs)",
-  "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing without legs and skin",
-  "price": 200,
-  "image": "https://www.bigbasket.com/media/uploads/p/l/40048898_5-fresho-chicken-curry-cut-without-skin-antibiotic-residue-free.jpg",
-  "category": "Chicken",
-  "quantity": "1kg (10 pcs)",
-  "bestSeller": true,
-  "newArrival": false
-},
-{
- "id": "6",
- "name": "Ginger Garlic Paste",
- "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing",
- "price": 120,
- "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTboNCZeDxli7BMxFESWDW1HolZ6r4usjHUWA&s",
- "category": "Spices",
- "quantity": "500ml Bottle",
- "bestSeller": true,
- "newArrival": false
-}
+    "id": "4",
+    "name": "Chicken Curry Cut (Without Bones)",
+    "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing without bones and skin without legs and skin without skin",
+    "price": 150,
+    "image": "wob.jpg",
+    "category": "Chicken",
+    "quantity": "1kg (10 pcs)",
+    "bestSeller": false,
+    "newArrival": true
+  },
+  {
+    "id": "5",
+    "name": "Chicken Curry Cut (Without Legs)",
+    "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing without legs and skin",
+    "price": 200,
+    "image": "thighs.jpg",
+    "category": "Chicken",
+    "quantity": "1kg (10 pcs)",
+    "bestSeller": true,
+    "newArrival": false
+  },
+  {
+    "id": "6",
+    "name": "Ginger Garlic Paste",
+    "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing",
+    "price": 120,
+    "image": "ggp.jpg",
+    "category": "Spices",
+    "quantity": "500ml Bottle",
+    "bestSeller": true,
+    "newArrival": false
+  },
+  {
+    "id": "7",
+    "name": "Classic Fried Chicken",
+    "price": 199,
+    "image": "cp3.jpg",
+    "description": "Crispy on the outside, juicy on the inside",
+    "category": "Fried",
+    "quantity": "500 gms (2 pcs)",
+    "bestSeller": true,
+    "newArrival": true
+  },
+  {
+    "id": "8",
+    "name": "Spicy Wings",
+    "price": 249,
+    "image": "cp2.jpg",
+    "description": "Hot and spicy chicken wings",
+    "category": "Wings",
+    "quantity": "400 gms (6 pcs)",
+    "bestSeller": false,
+    "newArrival": true
+  },
+  {
+    "id": "9",
+    "name": "Chicken Popcorn",
+    "price": 179,
+    "image": "cp.jpg",
+    "description": "Bite-sized crispy chicken pieces",
+    "category": "Snacks",
+    "quantity": "250 gms",
+    "bestSeller": true,
+    "newArrival": false
+  },
+  {
+    "id": "10",
+    "name": "Caesar Salad",
+    "price": 149,
+    "image": "salad.jpg",
+    "description": "Fresh salad with grilled chicken",
+    "category": "Salads",
+    "quantity": "300 gms",
+    "bestSeller": false,
+    "newArrival": false
+  }
 ]

@@ -57,7 +57,8 @@ export default function LoginScreen() {
 
         if (response.data.accessToken) {
           await login(response.data.user, response.data.accessToken);
-          navigation.replace('MainTabs');
+          navigation.replace('StoreType');
+          
         } else {
           Alert.alert('Error', 'Invalid credentials');
         }

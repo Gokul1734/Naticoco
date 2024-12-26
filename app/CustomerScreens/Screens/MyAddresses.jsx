@@ -48,7 +48,7 @@ export default function MyAddresses() {
     }
 
     const address = {
-      id: Date.now().toString(),
+      id: new Date().getTime().toString(),
       ...newAddress,
       isDefault: addresses.length === 0,
     };

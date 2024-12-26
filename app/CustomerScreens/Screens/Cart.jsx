@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,20 +14,52 @@ import { useCart } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import LoadingScreen from '../Components/LoadingScreen';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+const productImages = {
+  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
+  'cp3.jpg': require('../../../assets/images/cp3.jpg'),
+  'cp2.jpg': require('../../../assets/images/cp2.jpg'),
+  'cp.jpg': require('../../../assets/images/cp.jpg'),
+  'salad.jpg': require('../../../assets/images/salad.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+  'classic nati eggs(pack of 6.jpg': require('../../../assets/images/classic nati eggs(pack of 6.jpg'),
+  'classsic white eggs(pack of 6).jpg': require('../../../assets/images/classsic white eggs(pack of 6).jpg')
+};
+
+const getItemImage = (imageName) => {
+  return productImages[imageName] || productImages['logoo.jpg']; // Default to logo if image not found
+};
+
 export default function CartScreen({ navigation }) {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
+  const [isLoading, setIsLoading] = useState(true);
   const slideAnim = useRef(cartItems.map(() => new Animated.Value(0))).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  
   const totalAmount = cartItems.reduce(
-   (sum, item) => sum + item.price * item.quantity,
-   0
- );
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   useEffect(() => {
-    // Animate items in sequence
+    const loadCartData = async () => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 800));
+      } catch (error) {
+        console.error('Error loading cart:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCartData();
+  }, []);
+
+  useEffect(() => {
     cartItems.forEach((_, index) => {
       Animated.spring(slideAnim[index], {
         toValue: 1,
@@ -37,7 +69,11 @@ export default function CartScreen({ navigation }) {
         delay: index * 100,
       }).start();
     });
-  }, []);
+  }, [cartItems, slideAnim]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   const renderItem = ({ item, index }) => {
     const translateX = slideAnim[index].interpolate({
@@ -47,12 +83,13 @@ export default function CartScreen({ navigation }) {
 
     return (
       <Animated.View
-        style={[
-          styles.cartItem,
-          { transform: [{ translateX }] }
-        ]}
+        style={[styles.cartItem, { transform: [{ translateX }] }]}
       >
-        <Image source={{ uri: item.image }} style={styles.itemImage} />
+        <Image 
+          source={getItemImage(item.image)} 
+          style={styles.itemImage} 
+          resizeMode="cover"
+        />
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>{item.name}</Text>
           <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
@@ -110,6 +147,21 @@ export default function CartScreen({ navigation }) {
     ]).start(() => navigation.navigate('Checkout'));
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons name="cart-outline" size={64} color="#ddd" />
+        <Text style={styles.emptyText}>Your cart is empty</Text>
+        <TouchableOpacity
+          style={styles.shopButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.shopButtonText}>Start Shopping</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <LinearGradient
       colors={['#ffffff', '#fff5e6']}
@@ -125,50 +177,35 @@ export default function CartScreen({ navigation }) {
         <Text style={styles.headerTitle}>My Cart</Text>
       </View>
 
-      {cartItems.length > 0 ? (
-        <>
-          <FlatList
-            data={cartItems}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
+      <FlatList
+        data={cartItems}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+      />
 
-          <View style={styles.footer}>
-            <View style={styles.totalContainer}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalAmount}>₹{totalAmount}</Text>
-            </View>
-
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity
-                style={styles.checkoutButton}
-                onPress={handleCheckout}
-              >
-                <LinearGradient
-                  colors={['#F8931F', '#f4a543']}
-                  style={styles.gradientButton}
-                >
-                  <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#fff" />
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
-        </>
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="cart-outline" size={100} color="#ccc" />
-          <Text style={styles.emptyText}>Your cart is empty</Text>
-          <TouchableOpacity
-            style={styles.shopButton}
-            onPress={() => navigation.navigate('MainTabs')}
-          >
-            <Text style={styles.shopButtonText}>Start Shopping</Text>
-          </TouchableOpacity>
+      <View style={styles.footer}>
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total Amount</Text>
+          <Text style={styles.totalAmount}>₹{totalAmount}</Text>
         </View>
-      )}
+
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={handleCheckout}
+          >
+            <LinearGradient
+              colors={['#F8931F', '#f4a543']}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
     </LinearGradient>
   );
 }
@@ -218,6 +255,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 8,
+    backgroundColor: '#f5f5f5',
   },
   itemDetails: {
     flex: 1,

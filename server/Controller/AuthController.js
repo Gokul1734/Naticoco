@@ -91,7 +91,15 @@ const register = async (req, res) => {
 
     const hashpwd = await bcrypt.hash(password, 10);
 
-    await usermodel.create({ name, password: hashpwd, email, mobileno });
+    const memberSince = String(new Date());
+
+    await usermodel.create({
+      name,
+      password: hashpwd,
+      email,
+      mobileno,
+      memberSince,
+    });
 
     res.status(200).json({ message: "User registered successfully" });
   } catch (error) {

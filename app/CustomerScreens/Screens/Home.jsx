@@ -22,8 +22,10 @@ import mockFoodItems from '../../../Backend/Products.json';
 import { useCart } from '../context/CartContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from "../../context/AuthContext"
-
-
+import { MotiView } from 'moti';
+import { Asset } from 'expo-asset';
+import products from '../../../Backend/Products.json';
+import LoadingScreen from '../Components/LoadingScreen';
 const categories = [
   { id: '1', name: 'Eggs', icon: '🥚' },
   { id: '2', name: 'Marinated', icon: '🍖' },
@@ -33,10 +35,7 @@ const categories = [
   { id: '6', name: 'Pet Food', icon: '🐕' },
   { id: '7', name: 'Chicken', icon: '🍗' },
   { id: '8', name: 'Post Order', icon: '⏱️' },
-
-
 ];
-
 
 const bestSellers = mockFoodItems.filter((item) => item.bestSeller);
 
@@ -178,6 +177,85 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) 
   );
 };
 
+const productImages = {
+  natiChicken: require('../../../assets/images/logoo.jpg'),
+  kebab: require('../../../assets/images/ChickenKebab.jpg'),
+  // tikka: require('../../../assets/images/ChickenTikka.jpg'),
+  curryCut: require('../../../assets/images/wob.jpeg'),
+  curryCutLegs: require('../../../assets/images/thighs.jpeg'),
+  gingerGarlic: require('../../../assets/images/ggp.jpg'),
+};
+
+const CategoryButton = ({ name, icon, isSelected, onSelect }) => (
+  <TouchableOpacity
+    onPress={() => onSelect(name)}
+    style={[styles.categoryButton, isSelected && styles.selectedCategory]}
+  >
+    <Ionicons 
+      name={icon} 
+      size={26} 
+      color={isSelected ? '#F8931F' : '#666'} 
+    />
+    <Text style={[styles.categoryText, isSelected && styles.selectedCategoryText]}>
+      {name}
+    </Text>
+  </TouchableOpacity>
+);
+
+const ProductCard = ({ item, onPress, isInCart, quantity, onAddToCart }) => {
+  const getItemImage = (id) => {
+    switch(id) {
+      case "1": return productImages.natiChicken;
+      case "2": return productImages.kebab;
+      case "3": return productImages.tikka;
+      case "4": return productImages.curryCut;
+      case "5": return productImages.curryCutLegs;
+      case "6": return productImages.gingerGarlic;
+      default: return productImages.natiChicken;
+    }
+  };
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: 50 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 500 }}
+    >
+      <TouchableOpacity onPress={onPress}>
+        <View style={styles.card}>
+          <Image 
+            source={getItemImage(item.id)}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+          <View style={styles.cardContent}>
+            <Text style={styles.productName}>{item.name}</Text>
+            <Text style={styles.productDescription}>{item.description}</Text>
+            <View style={styles.priceContainer}>
+              <Text style={styles.price}>₹{item.price}</Text>
+              <View style={styles.quantityContainer}>
+                {quantity > 0 && (
+                  <Text style={styles.quantityText}>×{quantity}</Text>
+                )}
+                <TouchableOpacity 
+                  style={[styles.addButton, isInCart && styles.addedButton]}
+                  onPress={onAddToCart}
+                >
+                  <Ionicons 
+                    name={isInCart ? "add" : "add"} 
+                    size={24} 
+                    color="white" 
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </MotiView>
+  );
+};
+
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [location, setLocation] = useState(null);
@@ -189,6 +267,7 @@ export default function HomeScreen() {
     height: SCREEN_HEIGHT,
   });
   const {user} = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const onChange = ({ window }) => {
@@ -237,6 +316,20 @@ export default function HomeScreen() {
         setAddress('Location unavailable');
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const loadAssets = async () => {
+      try {
+        await Asset.loadAsync(Object.values(productImages));
+      } catch (error) {
+        console.error('Error loading assets:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAssets();
   }, []);
 
   const getNumColumns = () => {
@@ -308,6 +401,10 @@ export default function HomeScreen() {
       </TouchableOpacity>
     );
   };
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <SafeAreaView 

@@ -17,7 +17,15 @@
       "supportsTablet": true,
       "icon": "./assets/images/splash_icon.jpg",
       "infoPlist": {
-        "UIViewControllerBasedStatusBarAppearance": true
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "NSLocationWhenInUseUsageDescription": "This app needs access to location to provide delivery services.",
+        "NSLocationAlwaysUsageDescription": "This app needs access to location to provide delivery services.",
+        "UIBackgroundModes": [
+          "location"
+        ]
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY"
       }
     },
     "android": {
@@ -26,13 +34,14 @@
         "backgroundColor": "#FFFFFF"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
