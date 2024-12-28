@@ -15,7 +15,7 @@ import Animated, {
 import { useCart } from '../context/CartContext';
 import { useNavigation } from 'expo-router';
 
-const GOOGLE_MAPS_KEY = 'AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY'; 
+const GOOGLE_MAPS_KEY = ''; 
 
 export default function TrackScreen() {
   const navigation = useNavigation();
