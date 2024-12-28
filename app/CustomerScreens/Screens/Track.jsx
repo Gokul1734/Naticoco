@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useCart } from '../context/CartContext';
 import { useNavigation } from 'expo-router';
+import BackButton from '../../components/BackButton';
 
 const GOOGLE_MAPS_KEY = 'AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY'; 
 
@@ -117,6 +118,7 @@ export default function TrackScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      <BackButton color="white" />
       <View style={styles.container}>
         <MapView
           style={[styles.map, isExpanded && { height: '40%' }]}

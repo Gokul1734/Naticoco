@@ -8,7 +8,8 @@
     "category": "Naticoco",
     "quantity": "500 gms (2 pcs)",
     "bestSeller": true,
-    "newArrival": true
+    "newArrival": true,
+    "chickenType": "Nati"
   },
   {
     "id": "2",
@@ -35,24 +36,26 @@
   {
     "id": "4",
     "name": "Chicken Curry Cut (Without Bones)",
-    "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing without bones and skin without legs and skin without skin",
+    "description": "Fresh boneless chicken curry cut pieces",
     "price": 150,
     "image": "wob.jpg",
     "category": "Chicken",
     "quantity": "1kg (10 pcs)",
     "bestSeller": false,
-    "newArrival": true
+    "newArrival": true,
+    "chickenType": "Broiler"
   },
   {
     "id": "5",
     "name": "Chicken Curry Cut (Without Legs)",
-    "description": "Romaine lettuce, croutons, parmesan cheese with Caesar dressing without legs and skin",
+    "description": "Fresh chicken curry cut without legs",
     "price": 200,
     "image": "thighs.jpg",
     "category": "Chicken",
     "quantity": "1kg (10 pcs)",
     "bestSeller": true,
-    "newArrival": false
+    "newArrival": false,
+    "chickenType": "Country"
   },
   {
     "id": "6",
@@ -64,5 +67,29 @@
     "quantity": "500ml Bottle",
     "bestSeller": true,
     "newArrival": false
+  },
+  {
+    "id": "7",
+    "name": "Farm Fresh Eggs",
+    "description": "Fresh farm eggs, perfect for daily use",
+    "price": 80,
+    "image": "farm_eggs.jpg",
+    "category": "Eggs",
+    "quantity": "Pack of 12",
+    "bestSeller": true,
+    "newArrival": false,
+    "eggType": "Farm"
+  },
+  {
+    "id": "8",
+    "name": "Nati Eggs",
+    "description": "Traditional country eggs",
+    "price": 120,
+    "image": "nati_eggs.jpg",
+    "category": "Eggs",
+    "quantity": "Pack of 6",
+    "bestSeller": true,
+    "newArrival": true,
+    "eggType": "Nati"
   }
 ]

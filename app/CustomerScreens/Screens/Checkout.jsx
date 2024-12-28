@@ -1,12 +1,14 @@
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import BackButton from '../../components/BackButton';
 
 export default function CheckoutScreen(){
     const navigation = useNavigation();
    
     return(
         <View style={{flex:1,justifyContent:'start',alignItems:'center',paddingTop:100,backgroundColor:'white'}}>
+            <BackButton />
             <Text style={{fontSize:40,fontWeight:'600',marginBottom:40}}>Payment Gateway</Text>
             <Text style={{fontSize:16,fontWeight:'400',marginBottom:40}}>Please select the payment method</Text>
             <TouchableOpacity style={styles.paymethod} onPress={()=>navigation.navigate('Success')}>

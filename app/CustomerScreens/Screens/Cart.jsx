@@ -159,7 +159,8 @@ export default function CartScreen({ navigation }) {
 
   if (cartItems.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <ScreenBackground>
+       <View style={styles.emptyContainer}>
         <Ionicons name="cart-outline" size={64} color="#ddd" />
         <Text style={styles.emptyText}>Your cart is empty</Text>
         <TouchableOpacity
@@ -169,12 +170,12 @@ export default function CartScreen({ navigation }) {
           <Text style={styles.shopButtonText}>Start Shopping</Text>
         </TouchableOpacity>
       </View>
+      </ScreenBackground>
     );
   }
 
   return (
-    <ScreenBackground>
-      <View style={styles.container}>
+      <ScreenBackground style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity 
             onPress={() => navigation.goBack()}
@@ -214,8 +215,8 @@ export default function CartScreen({ navigation }) {
             </TouchableOpacity>
           </Animated.View>
         </View>
-      </View>
-    </ScreenBackground>
+      </ScreenBackground>
+
   );
 }
 

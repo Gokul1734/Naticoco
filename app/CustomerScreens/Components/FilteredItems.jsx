@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
@@ -25,6 +25,22 @@ const FilteredItems = ({ route }) => {
   const navigation = useNavigation();
   const { addToCart, cartItems, updateQuantity } = useCart();
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState(null);
+  
+  // Combined type filters
+  const categoryFilters = {
+    Chicken: [
+      { id: 'Nati', label: 'Nati Chicken', icon: require('../../../assets/images/NatiChik.png') },
+      { id: 'Broiler', label: 'Broiler Chicken', icon: require('../../../assets/images/FarmChik.png') },
+      { id: 'Country', label: 'Country Chicken', icon: require('../../../assets/images/TeetarChik.png') },
+    ],
+    Eggs: [
+      { id: 'Farm', label: 'Farm Eggs', icon: require('../../../assets/images/FarmEggs.png') },
+      { id: 'Nati', label: 'Nati Eggs', icon: require('../../../assets/images/NatiEggs.png') },
+      { id: 'Brown', label: 'Brown Eggs', icon: require('../../../assets/images/BrownEggs.png') },
+      { id: 'Duck', label: 'Duck Eggs', icon: require('../../../assets/images/DuckEggs.png') },
+    ]
+  };
 
   // Add asset loading
   useEffect(() => {
@@ -42,9 +58,20 @@ const FilteredItems = ({ route }) => {
     loadAssets();
   }, []);
 
-  const filteredProducts = mockFoodItems.filter(
-    (item) => item.category.toLowerCase() === category.toLowerCase()
-  );
+  const getFilteredProducts = () => {
+    let filtered = mockFoodItems.filter(item => item.category === category);
+    
+    // Apply filter based on category
+    if (selectedType) {
+      if (category === 'Chicken') {
+        filtered = filtered.filter(item => item.chickenType === selectedType.id);
+      } else if (category === 'Eggs') {
+        filtered = filtered.filter(item => item.eggType === selectedType.id);
+      }
+    }
+    
+    return filtered;
+  };
 
   const getItemImage = (imageName) => {
     return productImages[imageName] || productImages['logoo.jpg'];
@@ -92,13 +119,44 @@ const FilteredItems = ({ route }) => {
     );
   };
 
+  const renderFilters = () => {
+    if (!categoryFilters[category]) return null;
+
+    return (
+      <View style={styles.filterContainer}>
+        <View style={styles.filterScroll}>
+          {categoryFilters[category].map((type) => (
+            <TouchableOpacity
+              key={type.id}
+              style={[
+                styles.filterButton,
+                selectedType?.id === type.id && styles.filterButtonActive
+              ]}
+              onPress={() => setSelectedType(
+                selectedType?.id === type.id ? null : type
+              )}
+            >
+              <Image source={type.icon} style={styles.filterIcon} />
+              <Text style={[
+                styles.filterText,
+                selectedType?.id === type.id && styles.filterTextActive
+              ]}>
+                {type.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <ScreenBackground>
-      <View style={styles.container}>
+
+      <ScreenBackground style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#333" />
@@ -106,22 +164,29 @@ const FilteredItems = ({ route }) => {
           <Text style={styles.headerTitle}>{category}</Text>
           <View style={{width: 24}} />
         </View>
+
+        {renderFilters()}
         
-        {filteredProducts.length > 0 ? (
+        {getFilteredProducts().length > 0 ? (
           <FlatList
-            data={filteredProducts}
+            data={getFilteredProducts()}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContainer}
           />
         ) : (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No products found in this category</Text>
+            {
+              category == 'Mutton' ? (
+                <Image source={require('../../../assets/images/comingSoon.jpg')} style={styles.comingSoon}/>
+              ) : (
+                <Text style={styles.emptyText}>No products found in this category</Text>
+              )
+            }
           </View>
         )}
-      </View>
-    </ScreenBackground>
-  );
+      </ScreenBackground>
+  )
 };
 
 const styles = StyleSheet.create({
@@ -223,6 +288,52 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginLeft: 4,
+  },
+  comingSoon: {
+    width: 300,
+    height: 300,
+    marginBottom:150,
+  },
+  filterContainer: {
+    paddingVertical: 10,
+  },
+  filterScroll: {
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-evenly',
+    marginVertical: 30,
+    gap: 10,
+    alignItems: 'start',
+    justifyContent: 'start',
+  },
+  filterIcon: {
+    width: 50,
+    height: 50,
+  },
+  filterButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: '#F8931F',
+    height: 100,
+    width: '31.5%',
+    marginBottom: 10,
+    gap: 10,
+  },
+  filterButtonActive: {
+    backgroundColor: '#ff5500',
+  },
+  filterText: {
+    fontSize: 12,
+    color: '#ffffff',
+    fontWeight: '600',
+    alignSelf: 'center',
+  },
+  filterTextActive: {
+    color: 'white',
+    fontWeight: '600',
   },
 });
 

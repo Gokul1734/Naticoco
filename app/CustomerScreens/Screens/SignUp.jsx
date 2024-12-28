@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,14 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import Modal from 'react-native-modal';
+import BackButton from '../../components/BackButton';
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
@@ -20,7 +24,10 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
-  
+  const [otpModalVisible, setOtpModalVisible] = useState(false);
+  const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
+  const otpRefs = useRef([]);
+
   const generateOTP = async () => {
      console.log('Connecting to:', `http://192.168.29.165:3500/auth/generate-otp`);
       try {
@@ -35,7 +42,8 @@ export default function SignUpScreen() {
 
         console.log('Server response:', res.data);
         if (res.data.success) {
-          navigation.navigate('OTP', { email });
+         // Alert.alert('Success', res.data.message);
+          setOtpModalVisible(true);
         } else {
           Alert.alert('Error', res.data.message || 'Failed to send OTP');
         }
@@ -45,6 +53,69 @@ export default function SignUpScreen() {
       }
     };
 
+  const handleOtpChange = (value, index) => {
+    const newOtp = [...otpInput];
+    newOtp[index] = value;
+    setOtpInput(newOtp);
+
+    if (value && index < 5) {
+      otpRefs.current[index + 1].focus();
+    }
+
+    const isComplete = newOtp.every(digit => digit !== '');
+    if (isComplete) {
+      setTimeout(() => {
+        verifyOTP(newOtp);
+      }, 300);
+    }
+  };
+
+  const handleKeyPress = (e, index) => {
+    if (e.nativeEvent.key === 'Backspace') {
+      const newOtp = [...otpInput];
+      
+      // Clear current input if it has value
+      if (newOtp[index] !== '') {
+        newOtp[index] = '';
+        setOtpInput(newOtp);
+        return;
+      }
+      
+      // Move to previous input if current is empty
+      if (index > 0) {
+        newOtp[index - 1] = '';
+        setOtpInput(newOtp);
+        otpRefs.current[index - 1].focus();
+      }
+    }
+  };
+
+  const verifyOTP = async (otp) => {
+    console.log('Verifying OTP:',otp.join(''),email);
+    const url = 'http://192.168.29.165:3500/auth/verify-otp';
+
+    const data = {
+      email: email,
+      otp: otp.join(''),
+    };
+
+    try {
+      const response = await axios.post(url, data, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 5000,
+      });
+      console.log('OTP verification response:', response.data);
+      if (response.data.success) {
+        setOtpModalVisible(false);
+        navigation.replace('Welcome');
+      } else {
+        Alert.alert('Error', response.data.message || 'OTP verification failed');
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+    }
+  };
 
   const handlePostData = async () => {
     const url = 'http://192.168.29.165:3500/auth/Register';
@@ -80,7 +151,6 @@ export default function SignUpScreen() {
       });
       console.log('Response received:', response.data);
       if (response.status == 200) {
-        Alert.alert('Success', 'Verification code sent to your email');
         generateOTP();
       } else {
         Alert.alert('Error', response.data.message || 'Registration failed');
@@ -88,12 +158,11 @@ export default function SignUpScreen() {
     } catch (error) {
       console.log('Error message:', error.message);
     }
-
-    
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding" >
+      <BackButton />
       <View style={styles.formContainer}>
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.subtitle}>Sign up to get started</Text>
@@ -176,6 +245,56 @@ export default function SignUpScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        isVisible={otpModalVisible}
+        onBackdropPress={() => setOtpModalVisible(false)}
+        onBackButtonPress={() => setOtpModalVisible(false)}
+        style={styles.modal}
+        avoidKeyboard
+        propagateSwipe
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Enter Verification Code</Text>
+          <Text style={styles.modalSubtitle}>
+            Please enter the 6-digit verification code sent to your email
+          </Text>
+
+          <View style={styles.otpContainer}>
+            {otpInput.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={ref => otpRefs.current[index] = ref}
+                style={styles.otpInput}
+                maxLength={1}
+                keyboardType="numeric"
+                value={digit}
+                onChangeText={(value) => handleOtpChange(value, index)}
+                onKeyPress={(e) => handleKeyPress(e, index)}
+                returnKeyType={index === 5 ? "done" : "next"}
+                onSubmitEditing={() => {
+                  if (index < 5) {
+                    otpRefs.current[index + 1].focus();
+                  } else {
+                    Keyboard.dismiss();
+                  }
+                }}
+                selection={{
+                  start: 0,
+                  end: 0
+                }}
+              />
+            ))}
+          </View>
+
+          <TouchableOpacity 
+            style={styles.resendButton}
+            onPress={generateOTP}
+          >
+            <Text style={styles.resendText}>Resend Code</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -237,5 +356,65 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#F8931F',
     fontSize: 16,
+  },
+  modal: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 30,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#F8931F',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+    gap: 5,
+  },
+  otpInput: {
+    width: 45,
+    height: 45,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    margin: 2,
+    textAlign: 'center',
+    fontSize: 20,
+    backgroundColor: 'white',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  resendButton: {
+    padding: 10,
+  },
+  resendText: {
+    color: '#F8931F',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

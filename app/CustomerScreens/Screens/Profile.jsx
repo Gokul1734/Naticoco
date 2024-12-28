@@ -10,6 +10,7 @@ import {
   Animated,
   Dimensions,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState, useRef, useEffect } from 'react';
@@ -137,7 +138,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScreenBackground style={styles.container}>
+    <ImageBackground source={require('../../../assets/images/profileBackdrop.png')} resizeMode='cover' style={styles.container}>
         <Animated.View 
           style={[
             styles.profileContainer,
@@ -150,15 +151,16 @@ export default function ProfileScreen() {
             },
           ]}
         >
+          <View style={styles.profilebackdrop}></View>
           <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
             {image ? (
               <Image source={{ uri: image }} style={styles.profileImage} />
             ) : (
               <LinearGradient
-                colors={['#F8931F', '#f4a543']}
+                colors={['#fff5e6', '#ffffff']}
                 style={styles.placeholderImage}
               >
-                <Ionicons name="person" size={50} color="white" />
+                <Ionicons name="person" size={50} color="#F8931F" />
               </LinearGradient>
             )}
             <View style={styles.editBadge}>
@@ -207,6 +209,7 @@ export default function ProfileScreen() {
             </Animated.View>
           ))}
 
+          <View style={styles.logoutContainer}>
           <TouchableOpacity 
             style={styles.logoutButton} 
             onPress={handleLogout}
@@ -215,11 +218,25 @@ export default function ProfileScreen() {
               colors={['#F8931F', '#f4a543']}
               style={styles.logoutGradient}
             >
+              <Ionicons name="log-out-outline" size={24} color="white" />
               <Text style={styles.logoutText}>Logout</Text>
             </LinearGradient>
           </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.logoutButton} 
+            onPress={() => console.log('Support')}
+          >
+            <LinearGradient
+              colors={['#F8931F', '#f4a543']}
+              style={styles.logoutGradient}
+            >
+              <Ionicons name="call-outline" size={24} color="white" />
+              <Text style={styles.logoutText}>Support</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          </View>
         </Animated.View>
-    </ScreenBackground>
+    </ImageBackground>
   );
 }
 
@@ -228,6 +245,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 0,
     margin: 0,
+    backgroundColor: '#e59f50',
   },
   profileContainer: {
     flex: 1,
@@ -240,13 +258,13 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   profileImage: {
-    width: 150,
-    height: 150,
+    width: 120,
+    height: 120,
     borderRadius: 75,
   },
   placeholderImage: {
-    width: 150,
-    height: 150,
+    width: 120,
+    height: 120,
     borderRadius: 75,
     justifyContent: 'center',
     alignItems: 'center',
@@ -284,11 +302,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   infoContainer: {
+    marginTop: 80,
     width: '100%',
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 15,
-    marginBottom: 20,
+    marginBottom: 40,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -342,17 +361,47 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 25,
     marginTop: 20,
-    width: '100%',
+    width: '40%',
     maxWidth: 200,
+    height: 50,
   },
   logoutGradient: {
     paddingVertical: 12,
     paddingHorizontal: 30,
     alignItems: 'center',
+    justifyContent:'center',
+    width:'100%',
+    height:'100%',
+    flexDirection:'row',
+    gap:10,
   },
   logoutText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  logoutContainer: {
+    // flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor:'white',
+    flexDirection:'row',
+    gap:30,
+  },
+  profilebackdrop: {
+    height: 600,
+    width: 800,
+    position: 'absolute',
+    top: 250,
+    left: -200,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'white',
+    borderTopWidth: 15,
+    borderLeftWidth: 15,
+    borderRightWidth: 15,
+    borderColor: '#F8931F',
+    borderTopLeftRadius: '48%',
+    borderTopRightRadius: '48%',
   },
 });
