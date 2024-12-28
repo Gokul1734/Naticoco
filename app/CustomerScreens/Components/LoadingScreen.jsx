@@ -1,12 +1,16 @@
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 import { MotiView } from 'moti';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function LoadingScreen() {
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#fff', '#fff5e6']}
+      style={styles.container}
+    >
       <MotiView
         from={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -15,7 +19,7 @@ export default function LoadingScreen() {
         <ActivityIndicator size="large" color="#F8931F" />
         <Text style={styles.text}>Loading...</Text>
       </MotiView>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -24,12 +28,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
   },
   text: {
     marginTop: 12,
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    fontFamily: 'golos',
   },
 }); 

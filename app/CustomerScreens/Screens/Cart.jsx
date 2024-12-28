@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import LoadingScreen from '../Components/LoadingScreen';
+import ScreenBackground from '../Components/ScreenBackground';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -27,7 +28,16 @@ const productImages = {
   'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
   'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
   'classic nati eggs(pack of 6.jpg': require('../../../assets/images/classic nati eggs(pack of 6.jpg'),
-  'classsic white eggs(pack of 6).jpg': require('../../../assets/images/classsic white eggs(pack of 6).jpg')
+  'classsic white eggs(pack of 6).jpg': require('../../../assets/images/classsic white eggs(pack of 6).jpg'),
+  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
+  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
+  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
+  'wob.jpg': require('../../../assets/images/wob.jpeg'),
+  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
+  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+  'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
 };
 
 const getItemImage = (imageName) => {
@@ -163,50 +173,49 @@ export default function CartScreen({ navigation }) {
   }
 
   return (
-    <LinearGradient
-      colors={['#ffffff', '#fff5e6']}
-      style={styles.container}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Cart</Text>
-      </View>
-
-      <FlatList
-        data={cartItems}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
-
-      <View style={styles.footer}>
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>Total Amount</Text>
-          <Text style={styles.totalAmount}>₹{totalAmount}</Text>
+    <ScreenBackground>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Cart</Text>
         </View>
 
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <TouchableOpacity
-            style={styles.checkoutButton}
-            onPress={handleCheckout}
-          >
-            <LinearGradient
-              colors={['#F8931F', '#f4a543']}
-              style={styles.gradientButton}
+        <FlatList
+          data={cartItems}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+
+        <View style={styles.footer}>
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalAmount}>₹{totalAmount}</Text>
+          </View>
+
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+              style={styles.checkoutButton}
+              onPress={handleCheckout}
             >
-              <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
+              <LinearGradient
+                colors={['#F8931F', '#f4a543']}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       </View>
-    </LinearGradient>
+    </ScreenBackground>
   );
 }
 
@@ -296,6 +305,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
+    marginBottom: 60,
   },
   totalContainer: {
     flexDirection: 'row',

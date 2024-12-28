@@ -3,6 +3,7 @@ import { View, StyleSheet, Animated, TouchableOpacity, Dimensions, Platform } fr
 import SearchScreen from './CustomerScreens/Screens/Search';
 import HomeScreen from './CustomerScreens/Screens/Home';
 import ProfileScreen from './CustomerScreens/Screens/Profile';
+import MyOrders from './CustomerScreens/Screens/MyOrders';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import * as Haptics from 'expo-haptics';
@@ -76,6 +77,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
               return 'search';
             case 'Profile':
               return 'user';
+            case 'Orders':
+              return 'receipt-outline';
             default:
               return 'home';
           }
@@ -117,7 +120,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
 }
 
 export default function TabNavigator() {
-
   return (
     <Tab.Navigator
       screenOptions={{
@@ -126,9 +128,10 @@ export default function TabNavigator() {
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
       initialRouteName='Home'
-    >
+    > 
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Orders" component={MyOrders} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -137,8 +140,8 @@ export default function TabNavigator() {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'white', //#F8931F
-    height: 70,
+    backgroundColor: 'white',
+    height: 90,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: {
@@ -147,15 +150,15 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 3,
-    borderTopRightRadius: 50,
-    borderTopLeftRadius: 50,
+    borderRadius: 50,
+    paddingBottom: 20,
     position: 'absolute',
-    bottom: 0,
+    bottom: 45,
     paddingHorizontal: 10,
-    // paddingBottom: Platform.OS === 'ios' ? 10 : 10,
-    width:width,
-    alignSelf:'center',
-    marginBottom: -8
+    alignSelf: 'center',
+    // marginBottom: -8,
+    width: '100%',
+    backgroundColor: '#e6e6e6',
   },
   tabItem: {
     flex: 1,

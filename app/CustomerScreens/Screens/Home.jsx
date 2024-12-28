@@ -26,6 +26,8 @@ import { MotiView } from 'moti';
 import { Asset } from 'expo-asset';
 import products from '../../../Backend/Products.json';
 import LoadingScreen from '../Components/LoadingScreen';
+import { useLoadAssets } from '../../hooks/useLoadAssets';
+import ScreenBackground from '../Components/ScreenBackground';
 const categories = [
   { id: '1', name: 'Eggs', icon: '🥚' },
   { id: '2', name: 'Marinated', icon: '🍖' },
@@ -138,7 +140,7 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) 
               { opacity: welcomeOpacity }
             ]}
           >
-            Hi,{userName}
+            Hi, {userName}
           </Animated.Text>
         </View>
         <View style={styles.headerActions}>
@@ -178,12 +180,21 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) 
 };
 
 const productImages = {
-  natiChicken: require('../../../assets/images/logoo.jpg'),
-  kebab: require('../../../assets/images/ChickenKebab.jpg'),
-  // tikka: require('../../../assets/images/ChickenTikka.jpg'),
-  curryCut: require('../../../assets/images/wob.jpeg'),
-  curryCutLegs: require('../../../assets/images/thighs.jpeg'),
-  gingerGarlic: require('../../../assets/images/ggp.jpg'),
+  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
+  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
+  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
+  'wob.jpg': require('../../../assets/images/wob.jpeg'),
+  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
+  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
+  'wob.jpg': require('../../../assets/images/wob.jpeg'),
+  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
+  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+  'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
 };
 
 const CategoryButton = ({ name, icon, isSelected, onSelect }) => (
@@ -267,7 +278,7 @@ export default function HomeScreen() {
     height: SCREEN_HEIGHT,
   });
   const {user} = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoading = useLoadAssets(productImages);
 
   useEffect(() => {
     const onChange = ({ window }) => {
@@ -361,40 +372,43 @@ export default function HomeScreen() {
 
   const renderProductCard = ({ item }) => {
     const cardWidth = layout.width > 600 
-      ? layout.width * 0.4  // 40% on larger screens
-      : layout.width * 0.55; // 55% on smaller screens
+      ? layout.width * 0.4 
+      : layout.width * 0.55;
 
     const cartItem = cartItems.find(i => i.id === item.id);
     
+    const getItemImage = (imageName) => {
+      return productImages[imageName] || productImages['logoo.jpg']; // Default to logo if image not found
+    };
+
     return (
       <TouchableOpacity 
         style={[styles.productCard, { width: cardWidth }]}
         onPress={() => navigation.navigate('ItemDisplay', { item })}
       >
-        <Image source={{ uri: item.image }} style={styles.productImage} />
+        <Image 
+          source={getItemImage(item.image)}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
         <Text style={styles.productName}>{item.name}</Text>
         <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingHorizontal:10 ,marginBottom:10}}>
           <Text style={styles.productPrice}>Rs.{item.price}/-</Text>
           <View style={styles.cartActions}>
-
             <TouchableOpacity 
               style={styles.cart}
-              onPress={() => {
-               addToCart(item)
-              }  }
+              onPress={() => addToCart(item)}
             >
               <Text style={styles.addToCartText}>
                 {cartItem?.quantity ? (
                   <View style={{flexDirection:'row',alignItems:'center',gap:5}}>
-
                     <Text style={{fontSize:12,fontWeight:'600',color:'white'}}>{cartItem.quantity}</Text>
-                    <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity + 1)}>
+                    <TouchableOpacity onPress={() => updateQuantity(item.id, cartItem.quantity + 1)}>
                       <Ionicons name="add-circle" size={24} color="white" />
                     </TouchableOpacity>
                   </View>
                 ) : 'Add'}
               </Text>
-              
             </TouchableOpacity>
           </View>
         </View>
@@ -407,20 +421,18 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView 
-      style={styles.container}
-      edges={['right', 'left']}
-    >
-      <LinearGradient colors={['#ffff','#fff5e6']} style={styles.container}>
+    <ScreenBackground>
+     <SafeAreaView style={{flex:1,backgroundColor:'transparent',marginBottom:60}} edges={['right', 'left']}>
       <AnimatedHeader 
         address={address}
         cartCount={cartCount}
         navigation={navigation}
-        userName={user.name.split(" ")[0]}
+        userName={user?.name?.split(" ")[0] || "Guest"}
       />
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}
+        style={{backgroundColor:'transparent'}}
       >
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>SHOP BY CATEGORY</Text>
@@ -462,15 +474,16 @@ export default function HomeScreen() {
           />
         </View>
       </ScrollView>
-      </LinearGradient>
     </SafeAreaView>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'white',
+    flex: 0,
+    backgroundColor: 'transparent',
+    marginBottom: 60
   },
   flexcont: {
    justifyContent : "space-between",
@@ -490,7 +503,7 @@ const styles = StyleSheet.create({
     
     marginBottom: 20,
     alignSelf: 'center',
-    borderRadius: 50,
+    borderRadius: 80,
   },
   locationContainer: {
     flexDirection: 'row',
@@ -520,6 +533,7 @@ const styles = StyleSheet.create({
   sectionContainer: {
     padding: normalize(16),
     paddingBottom: Platform.OS === 'ios' ? normalize(16) : normalize(8),
+    backgroundColor:'transparent'
   },
   sectionTitle: {
     fontSize: normalize(18),
@@ -546,11 +560,12 @@ const styles = StyleSheet.create({
   horizontalList: {
     paddingRight: normalize(16),
     paddingVertical: normalize(10),
+    backgroundColor:'transparent'
   },
   productCard: {
     width: SCREEN_WIDTH * 0.55, // 55% of screen width
     marginRight: normalize(16),
-    backgroundColor: '#fff',
+    backgroundColor: '#E6E6E6',
     borderRadius: normalize(12),
     shadowColor: '#000',
     shadowOffset: {

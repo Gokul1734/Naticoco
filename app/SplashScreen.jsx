@@ -1,59 +1,38 @@
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, Animated, Dimensions } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import { View, StyleSheet, Image, Dimensions, Text } from 'react-native';
+import { MotiView } from 'moti';
+import { useEffect } from 'react';
+import * as ExpoSplashScreen from 'expo-splash-screen';
 
-// Keep splash screen visible
-SplashScreen.preventAutoHideAsync();
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const { width, height } = Dimensions.get('window');
+// Prevent auto hide of splash screen
+ExpoSplashScreen.preventAutoHideAsync();
 
 export default function CustomSplashScreen({ onFinish }) {
-  const fadeAnim = new Animated.Value(1); // Start fully visible
-  const scaleAnim = new Animated.Value(1);
-
   useEffect(() => {
-    const animate = async () => {
-      // Wait for a moment with the splash visible
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Animate out
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]).start(async () => {
-        await SplashScreen.hideAsync();
-        onFinish();
-      });
+    const hideSplash = async () => {
+      // Wait for 2 seconds
+      // await new Promise(resolve => setTimeout(resolve, 5000));
+      // Hide the splash screen
+      await ExpoSplashScreen.hideAsync();
+      // Call onFinish callback
+      onFinish();
     };
 
-    animate();
+    hideSplash();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.logoContainer, 
-          { 
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }]
-          }
-        ]}
-      >
         <Image
-          source={require('../assets/images/splash_icon.jpg')}
-          style={styles.logo}
-          resizeMode="contain"
+          source={require('../assets/images/SplashScreen.jpg')}
+          style={styles.image}
+          resizeMode="cover"
         />
-      </Animated.View>
+        <View style={styles.textContainer}>
+         <Text style={styles.text}>A Unit of MaktSon Group</Text>
+         <Image source={require('../assets/images/prod.png')} style={styles.logo} />
+        </View>
     </View>
   );
 }
@@ -61,18 +40,39 @@ export default function CustomSplashScreen({ onFinish }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
+    backgroundColor: 'white',
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  logoContainer: {
-    width: width * 0.7, // 70% of screen width
-    height: height * 0.3, // 30% of screen height
-    alignItems: 'center',
-    justifyContent: 'center',
+  image: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT, 
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    bottom: 10,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
   },
   logo: {
-    width: '100%',
-    height: '100%',
+    width: 50,
+    height: 50,
+    marginTop: 10,
+    bottom: 10,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+  },
+  textContainer: {
+    bottom: 80,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    position: 'absolute',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
 }); 

@@ -16,13 +16,25 @@ import { useState, useRef, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
+import ScreenBackground from '../Components/ScreenBackground';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { user, logout: authLogout } = useAuth();
   const [image, setImage] = useState(null);
+
+  // Sample user data
+  const sampleUser = {
+    name: 'Gokulpriyan Karthikeyan',
+    email: 'kgokulpriyan@gmail.com',
+    location: {
+      city: 'Chennai',
+      state: 'Tamil Nadu',
+      country: 'India'
+    },
+    memberSince: 'December 2024'
+  };
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -64,13 +76,6 @@ export default function ProfileScreen() {
     });
   }, []);
 
-  // Add navigation effect when user is null
-  useEffect(() => {
-    if (!user) {
-      navigation.replace('Login');
-    }
-  }, [user]);
-
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -109,27 +114,21 @@ export default function ProfileScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Logout',
-          onPress: async () => {
-            try {
-              // First animate, then logout
-              Animated.parallel([
-                Animated.timing(fadeAnim, {
-                  toValue: 0,
-                  duration: 300,
-                  useNativeDriver: true,
-                }),
-                Animated.timing(slideAnim, {
-                  toValue: 50,
-                  duration: 300,
-                  useNativeDriver: true,
-                }),
-              ]).start(async () => {
-                await authLogout();
-                navigation.replace('Login');
-              });
-            } catch (error) {
-              Alert.alert('Error', 'Failed to logout');
-            }
+          onPress: () => {
+            Animated.parallel([
+              Animated.timing(fadeAnim, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+              }),
+              Animated.timing(slideAnim, {
+                toValue: 50,
+                duration: 300,
+                useNativeDriver: true,
+              }),
+            ]).start(() => {
+              navigation.replace('Login');
+            });
           },
           style: 'destructive',
         },
@@ -137,17 +136,8 @@ export default function ProfileScreen() {
     );
   };
 
-  // Add loading state
-  if (!user) {
-    return null; // Or a loading spinner if needed
-  }
-
   return (
-    <LinearGradient
-      colors={['#ffffff', '#fff5e6']}
-      style={styles.container}
-    >
-      <SafeAreaView style={styles.container}>
+    <ScreenBackground style={styles.container}>
         <Animated.View 
           style={[
             styles.profileContainer,
@@ -176,17 +166,19 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
 
-          <Text style={styles.username}>{user?.name || 'User Name'}</Text>
-          <Text style={styles.email}>{user?.email || 'abc@example.com'}</Text>
+          <Text style={styles.username}>{sampleUser.name}</Text>
+          <Text style={styles.email}>{sampleUser.email}</Text>
 
           <View style={styles.infoContainer}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Chennai</Text>
-              <Text style={styles.infoValue}>Tamil Nadu, India</Text>
+              <Text style={styles.infoLabel}>{sampleUser.location.city}</Text>
+              <Text style={styles.infoValue}>
+                {`${sampleUser.location.state}, ${sampleUser.location.country}`}
+              </Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Member Since</Text>
-              <Text style={styles.infoValue}>December 2024</Text>
+              <Text style={styles.infoValue}>{sampleUser.memberSince}</Text>
             </View>
           </View>
 
@@ -227,14 +219,15 @@ export default function ProfileScreen() {
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
-      </SafeAreaView>
-    </LinearGradient>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 0,
+    margin: 0,
   },
   profileContainer: {
     flex: 1,

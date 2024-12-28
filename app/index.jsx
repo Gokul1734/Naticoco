@@ -1,12 +1,16 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { View } from 'react-native';
+import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
+import { View, SafeAreaView, StatusBar, Text, StyleSheet } from 'react-native';
 import StackNavigator from './Stack';
 import CustomSplashScreen from './SplashScreen';
 import { CartProvider } from './CustomerScreens/context/CartContext';
 import * as Font from 'expo-font';
 import { AuthProvider } from './context/AuthContext';
 import { PaperProvider } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ScreenBackground from './CustomerScreens/Components/ScreenBackground';
+import { Dimensions } from 'react-native';
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
@@ -15,12 +19,9 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Pre-load fonts, make API calls, etc
         await Font.loadAsync({
-          // Add any custom fonts here
+          'golos': require('../assets/fonts/gt.ttf'),
         });
-
-        // Artificially delay for demonstration
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
@@ -45,12 +46,25 @@ export default function App() {
   }
 
   return (
-    <PaperProvider>
-      <AuthProvider>
-        <CartProvider>
-          <StackNavigator />
-        </CartProvider>
-      </AuthProvider>
-    </PaperProvider>
+    <NavigationIndependentTree>
+      <GestureHandlerRootView style={styles.container}>
+        <PaperProvider>
+          <AuthProvider>
+            <CartProvider>
+              <StackNavigator />
+            </CartProvider>
+          </AuthProvider>
+        </PaperProvider>
+      </GestureHandlerRootView>
+    </NavigationIndependentTree>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 0,
+    margin: 0,
+
+  },
+});

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import ScreenBackground from '../Components/ScreenBackground';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
 // Mock data for addresses (replace with actual data from backend)
 const initialAddresses = [
@@ -27,6 +30,8 @@ const initialAddresses = [
     isDefault: false,
   },
 ];
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function MyAddresses() {
   const navigation = useNavigation();
@@ -120,94 +125,111 @@ export default function MyAddresses() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Addresses</Text>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Ionicons name="add-circle-outline" size={24} color="#F8931F" />
-        </TouchableOpacity>
-      </View>
+    <ScreenBackground style={styles.container}>
 
-      <FlatList
-        data={addresses}
-        renderItem={({ item }) => <AddressCard address={item} />}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.addressList}
-        showsVerticalScrollIndicator={false}
-      />
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add New Address</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Address Tag</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newAddress.tag}
-                  onChangeText={(text) => setNewAddress({...newAddress, tag: text})}
-                  placeholder="e.g., Home, Office, Mom's House"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Complete Address</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newAddress.address}
-                  onChangeText={(text) => setNewAddress({...newAddress, address: text})}
-                  placeholder="House/Flat No., Building Name"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Area</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newAddress.area}
-                  onChangeText={(text) => setNewAddress({...newAddress, area: text})}
-                  placeholder="Street Name, Area"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Pincode</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newAddress.pincode}
-                  onChangeText={(text) => setNewAddress({...newAddress, pincode: text})}
-                  placeholder="6-digit Pincode"
-                  keyboardType="numeric"
-                  maxLength={6}
-                />
-              </View>
-
-              <TouchableOpacity 
-                style={styles.saveButton}
-                onPress={handleAddAddress}
-              >
-                <Text style={styles.saveButtonText}>Save Address</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Addresses</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Ionicons name="add-circle-outline" size={24} color="#F8931F" />
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </SafeAreaView>
+
+        <FlatList
+          data={addresses}
+          renderItem={({ item }) => <AddressCard address={item} />}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.addressList}
+          showsVerticalScrollIndicator={false}
+        />
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalWrapper}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Add New Address</Text>
+                  <TouchableOpacity 
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setModalVisible(false);
+                    }}
+                  >
+                    <Ionicons name="close" size={24} color="#333" />
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView 
+                  style={styles.modalScroll}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Address Tag</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newAddress.tag}
+                      onChangeText={(text) => setNewAddress({...newAddress, tag: text})}
+                      placeholder="e.g., Home, Office, Mom's House"
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Complete Address</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newAddress.address}
+                      onChangeText={(text) => setNewAddress({...newAddress, address: text})}
+                      placeholder="House/Flat No., Building Name"
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Area</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newAddress.area}
+                      onChangeText={(text) => setNewAddress({...newAddress, area: text})}
+                      placeholder="Street Name, Area"
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Pincode</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newAddress.pincode}
+                      onChangeText={(text) => setNewAddress({...newAddress, pincode: text})}
+                      placeholder="6-digit Pincode"
+                      keyboardType="numeric"
+                      maxLength={6}
+                    />
+                  </View>
+                </ScrollView>
+
+                <TouchableOpacity 
+                  style={styles.saveButton}
+                  onPress={() => {
+                    handleAddAddress();
+                    Keyboard.dismiss();
+                  }}
+                >
+                  <Text style={styles.saveButtonText}>Save Address</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+    </ScreenBackground>
   );
 }
 
@@ -223,6 +245,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    backgroundColor: 'white',
   },
   headerTitle: {
     fontSize: 18,
@@ -297,7 +320,10 @@ const styles = StyleSheet.create({
     color: '#F8931F',
     fontSize: 14,
   },
-  modalContainer: {
+  modalWrapper: {
+    flex: 1,
+  },
+  modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
@@ -306,21 +332,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '90%',
+    padding: 30,
+    maxHeight: SCREEN_HEIGHT * 0.8,
+  },
+  modalScroll: {
+    maxHeight: SCREEN_HEIGHT * 0.6,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    paddingHorizontal: 10,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 5,
   },
   inputLabel: {
     fontSize: 14,
@@ -328,19 +358,31 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
+    backgroundColor: 'white',
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
+    marginBottom: 16,
     fontSize: 16,
-    backgroundColor: 'white',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   saveButton: {
     backgroundColor: '#F8931F',
-    padding: 16,
+    padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   saveButtonText: {
     color: 'white',

@@ -6,13 +6,14 @@ import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Asset } from 'expo-asset';
-import products from '../../../Backend/Products.json';
+import crispyProducts from '../../../Backend/CrispyProducts.json';
 import { useCart } from '../context/CartContext';
 import LoadingScreen from '../Components/LoadingScreen';
+import { useLoadAssets } from '../../hooks/useLoadAssets';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const crispyItems = products.filter(item => item.category === 'Crispy' || item.category === 'Fried' || item.category === 'Wings' || item.category === 'Snacks' || item.category === 'Salads');
+const crispyItems = crispyProducts;
 
 const categories = [
   { name: 'All', icon: 'restaurant-outline' },
@@ -114,32 +115,7 @@ export default function CrispyHome() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const { addToCart, cartItems } = useCart();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadAssets = async () => {
-      try {
-        await Asset.loadAsync([
-          productImages.cp3,
-          productImages.cp2,
-          productImages.cp,
-          productImages.salad,
-          productImages.natiChicken,
-          productImages.kebab,
-          productImages.tikka,
-          productImages.curryCut,
-          productImages.curryCutLegs,
-          productImages.gingerGarlic,
-        ]);
-      } catch (error) {
-        console.error('Error loading assets:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAssets();
-  }, []);
+  const isLoading = useLoadAssets(productImages);
 
   if (isLoading) {
     return <LoadingScreen />;

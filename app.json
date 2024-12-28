@@ -6,9 +6,9 @@
     "orientation": "potrait",
     "icon": "./assets/images/splash_icon.jpg",
     "splash": {
-      "image": "./assets/images/splash_icon.jpg",
+      "image": "./assets/images/SplashScreen.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "black"
     },
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
@@ -53,7 +53,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash_icon.jpg",
+          "image": "./assets/images/SplashScreen.jpg",
           "imageResizeMode": "contain",
           "backgroundColor": "#FFFFFF",
           "imageWidth": 300

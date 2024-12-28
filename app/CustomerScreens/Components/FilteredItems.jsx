@@ -1,19 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
 import mockFoodItems from '../../../Backend/Products.json';
+import { Asset } from 'expo-asset';
+import LoadingScreen from './LoadingScreen';
+import ScreenBackground from './ScreenBackground';
+
+// Add productImages mapping
+const productImages = {
+  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
+  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
+  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
+  'wob.jpg': require('../../../assets/images/wob.jpeg'),
+  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
+  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+};
 
 const FilteredItems = ({ route }) => {
   const { category } = route.params;
   const navigation = useNavigation();
   const { addToCart, cartItems, updateQuantity } = useCart();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Filter items based on category
+  // Add asset loading
+  useEffect(() => {
+    const loadAssets = async () => {
+      try {
+        await Asset.loadAsync(Object.values(productImages));
+        await new Promise(resolve => setTimeout(resolve, 800));
+      } catch (error) {
+        console.error('Error loading assets:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAssets();
+  }, []);
+
   const filteredProducts = mockFoodItems.filter(
     (item) => item.category.toLowerCase() === category.toLowerCase()
   );
+
+  const getItemImage = (imageName) => {
+    return productImages[imageName] || productImages['logoo.jpg'];
+  };
 
   const renderItem = ({ item }) => {
     const cartItem = cartItems.find(i => i.id === item.id);
@@ -23,7 +58,11 @@ const FilteredItems = ({ route }) => {
         style={styles.productCard}
         onPress={() => navigation.navigate('ItemDisplay', { item })}
       >
-        <Image source={{ uri: item.image }} style={styles.productImage} />
+        <Image 
+          source={getItemImage(item.image)} 
+          style={styles.productImage}
+          resizeMode="cover"
+        />
         <View style={styles.productDetails}>
           <Text style={styles.productName}>{item.name}</Text>
           <Text style={styles.productDescription}>{item.description}</Text>
@@ -36,8 +75,11 @@ const FilteredItems = ({ route }) => {
               {cartItem?.quantity ? (
                 <View style={styles.quantityContainer}>
                   <Text style={styles.quantityText}>{cartItem.quantity}</Text>
-                  <TouchableOpacity onPress={() => updateQuantity(item.id, cartItem.quantity + 1)}>
-                    {/* <Ionicons name="add-circle" size={24} color="white" /> */}
+                  <TouchableOpacity 
+                    onPress={() => updateQuantity(item.id, cartItem.quantity + 1)}
+                    style={styles.addButton}
+                  >
+                    <Ionicons name="add-circle" size={24} color="white" />
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -50,29 +92,35 @@ const FilteredItems = ({ route }) => {
     );
   };
 
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{category}</Text>
-        <View style={{width: 24}} />
-      </View>
-      
-      {filteredProducts.length > 0 ? (
-        <FlatList
-          data={filteredProducts}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No products found in this category</Text>
+    <ScreenBackground>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{category}</Text>
+          <View style={{width: 24}} />
         </View>
-      )}
-    </View>
+        
+        {filteredProducts.length > 0 ? (
+          <FlatList
+            data={filteredProducts}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No products found in this category</Text>
+          </View>
+        )}
+      </View>
+    </ScreenBackground>
   );
 };
 
@@ -116,6 +164,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderTopLeftRadius: 12,
     borderBottomLeftRadius: 12,
+    backgroundColor: '#f5f5f5',
   },
   productDetails: {
     flex: 1,
@@ -156,7 +205,7 @@ const styles = StyleSheet.create({
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 8,
   },
   quantityText: {
     color: 'white',
@@ -173,7 +222,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   addButton: {
-    marginLeft: 8,
+    marginLeft: 4,
   },
 });
 

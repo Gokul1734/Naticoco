@@ -69,7 +69,7 @@ export default function AddStore({ navigation }) {
     }
   };
 
-  return (
+    return (
     <LinearGradient
       colors={['#fff', '#fff5e6']}
       style={styles.container}

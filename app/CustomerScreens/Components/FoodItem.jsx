@@ -4,13 +4,34 @@ import { useCart } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
 // import {updateQuantity}  from '../context/CartContext';
 
+// Add image mapping
+const productImages = {
+  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
+  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
+  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
+  'wob.jpg': require('../../../assets/images/wob.jpeg'),
+  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
+  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+  'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
+};
+
+const getItemImage = (imageName) => {
+  return productImages[imageName] || productImages['logoo.jpg'];
+};
+
 export default function FoodItem({ item, onPress }) {
   const { addToCart, cartItems, updateQuantity } = useCart();
   const cartItem = cartItems.find(i => i.id === item.id);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image 
+        source={getItemImage(item.image)} 
+        style={styles.image}
+        resizeMode="cover"
+      />
       <View style={styles.info}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.quantity}>{item.quantity}</Text>

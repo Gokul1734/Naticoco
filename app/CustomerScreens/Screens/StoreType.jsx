@@ -11,13 +11,15 @@ import leg from '../../../assets/images/leg.png';
 import lemon3 from '../../../assets/images/l3.png';
 import LoadingScreen from '../Components/LoadingScreen';
 import { Asset } from 'expo-asset';
+import ScreenBackground from '../Components/ScreenBackground';
+import { useLoadAssets } from '../../hooks/useLoadAssets';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const StoreButton = ({title, image, onPress, delay }) => (
   <MotiView
-    from={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 1, scale: 1 }}
+    // from={{ opacity: 0, scale: 0.9 }}
+    // animate={{ opacity: 1, scale: 1 }}
     transition={{
       type: 'spring',
       delay,
@@ -38,68 +40,58 @@ const StoreButton = ({title, image, onPress, delay }) => (
   </MotiView>
 );
 
+const storeImages = {
+  juicyBanner: JuciyBanner,
+  crispyBanner: CrispyBanner,
+  breast,
+  egg,
+  lemon1,
+  leg,
+  lemon3,
+};
+
 export default function StoreType() {
   const navigation = useNavigation();
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoading = useLoadAssets(storeImages);
   
-  useEffect(() => {
-    const loadAssets = async () => {
-      try {
-        await Asset.loadAsync([
-          JuciyBanner,
-          CrispyBanner,
-          breast,
-          egg,
-          lemon1,
-          leg,
-          lemon3
-        ]);
-      } catch (error) {
-        console.error('Error loading assets:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAssets();
-  }, []);
-
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Store Category</Text>
-      <StoreButton
-        title="Juicy Chicken Delight Store"
-        image={JuciyBanner}
-        delay={300}
-        onPress={() => navigation.navigate('MainTabs')}
-      />
-      <StoreButton
-        title="Fried Chicken Store"
-        image={CrispyBanner}
-        delay={500}
-        onPress={() => navigation.navigate('CrispyHome')}
-      />
-      <View style={{marginTop: 10}}>
-        <View style={styles.quoteContainer}>
-          <Text style={[{color: '#F8931F'}, styles.subtitle]}>"Farm-Fresh ,</Text>
-          <Text style={styles.subtitle}>Tender Chicken"</Text>
+    <ScreenBackground>
+      <View style={styles.container}>
+        <Text style={styles.title}>Store Category</Text>
+        <StoreButton
+          title="Juicy Chicken Delight Store"
+          image={JuciyBanner}
+          delay={300}
+          onPress={() => navigation.navigate('MainTabs')}
+        />
+        <StoreButton
+          title="Fried Chicken Store"
+          image={CrispyBanner}
+          delay={500}
+          onPress={() => navigation.navigate('CrispyHome')}
+        />
+        <View style={{marginTop: 10}}>
+          <View style={styles.quoteContainer}>
+            <Text style={[{color: '#F8931F'}, styles.subtitle]}>"Farm-Fresh ,</Text>
+            <Text style={styles.subtitle}>Tender Chicken"</Text>
+          </View>
+          <View style={[styles.quoteContainer, { marginTop: -15 }]}>
+            <Text style={styles.subtitle}>"Healthy Eating ,</Text>
+            <Text style={[{color: '#F8931F'}, styles.subtitle]}>Happy Living."</Text>
+          </View>
         </View>
-        <View style={[styles.quoteContainer, { marginTop: -15 }]}>
-          <Text style={styles.subtitle}>"Healthy Eating ,</Text>
-          <Text style={[{color: '#F8931F'}, styles.subtitle]}>Happy Living."</Text>
-        </View>
+        <Image source={breast} style={{width:100,height:100,alignSelf:'start'}} />
+        <Image source={lemon1} style={{position:'absolute',width:40,height:40,alignSelf:'center',marginTop:650,left:130}} />
+        <Image source={lemon1} style={{position:'absolute',width:40,height:40,alignSelf:'center',top:750,left:320}} />
+        <Image source={lemon3} style={{position:'absolute',width:40,height:40,alignSelf:'center',top:650,left:250}} />
+        <Image source={leg} style={{position:'absolute',width:100,height:100,alignSelf:'center',top:620,left:300}} />
+        <Image source={egg} style={{width:140,height:120,alignSelf:'center',marginTop:-20}} />
       </View>
-      <Image source={breast} style={{width:100,height:100,alignSelf:'start'}} />
-      <Image source={lemon1} style={{position:'absolute',width:40,height:40,alignSelf:'center',marginTop:650,left:130}} />
-      <Image source={lemon1} style={{position:'absolute',width:40,height:40,alignSelf:'center',top:750,left:320}} />
-      <Image source={lemon3} style={{position:'absolute',width:40,height:40,alignSelf:'center',top:650,left:250}} />
-      <Image source={leg} style={{position:'absolute',width:100,height:100,alignSelf:'center',top:620,left:300}} />
-      <Image source={egg} style={{width:140,height:120,alignSelf:'center',marginTop:-20}} />
-    </View>
+    </ScreenBackground>
   );
 }
 
@@ -109,7 +101,6 @@ const styles = StyleSheet.create({
     justifyContent: 'start',
     gap: 20,
     padding: 20,
-    backgroundColor: 'white',
   },
   title: {
     fontSize: 40,

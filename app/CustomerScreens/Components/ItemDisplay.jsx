@@ -1,48 +1,76 @@
-import { View, Text,Image,TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useCart } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useLoadAssets } from '../../hooks/useLoadAssets';
+import LoadingScreen from './LoadingScreen';
 
-export default function ItemDisplay({route}){
-    const {item} = route.params;
-    const { addToCart, cartItems, updateQuantity } = useCart();
-    const cartItem = cartItems.find(i => i.id === item.id);
-    return(
-        <View style={{flex:1,backgroundColor:'white'}} >
-         <View style={{justifyContent:'start',alignItems:'center',padding:10,backgroundColor:'white'}}>
-         <Image source={{uri:item.image}} style={styles.image}/>
-         <Text style={styles.name}>{item.name}</Text>
-         <Text style={styles.category}>• {item.category}</Text>
-         <Text style={styles.category}>• {item.quantity}</Text>
-         <Text style={styles.description}>{item.description}</Text>
-         </View>
-         <View style={styles.bar}>
-         <Text style={styles.price}>₹{item.price}</Text>
-         <View style={styles.cartActions}>
-            <TouchableOpacity 
-              style={cartItem?.quantity ? {backgroundColor : '#89C73A',paddingHorizontal: 12,
-               paddingVertical: 6,
-               borderRadius: 15,} : styles.addButton}
-              onPress={() => addToCart(item)}
-            >
-              <Text style={{backgroundColor:'#F8931F',padding:20,borderRadius:50,color:'white'}}>
-                {cartItem?.quantity ? 
-                <View style={{flexDirection:'row',alignItems:'center',gap:5}}>
-                <Text style={{color:'white'}}>{cartItem.quantity}</Text>
-                <TouchableOpacity onPress={() => updateQuantity(cartItem.id, cartItem.quantity + 1)}>
-                      <Ionicons name="add-circle" size={24} color="white" />
-                    </TouchableOpacity>
+const productImages = {
+  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
+  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
+  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
+  'wob.jpg': require('../../../assets/images/wob.jpeg'),
+  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
+  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
+  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
+  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
+  'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
+};
+
+const getItemImage = (imageName) => {
+  return productImages[imageName] || productImages['logoo.jpg'];
+};
+
+export default function ItemDisplay({ route }) {
+  const { item } = route.params;
+  const { addToCart, cartItems, updateQuantity } = useCart();
+  const cartItem = cartItems.find(i => i.id === item.id);
+  const isLoading = useLoadAssets(productImages);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ justifyContent: 'start', alignItems: 'center', padding: 10, backgroundColor: 'white' }}>
+        <Image 
+          source={getItemImage(item.image)} 
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.category}>• {item.category}</Text>
+        <Text style={styles.category}>• {item.quantity}</Text>
+        <Text style={styles.description}>{item.description}</Text>
+      </View>
+      <View style={styles.bar}>
+        <Text style={styles.price}>₹{item.price}</Text>
+        <View style={styles.cartActions}>
+          <TouchableOpacity
+            style={cartItem?.quantity ? {
+              backgroundColor: '#89C73A',
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 15,
+            } : styles.addButton}
+            onPress={() => addToCart(item)}
+          >
+            <Text style={{ backgroundColor: '#F8931F', padding: 20, borderRadius: 50, color: 'white' }}>
+              {cartItem?.quantity ?
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Text style={{ color: 'white' }}>{cartItem.quantity}</Text>
+                  <TouchableOpacity onPress={() => updateQuantity(cartItem.id, cartItem.quantity + 1)}>
+                    <Ionicons name="add-circle" size={24} color="white" />
+                  </TouchableOpacity>
                 </View>
-                
                 : 'Add'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          </View>
-
+            </Text>
+          </TouchableOpacity>
         </View>
-    )
+      </View>
+    </View>
+  );
 }
-
 
 const styles = StyleSheet.create({
     image:{

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
+import ScreenBackground from '../Components/ScreenBackground';
 
 
 const handleAxiosError = (error, operation) => {
@@ -28,9 +29,9 @@ const handleAxiosError = (error, operation) => {
 const OTP = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { email } = route.params;
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [timer, setTimer] = useState(300);
+  // const { email } = route.params;
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const [timer, setTimer] = useState(10);
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -54,57 +55,16 @@ const OTP = () => {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    if (value && index < 5) {
+    if (value && index < 3) {
       inputRefs.current[index + 1].focus();
     }
-  };
 
-  const handleVerify = async () => {
-    const enteredOtp = otp.join('');
-    if (enteredOtp.length !== 6) {
-      Alert.alert('Error', 'Please enter a valid verification code');
-      return;
-    }
-
-    try {
-      const response = await axios.post(`http://192.168.29.165:3500/auth/verify-otp`, {
-        email: email,
-        otp: enteredOtp
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 5000
-      });
-
-      console.log('Verify response:', response.data);
-      if (response.data.success) {
-        navigation.replace('Login');
-      } else {
-        Alert.alert('Error', response.data.message || 'Invalid verification code');
+    if (value && index === 3) {
+      if (newOtp.every(digit => digit !== '')) {
+        setTimeout(() => {
+          navigation.replace('StoreType');
+        }, 300);
       }
-    } catch (error) {
-      handleAxiosError(error, 'OTP verification');
-    }
-  };
-
-  const handleResendCode = async () => {
-    if (timer > 0) return;
-
-    try {
-      const response = await axios.post(`${API_URL}/auth/resend-otp`, {
-        email: "kgokulpriyan@gmail.com",
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 5000
-      });
-      
-      setTimer(300);
-      Alert.alert('Success', 'New verification code has been sent to your email');
-    } catch (error) {
-      handleAxiosError(error, 'Resend OTP');
     }
   };
 
@@ -115,10 +75,10 @@ const OTP = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Verify Your Email</Text>
+    <ScreenBackground style={styles.container}>
+      <Text style={styles.title}>Verification Code</Text>
       <Text style={styles.subtitle}>
-        Enter the verification code sent to{'\n'}{email}
+        Enter the verification code sent to mobile number{'\n'}
       </Text>
       
       <View style={styles.otpContainer}>
@@ -135,38 +95,36 @@ const OTP = () => {
         ))}
       </View>
 
-      <TouchableOpacity 
-        style={styles.Button}
-        onPress={handleVerify}
-      >
-        <Text style={styles.ButtonText}>Verify</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
+      <View style={{flex: 1, flexDirection: 'row'}}>
+        <Text style={{color: 'black', fontSize: 16, fontWeight: '600', fontFamily: 'golos'}}>Have'nt received the code?</Text>
+        <TouchableOpacity 
         style={[styles.resendButton, timer > 0 && styles.resendButtonDisabled]}
-        onPress={handleResendCode}
         disabled={timer > 0}
+        onPress={() => setTimer(4)}
       >
         <Text style={[styles.resendText, timer > 0 && styles.resendTextDisabled]}>
           {timer > 0 ? `Resend code in ${formatTime(timer)}` : 'Resend Code'}
         </Text>
       </TouchableOpacity>
-    </View>
+      </View>
+    </ScreenBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: 'transparent',
   },
   title: {
    fontSize: 28,
    fontWeight: 'bold',
    marginBottom: 20,
-   color: '#F8931F',
+   color: 'black',
+   fontFamily: 'golos',
  },
   otpContainer: {
     flexDirection: 'row',
@@ -175,29 +133,26 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   otpInput: {
-    width: 45,
-    height: 45,
+    width: 70,
+    height: 60,
     borderWidth: 1,
     borderRadius: 10,
     margin: 4,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 20,
     borderColor: '#ccc',
-  },
-  Button: {
-   backgroundColor: '#F8931F',
-   padding: 15,
-   borderRadius: 8,
-   alignItems: 'center',
-   marginTop: 20,
- },
- ButtonText: {
-   color: 'white',
-   fontSize: 16,
-   fontWeight: '600',
- },
-  verifyButton: {
-    width: '80%',
+    backgroundColor: 'white',
+    ...Platform.select({
+      ios: {
+        shadowColor: 'black',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   subtitle: {
     fontSize: 14,
@@ -205,8 +160,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   resendButton: {
-    marginTop: 20,
-    padding: 10,
+    marginTop: 3,
+    // padding: 10,
+    marginLeft: 10,
   },
   resendButtonDisabled: {
     opacity: 0.6,
