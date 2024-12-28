@@ -8,7 +8,7 @@ import { MotiView } from 'moti';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const GOOGLE_PLACES_API_KEY = 'AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY'; // Replace with your API key
+const GOOGLE_PLACES_API_KEY = ''; // Replace with your API key
 
 export default function LocationScreen({ navigation }) {
   const [location, setLocation] = useState(null);
