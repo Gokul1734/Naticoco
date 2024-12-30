@@ -21,6 +21,7 @@ import { Dimensions } from 'react-native';
 import { useGlobalAssets } from './hooks/useGlobalAssets';
 import LoadingScreen from './CustomerScreens/Components/LoadingScreen';
 import ScreenBackground from './CustomerScreens/Components/ScreenBackground';
+import DeliveryTab from './DeliveryScreens/DeliveryTab';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 //Admin Screens
@@ -30,6 +31,10 @@ import UserManagement from './AdminScreens/ManageUser';
 import OrderAnalytics from './AdminScreens/OrderAnalytics';
 import DeliveryPartner from './AdminScreens/DeliveryPartner';
 import AddStore from './AdminScreens/AddStore';
+
+//Delivery Screens
+import DeliveryHome from './DeliveryScreens/DeliveryHome';
+import ActiveDeliveries from './DeliveryScreens/ActiveDeliveries';
 
 const Stack = createNativeStackNavigator();
 
@@ -182,6 +187,11 @@ export default function StackNavigator() {
          name='CrispyHome'
          component={CrispyHome}
          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="DeliveryTab" 
+          component={DeliveryTab}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </ScreenBackground>

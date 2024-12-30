@@ -572,9 +572,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: Platform.OS === 'ios' ? 2 : 1,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.4,
+    shadowRadius: 3,
+    elevation: 6,
   },
   productImage: {
     width: '100%',

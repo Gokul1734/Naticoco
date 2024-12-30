@@ -10,17 +10,15 @@ import crispyProducts from '../../../Backend/CrispyProducts.json';
 import { useCart } from '../context/CartContext';
 import LoadingScreen from '../Components/LoadingScreen';
 import { useLoadAssets } from '../../hooks/useLoadAssets';
+import ScreenBackground from '../Components/ScreenBackground';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const crispyItems = crispyProducts;
 
 const categories = [
-  { name: 'All', icon: 'restaurant-outline' },
-  { name: 'Fried', icon: 'fast-food-outline' },
-  { name: 'Wings', icon: 'flame-outline' },
-  { name: 'Snacks', icon: 'pizza-outline' },
-  { name: 'Salads', icon: 'leaf-outline' }
+  { name: 'Crispy', icon: require('../../../assets/images/Crispy.png') },
+  { name: 'Salads', icon: require('../../../assets/images/Salads.png') }
 ];
 
 const productImages = {
@@ -41,10 +39,16 @@ const CategoryButton = ({ name, icon, isSelected, onSelect }) => (
     onPress={() => onSelect(name)}
     style={[styles.categoryButton, isSelected && styles.selectedCategory]}
   >
-    <Ionicons 
-      name={icon} 
-      size={26} 
-      color={isSelected ? '#F8931F' : '#666'} 
+    <LinearGradient
+      colors={[(isSelected)?'#fcc381':"#F8931F","#f4a543"]}
+      style={[{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0},styles.categoryButton]}
+      start={{x: 0, y: 0}}
+      end={{x: 0, y: 1}}
+    />
+    <Image 
+      source={icon} 
+      style={styles.categoryIcon}
+      resizeMode="contain"
     />
     <Text style={[styles.categoryText, isSelected && styles.selectedCategoryText]}>
       {name}
@@ -112,7 +116,7 @@ const ProductCard = ({ item, onPress, isInCart, quantity, onAddToCart }) => {
 
 export default function CrispyHome() {
   const navigation = useNavigation();
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('Crispy');
   const [searchQuery, setSearchQuery] = useState('');
   const { addToCart, cartItems } = useCart();
   const isLoading = useLoadAssets(productImages);
@@ -122,7 +126,9 @@ export default function CrispyHome() {
   }
 
   const filteredItems = crispyItems.filter(item => {
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+    const matchesCategory = 
+      (selectedCategory === 'Crispy' && item.category !== 'Salads') ||
+      (selectedCategory === 'Salads' && item.category === 'Salads');
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -135,7 +141,7 @@ export default function CrispyHome() {
       >
         <View style={styles.headerRow}>
           <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>Crispy Delights</Text>
+            <Text style={styles.headerTitle}>Crispy Chicken Store</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity 
@@ -164,13 +170,15 @@ export default function CrispyHome() {
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchBar}
+          inputStyle={{color: '#F8931F'}}
+          placeholderTextColor="black"
         />
       </LinearGradient>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
+      <ScreenBackground>
+      <View
         style={styles.categoryContainer}
+        // style={styles.categoryContainer}
       >
         {categories.map((category) => (
           <CategoryButton
@@ -181,8 +189,7 @@ export default function CrispyHome() {
             onSelect={setSelectedCategory}
           />
         ))}
-      </ScrollView>
-
+      </View>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.productsContainer}
@@ -203,6 +210,7 @@ export default function CrispyHome() {
           );
         })}
       </ScrollView>
+      </ScreenBackground>
     </View>
   );
 }
@@ -217,7 +225,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#F8931F',
   },
@@ -226,22 +234,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     elevation: 4,
     marginTop: 8,
+    borderColor: '#F8931F',
+    borderWidth: 1,
   },
   categoryContainer: {
     paddingHorizontal: 20,
-    marginVertical: 30,
-    overflow: 'visible',
-
+    marginVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   categoryButton: {
     alignItems: 'center',
-    padding: 12,
-    marginRight: 12,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 15,
     backgroundColor: 'white',
-    elevation: 2,
-    minWidth: 70,
-    height: 70,
+    elevation: 3,
+    width: SCREEN_WIDTH * 0.43,
+    height: 150,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -249,18 +258,20 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+    justifyContent: 'center',
   },
   selectedCategory: {
     backgroundColor: '#fff5e6',
     
   },
   categoryText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#666',
+    marginTop: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffff',
   },
   selectedCategoryText: {
-    color: '#F8931F',
+    color: '#e6e6e6',
     fontWeight: 'bold',
   },
   productsContainer: {

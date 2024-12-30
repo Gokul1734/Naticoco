@@ -217,7 +217,10 @@ export default function LoginScreen() {
               onPress={() => {
                if (phoneNumber == 7010871355) {
                 navigation.navigate('AdminHome');
-               } else {
+               } else if (phoneNumber == 0) {
+                navigation.navigate('DeliveryTab');
+               }
+               else {
                 navigation.navigate('OTP');
                }
               }}
