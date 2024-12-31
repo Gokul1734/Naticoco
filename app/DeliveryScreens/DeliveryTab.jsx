@@ -1,13 +1,15 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, StyleSheet, Platform, Dimensions } from 'react-native';
+import { View, StyleSheet, Platform, Dimensions, SafeAreaView } from 'react-native';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
+import { scale, verticalScale, getSafeAreaPadding } from '../utils/responsive';
 import DeliveryHome from './DeliveryHome';
 import DeliverySearch from './DeliverySearch';
 import DeliveryLocations from './DeliveryLocations';
 import DeliveryProfile from './DeliveryProfile';
 import DeliverySavings from './DeliverySavings';
+
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -37,6 +39,8 @@ const TabIcon = ({ focused, icon }) => (
 );
 
 export default function DeliveryTab() {
+  const safeAreaPadding = getSafeAreaPadding();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -64,7 +68,10 @@ export default function DeliveryTab() {
           return <TabIcon focused={focused} icon={iconName} />;
         },
         tabBarShowLabel: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: {
+          ...styles.tabBar,
+          bottom: Platform.OS === 'ios' ? safeAreaPadding.paddingBottom : 16,
+        },
         headerShown: false,
       })}
     >
@@ -80,13 +87,12 @@ export default function DeliveryTab() {
 const styles = StyleSheet.create({
   tabBar: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 50 : 16,
-    left: 20,
-    right: 20,
-    height: 80,
+    left: scale(20),
+    right: scale(20),
+    height: verticalScale(80),
     backgroundColor: '#fff',
-    borderRadius: 35,
-    paddingHorizontal: 10,
+    borderRadius: scale(35),
+    paddingHorizontal: scale(10),
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: {
@@ -100,12 +106,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
   },
   iconContainer: {
-    marginTop:30,
-    width: 50,
-    height: 50,
+    marginTop: Platform.OS === 'ios' ? verticalScale(15) : verticalScale(10),
+    width: scale(50),
+    height: scale(50),
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
+    borderRadius: scale(25),
   },
   focusedIconContainer: {
     backgroundColor: '#FFF5E6',

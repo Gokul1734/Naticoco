@@ -15,7 +15,7 @@ const UserStatsCard = ({ totalUsers, activeUsers, newUsers }) => (
     transition={{ type: 'spring', delay: 100 }}
   >
     <LinearGradient
-      colors={['#fff', '#fff5e6']}
+      colors={['#fff', '#ffff']}
       style={styles.statsCard}
     >
       <View style={styles.statsContainer}>
@@ -38,67 +38,87 @@ const UserStatsCard = ({ totalUsers, activeUsers, newUsers }) => (
   </MotiView>
 );
 
-const UserCard = ({ user, index }) => (
-  <MotiView
-    from={{ opacity: 0, translateX: -100 }}
-    animate={{ opacity: 1, translateX: 0 }}
-    transition={{ type: 'spring', delay: index * 100 }}
-  >
-    <Card style={styles.userCard}>
-      <Card.Content>
-        <View style={styles.userHeader}>
-          <View style={styles.userInfo}>
-            <Avatar.Text 
-              size={50} 
-              label={user.name.split(' ').map(n => n[0]).join('')} 
-              style={styles.avatar}
-              color='white'
-              backgroundColor='#F8931F'
-            />
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>{user.name}</Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
+const UserCard = ({ user, index }) => {
+  // Convert orderId object to string if it exists
+  const getOrderCount = (orders) => {
+    if (!orders) return 0;
+    return typeof orders === 'object' ? Object.keys(orders).length : orders;
+  };
+
+  // Convert addresses object to string if it exists
+  const getAddressCount = (addresses) => {
+    if (!addresses) return 0;
+    return typeof addresses === 'object' ? Object.keys(addresses).length : addresses;
+  };
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateX: -100 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: 'spring', delay: index * 100 }}
+    >
+      <Card style={styles.userCard}>
+        <Card.Content>
+          <View style={styles.userHeader}>
+            <View style={styles.userInfo}>
+              <Avatar.Text 
+                size={50} 
+                label={user.name ? user.name.split(' ').map(n => n[0]).join('') : '?'} 
+                style={styles.avatar}
+                color='#0f1c57'
+                backgroundColor='white'
+              />
+              <View style={styles.userDetails}>
+                <Text style={styles.userName}>{user.name || 'No Name'}</Text>
+                <Text style={styles.userEmail}>{user.email || 'No Email'}</Text>
+              </View>
             </View>
           </View>
-        </View>
-        
-        <View style={styles.userMetrics}>
-          <View style={styles.metric}>
-            <Ionicons name="cart" size={20} color="#F8931F" />
-            <Text style={styles.metricText}>{2} Orders</Text>
+          
+          <View style={styles.userMetrics}>
+            <View style={styles.metric}>
+              <Ionicons name="cart" size={20} color="white" />
+              <Text style={[styles.metricText, { color: 'white' }]}>
+                {getOrderCount(user.orders)} Orders
+              </Text>
+            </View>
+            <View style={styles.metric}>
+              <Ionicons name="location" size={20} color="white" />
+              <Text style={[styles.metricText, { color: 'white' }]}>
+                {getAddressCount(user.addresses)} Addresses
+              </Text>
+            </View>
+            <View style={styles.metric}>
+              <Ionicons name="star" size={20} color="white" />
+              <Text style={[styles.metricText, { color: 'white' }]}>
+                {typeof user.rating === 'number' ? user.rating.toFixed(1) : '0'}/5
+              </Text>
+            </View>
           </View>
-          <View style={styles.metric}>
-            <Ionicons name="location" size={20} color="#F8931F" />
-            <Text style={styles.metricText}>{3} Addresses</Text>
-          </View>
-          <View style={styles.metric}>
-            <Ionicons name="star" size={20} color="#F8931F" />
-            <Text style={styles.metricText}>{(user.rating)?user.rating:"0"}/5</Text>
-          </View>
-        </View>
 
-        <View style={styles.tagContainer}>
-          {user.isActive && (
-            <Chip 
-              style={[styles.chip, { backgroundColor: '#E8F5E9' }]}
-              textStyle={{ color: '#2E7D32' }}
-            >
-              Active
-            </Chip>
-          )}
-          {user.isPremium && (
-            <Chip 
-              style={[styles.chip, { backgroundColor: '#FFF3E0' }]}
-              textStyle={{ color: '#F8931F' }}
-            >
-              Premium
-            </Chip>
-          )}
-        </View>
-      </Card.Content>
-    </Card>
-  </MotiView>
-);
+          <View style={styles.tagContainer}>
+            {user.isActive && (
+              <Chip 
+                style={[styles.chip, { backgroundColor: '#E8F5E9' }]}
+                textStyle={{ color: '#2E7D32' }}
+              >
+                Active
+              </Chip>
+            )}
+            {user.isPremium && (
+              <Chip 
+                style={[styles.chip, { backgroundColor: '#FFF3E0' }]}
+                textStyle={{ color: '#F8931F' }}
+              >
+                Premium
+              </Chip>
+            )}
+          </View>
+        </Card.Content>
+      </Card>
+    </MotiView>
+  );
+};
 
 export default function ManageUser() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,21 +144,28 @@ export default function ManageUser() {
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query.trim() === '') {
-      setFilteredUsers(users); // Show all users when search is empty
+      setFilteredUsers(users);
       return;
     }
 
-    const filtered = users.filter(user => 
-      user.name.toLowerCase().includes(query.toLowerCase()) ||
-      user.email.toLowerCase().includes(query.toLowerCase()) ||
-      user.userId.toLowerCase().includes(query.toLowerCase())
-    );
+    const filtered = users.filter(user => {
+      const name = user.name?.toLowerCase() || '';
+      const email = user.email?.toLowerCase() || '';
+      const userId = user.userId?.toLowerCase() || '';
+      const searchQuery = query.toLowerCase();
+
+      return (
+        name.includes(searchQuery) ||
+        email.includes(searchQuery) ||
+        userId.includes(searchQuery)
+      );
+    });
     setFilteredUsers(filtered);
   };
 
   return (
     <LinearGradient
-      colors={['#fff', '#fff5e6']}
+      colors={['#fff', '#ffff']}
       style={styles.container}
     >
       <MotiView
@@ -151,8 +178,10 @@ export default function ManageUser() {
           onChangeText={handleSearch}
           value={searchQuery}
           style={styles.searchBar}
-          iconColor="#F8931F"
-          theme={{ colors: { primary: '#F8931F' } }}
+          textColor='#0f1c57'
+          iconColor="#0f1c57"
+          placeholderTextColor='#0f1c57'
+          // theme={{ colors: { primary: '#0f1c57' } }}
         />
       </MotiView>
 
@@ -178,7 +207,7 @@ export default function ManageUser() {
         <FlatList
           data={filteredUsers}
           renderItem={({ item, index }) => <UserCard user={item} index={index} />}
-          keyExtractor={item => item.userId}
+          keyExtractor={item => item._id}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
         />
@@ -198,6 +227,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     elevation: 4,
     marginHorizontal: 10,
+    iconColor: '#0f1c57',
+    borderColor:'#0f1c57',
+    borderWidth:3
   },
   statsCard: {
     borderRadius: 12,
@@ -216,7 +248,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#F8931F',
+    color: '#0f1c57',
   },
   statLabel: {
     color: '#666',
@@ -231,7 +263,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 12,
     elevation: 2,
-    backgroundColor: 'white',
+    backgroundColor: '#0f1c57',
     marginHorizontal: 10,
   },
   userHeader: {
@@ -245,6 +277,7 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginRight: 12,
+    
   },
   userDetails: {
     flex: 1,
@@ -252,7 +285,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'white',
   },
   userEmail: {
     color: '#666',

@@ -32,7 +32,7 @@ const AnimatedStoreStats = ({ stores }) => {
   return (
     <Animated.View style={{ opacity: opacityAnim, transform: [{ scale: scaleAnim }] }}>
       <LinearGradient
-        colors={['#fff', '#fff5e6']}
+        colors={['#20348f', '#20348f']}
         style={styles.statsCard}
       >
         <Card.Content style={styles.statsContent}>
@@ -83,10 +83,10 @@ const StoreCard = ({ store, index, onPress }) => {
       }}
     >
       <LinearGradient
-        colors={['#fff', '#fff5e6']}
+        colors={['#20348f', '#20348f']}
         style={[styles.storeCard, { elevation: 4 }]}
       >
-        <Card onPress={onPress}>
+        <Card mode='elevated' style={{backgroundColor:'#0f1c57'}} onPress={onPress}>
           <Card.Content>
             <View style={styles.storeHeader}>
               <View>
@@ -100,7 +100,7 @@ const StoreCard = ({ store, index, onPress }) => {
               <IconButton
                 icon="pencil"
                 size={24}
-                iconColor='#f8931f'
+                iconColor='#20348f'
                 onPress={onPress}
                 style={styles.editButton}
               />
@@ -175,7 +175,7 @@ export default function ManageStore({ navigation, route }) {
 
     return (
         <LinearGradient
-            colors={['#fff', '#fff5e6']}
+            colors={['#fff', '#ffff']}
             style={styles.container}
         >
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -193,7 +193,7 @@ export default function ManageStore({ navigation, route }) {
 
             <FAB
                 icon="plus"
-                style={[styles.fab, { transform: [{ scale: 1.1 }], backgroundColor: '#f8931f' }]}
+                style={[styles.fab, { transform: [{ scale: 1.1 }], backgroundColor: '#20348f' }]}
                 onPress={() => navigation.navigate('AddStore')}
                 animated={true}
             />
@@ -203,7 +203,7 @@ export default function ManageStore({ navigation, route }) {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+     flex:1,
     },
     statsCard: {
         margin: 16,
@@ -219,11 +219,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     statNumber: {
-        color:'#f8931f',
+        color: 'white',
         fontWeight: 'bold',
     },
     statLabel: {
-        color: '#666',
+        color: 'white',
         marginTop: 4,
     },
     storeCard: {
@@ -231,6 +231,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         borderRadius: 12,
         overflow: 'hidden',
+        backgroundColor:'#20348f'
     },
     storeHeader: {
         flexDirection: 'row',
@@ -238,17 +239,20 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     areaText: {
-        color:'#f8931f',
+        color: 'white',
         fontWeight: 'bold',
+        color:'white'
     },
     address: {
         opacity: 0.7,
         marginTop: 4,
+        color:'white'
     },
     storeDetails: {
         flexDirection: 'row',
         marginTop: 16,
         justifyContent: 'space-around',
+        color:'white'
     },
     detailItem: {
         flexDirection: 'row',
@@ -257,14 +261,14 @@ const styles = StyleSheet.create({
     },
     detailText: {
         marginLeft: 4,
-        color: '#444',
+        color: 'white',
     },
     fab: {
         position: 'absolute',
         margin: 16,
-        right: 0,
-        bottom: 0,
-        backgroundColor:'#f8931f'
+        right: 20,
+        bottom: 80,
+        backgroundColor: '#0f1c57'
     },
     modal: {
         backgroundColor: 'white',
@@ -275,15 +279,15 @@ const styles = StyleSheet.create({
     modalTitle: {
         marginBottom: 20,
         textAlign: 'center',
-        color:'#f8931f'
+        color: '#0f1c57'
     },
     input: {
         marginBottom: 12,
         backgroundColor: '#fff',
     },
     addButton: {
-        marginTop: 16,
-        backgroundColor:'#f8931f'
+        bottom:200,
+        backgroundColor:'#20348f'
     },
     editButton: {
         backgroundColor: '#fff5e6',

@@ -22,6 +22,7 @@ import { useGlobalAssets } from './hooks/useGlobalAssets';
 import LoadingScreen from './CustomerScreens/Components/LoadingScreen';
 import ScreenBackground from './CustomerScreens/Components/ScreenBackground';
 import DeliveryTab from './DeliveryScreens/DeliveryTab';
+import StoreStack from './StoreScreens/StoreStack';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 //Admin Screens
@@ -191,6 +192,11 @@ export default function StackNavigator() {
         <Stack.Screen 
           name="DeliveryTab" 
           component={DeliveryTab}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="StoreStack" 
+          component={StoreStack}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

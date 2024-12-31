@@ -39,7 +39,7 @@ export default function AdminHome({ navigation }) {
 
   return (
     <LinearGradient
-      colors={['#fff', '#fff5e6']}
+      colors={['#fff', '#ffff']}
       style={styles.container}
     >
       <ScrollView style={styles.container}>
@@ -50,7 +50,7 @@ export default function AdminHome({ navigation }) {
         >
           <Surface style={styles.header} elevation={2}>
             <LinearGradient
-              colors={['#F8931F', '#f4a543']}
+              colors={['#0f1c57', '#20348f']}
               style={styles.headerGradient}
             >
               <Text variant="headlineMedium" style={styles.headerText}>
@@ -61,15 +61,15 @@ export default function AdminHome({ navigation }) {
         </MotiView>
         <View style={[{flexDirection:'row',justifyContent:'space-between'},styles.headerContainer]}>
           <View>
-           <Text style={{color:'#f5931f',fontSize:20,fontWeight:'bold',padding:20,paddingBottom:5}}>Admin : Gokul</Text>
-           <Text style={{color:'#f5931f',fontSize:20,fontWeight:'bold',padding:20,paddingVertical:0}}>City : Chennai</Text>
+           <Text style={{color:'#20348f',fontSize:20,fontWeight:'bold',padding:20,paddingBottom:5}}>Admin : Gokul</Text>
+           <Text style={{color:'#20348f',fontSize:20,fontWeight:'bold',padding:20,paddingVertical:0}}>City : Chennai</Text>
           </View>
           <TouchableOpacity onPress={async () => {
             await AsyncStorage.removeItem('stores');
             navigation.navigate('Login');
            }}>
             <Text style={{color:'white',fontSize:20,fontWeight:'bold',padding:20,
-             backgroundColor:'#f5931f',borderRadius:10,padding:10,margin:20}}>Logout</Text>
+             backgroundColor:'#20348f',borderRadius:10,padding:10,margin:20}}>Logout</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.cardsContainer}>
@@ -90,13 +90,13 @@ export default function AdminHome({ navigation }) {
                 onPress={() => navigation.navigate(feature.route)}
               >
                 <LinearGradient
-                  colors={['#fff', '#fff5e6']}
+                  colors={['#0f1c57', '#0f1c57']}
                   style={styles.cardGradient}
                 >
                   <Card.Content style={styles.cardContent}>
                     <View style={styles.iconContainer}>
                       <LinearGradient
-                        colors={['#F8931F', '#f4a543']}
+                        colors={['#20348f', '#20348f']}
                         style={styles.iconGradient}
                       >
                         <Ionicons name={feature.iconName} size={24} color="white" />
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
   cardsContainer: {
     padding: 16,
     gap: 16,
+    marginBottom:100
   },
   card: {
     marginBottom: 16,
@@ -166,14 +167,15 @@ const styles = StyleSheet.create({
   cardTitle: {
     marginTop: 8,
     fontWeight: 'bold',
-    color: '#F8931F',
+    color: 'white',
     fontSize: 18,
   },
   cardDescription: {
     textAlign: 'center',
     marginTop: 8,
     opacity: 0.7,
-    color: '#666',
+    color: 'white',
   },
 });
+
 

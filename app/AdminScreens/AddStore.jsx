@@ -71,7 +71,7 @@ export default function AddStore({ navigation }) {
 
     return (
     <LinearGradient
-      colors={['#fff', '#fff5e6']}
+      colors={['#fff', '#fff']}
       style={styles.container}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -81,7 +81,7 @@ export default function AddStore({ navigation }) {
           transition={{ type: 'timing', duration: 1000 }}
         >
           <LinearGradient
-            colors={['#F8931F', '#f4a543']}
+            colors={['#20348f', '#20348f']}
             style={styles.header}
           >
             <IconButton
@@ -117,18 +117,18 @@ export default function AddStore({ navigation }) {
                 <Ionicons 
                   name={field.icon} 
                   size={24} 
-                  color="#F8931F" 
+                  color="#20348f" 
                   style={styles.inputIcon}
                 />
                 <TextInput
                   label={field.label}
                   value={store[field.value]}
                   onChangeText={(text) => setStore(prev => ({ ...prev, [field.value]: text }))}
-                  textColor='#f5931f'
+                  textColor='#20348f'
                   style={styles.input}
                   mode="outlined"
-                  outlineColor="#F8931F"
-                  activeOutlineColor="#F8931F"
+                  outlineColor="#20348f"
+                  activeOutlineColor="#20348f"
                   multiline={field.value === 'address'}
                 />
               </View>
@@ -149,6 +149,7 @@ export default function AddStore({ navigation }) {
               onPress={getLocation}
               style={[styles.button, { marginBottom: 12 }]}
               loading={loading}
+              labelStyle={styles.buttonLabel}
             >
               Get Current Location
             </Button>
@@ -206,20 +207,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   inputText: {
-    color:'#f5931f'
+    color:'white'
   },
   button: {
-    backgroundColor: '#F8931F',
+    backgroundColor: '#20348f',
     paddingVertical: 8,
+    color:'white'
   },
   buttonLabel: {
     fontSize: 16,
     paddingVertical: 4,
+    color:'white'
   },
   locationText: {
     textAlign: 'center',
     marginBottom: 16,
-    color: '#F8931F',
+    color: '#20348f',
     fontWeight: 'bold',
   },
 });

@@ -219,6 +219,8 @@ export default function LoginScreen() {
                 navigation.navigate('AdminHome');
                } else if (phoneNumber == 0) {
                 navigation.navigate('DeliveryTab');
+               }else if (phoneNumber == 1) {
+                navigation.navigate('StoreStack');
                }
                else {
                 navigation.navigate('OTP');
