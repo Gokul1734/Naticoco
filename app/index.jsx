@@ -46,8 +46,8 @@ export default function App() {
   }
 
   return (
-    <NavigationIndependentTree>
-      <GestureHandlerRootView style={styles.container}>
+    <NavigationIndependentTree style={styles.container}>
+      <GestureHandlerRootView >
         <PaperProvider>
           <AuthProvider>
             <CartProvider>
@@ -63,8 +63,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width : SCREEN_WIDTH,
+    height : SCREEN_HEIGHT,
     padding: 0,
     margin: 0,
-
   },
 });

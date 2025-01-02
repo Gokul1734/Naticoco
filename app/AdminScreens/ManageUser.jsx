@@ -92,13 +92,15 @@ const ManageUser = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://192.168.29.165:3500/auth/users');
-        const usersData = response.data;
-        console.log(usersData);
+        const response = await axios.get('https://nati-coco-server.onrender.com/auth/users');
+        const usersData = response.data.users || [];
+        console.log('Users data:', usersData);
         setUsers(usersData);
         setFilteredUsers(usersData);
       } catch (error) {
         console.error('Error fetching users:', error);
+        setUsers([]);
+        setFilteredUsers([]);
       } finally {
         setLoading(false);
       }
@@ -108,6 +110,8 @@ const ManageUser = () => {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    if (!users) return;
+
     const filtered = users.filter(user => {
       const searchLower = query.toLowerCase();
       return (
@@ -130,8 +134,8 @@ const ManageUser = () => {
       />
 
       <UserStatsCard
-        totalUsers={users.length}
-        verifiedUsers={users.filter(u => u.verified).length}
+        totalUsers={users?.length || 0}
+        verifiedUsers={users?.filter(u => u.verified)?.length || 0}
       />
 
       {loading ? (

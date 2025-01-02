@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import * as Haptics from 'expo-haptics';
 
 const Tab = createBottomTabNavigator();
-const { width } = Dimensions.get('window');
+const { width,height } = Dimensions.get('window');
 
 function CustomTabBar({ state, descriptors, navigation }) {
   const animatedValues = useMemo(
@@ -140,8 +140,7 @@ export default function TabNavigator() {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'white',
-    height: 90,
+    height: Platform.OS == 'ios' ? height*0.1 : height*0.1,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: {
@@ -153,11 +152,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingBottom: 20,
     position: 'absolute',
-    bottom: 45,
+    bottom : Platform.OS == 'ios' ? 40 : 0,
     paddingHorizontal: 10,
     alignSelf: 'center',
     // marginBottom: -8,
-    width: '100%',
+    width: Platform.OS == 'ios' ? '100%' : '102%',
     backgroundColor: '#e6e6e6',
   },
   tabItem: {

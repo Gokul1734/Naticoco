@@ -74,12 +74,12 @@ const StoreCard = ({ store, index, onPress }) => {
         <Card mode='elevated' style={{backgroundColor: '#0f1c57'}} onPress={onPress}>
           <Card.Content>
             <View style={styles.storeHeader}>
-              <View>
-                <Text variant="titleLarge" style={styles.areaText}>
-                  {store.name}, {store.cityName}
+              <View style={styles.headerContent}>
+                <Text variant="titleLarge" style={styles.storeName}>
+                  {store.name}
                 </Text>
-                <Text variant="bodyMedium" style={styles.address}>
-                  {`${store.locations.latitude}, ${store.locations.longitude}`}
+                <Text variant="bodyMedium" style={styles.storeEmail}>
+                  {store.email}
                 </Text>
               </View>
               <IconButton
@@ -103,9 +103,9 @@ const StoreCard = ({ store, index, onPress }) => {
                 <Text variant="bodyLarge" style={styles.detailText}>4.5</Text>
               </View>
               <View style={styles.detailItem}>
-                <Ionicons name="mail" size={20} color='#f8931f' />
+                <Ionicons name="location" size={20} color='#f8931f' />
                 <Text variant="bodyLarge" style={styles.detailText}>
-                  {store.email}
+                  {store.cityName}
                 </Text>
               </View>
             </View>
@@ -127,7 +127,7 @@ const ManageStore = () => {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get('http://192.168.29.165:3500/Admin/cityowners');
+      const response = await axios.get('https://nati-coco-server.onrender.com/Admin/cityowners');
       console.log('API Response:', response.data);
 
       if (response.data.cityOwners && Array.isArray(response.data.cityOwners)) {
@@ -245,20 +245,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  areaText: {
+  headerContent: {
+    flex: 1,
+  },
+  storeName: {
     fontWeight: 'bold',
     color: 'white',
+    fontSize: 20,
+    marginBottom: 4,
   },
-  address: {
-    opacity: 0.7,
-    marginTop: 4,
-    color: 'white',
+  storeEmail: {
+    color: '#f8931f',
+    fontSize: 14,
   },
   storeDetails: {
     flexDirection: 'row',
-    marginTop: 16,
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   detailItem: {
     flexDirection: 'row',
@@ -268,15 +275,17 @@ const styles = StyleSheet.create({
   detailText: {
     marginLeft: 4,
     color: 'white',
+    fontSize: 14,
+  },
+  editButton: {
+    backgroundColor: '#fff5e6',
+    marginLeft: 8,
   },
   fab: {
     position: 'absolute',
     right: 20,
     bottom: 80,
     backgroundColor: '#20348f',
-  },
-  editButton: {
-    backgroundColor: '#fff5e6',
   },
   loadingContainer: {
     flex: 1,

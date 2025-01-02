@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     margin: normalize(5),
     backgroundColor: '#fff',
     borderRadius: normalize(12),
-    minWidth: (SCREEN_WIDTH - normalize(60)) / 3.3,
+    minWidth: (SCREEN_WIDTH - normalize(40)) / 3.3,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: {

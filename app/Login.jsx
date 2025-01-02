@@ -69,7 +69,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      // const response = await axios.post("http://192.168.29.165:3500/auth/login", {
+      // const response = await axios.post("https://nati-coco-server.onrender.com/auth/login", {
       //   mobileno: phoneNumber,
       //   password: password
       // }, {

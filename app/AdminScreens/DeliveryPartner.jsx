@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, ScrollView, Animated, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Dimensions, ScrollView, Animated, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Text, Card, Avatar, Button, Chip, IconButton, Searchbar } from 'react-native-paper';
 import { MotiView, AnimatePresence } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,12 +8,21 @@ import { PanGestureHandler } from 'react-native-gesture-handler';
 import { Platform } from 'react-native';
 import { State } from 'react-native-gesture-handler';
 import axios from 'axios';
+import { Alert } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const DeliveryPartnerCard = ({ partner, onApprove, onReject, onSuspend }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const translateX = new Animated.Value(0);
+  const heightAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(heightAnim, {
+      toValue: isExpanded ? 1 : 0,
+      useNativeDriver: false,
+    }).start();
+  }, [isExpanded]);
 
   const onGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
@@ -34,6 +43,10 @@ const DeliveryPartnerCard = ({ partner, onApprove, onReject, onSuspend }) => {
     }
   };
 
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <MotiView
       from={{ opacity: 0, scale: 0.9 }}
@@ -46,13 +59,14 @@ const DeliveryPartnerCard = ({ partner, onApprove, onReject, onSuspend }) => {
         onHandlerStateChange={onHandlerStateChange}
         enabled={partner.status === 'PENDING'}
       >
-        <Animated.View style={[
-          styles.cardWrapper,
-          { transform: [{ translateX }] }
-        ]}>
+        <Animated.View style={[styles.cardWrapper, { transform: [{ translateX }] }]}>
           <Card style={styles.card}>
             <Card.Content>
-              <View style={styles.cardHeader}>
+              <TouchableOpacity 
+                style={styles.cardHeader} 
+                onPress={toggleExpand}
+                activeOpacity={0.7}
+              >
                 <View style={styles.userInfo}>
                   <Avatar.Text
                     size={50}
@@ -75,15 +89,18 @@ const DeliveryPartnerCard = ({ partner, onApprove, onReject, onSuspend }) => {
                 </View>
                 <IconButton
                   icon={isExpanded ? 'chevron-up' : 'chevron-down'}
-                  onPress={() => setIsExpanded(!isExpanded)}
+                  onPress={toggleExpand}
                 />
-              </View>
+              </TouchableOpacity>
 
-              <MotiView
-                animate={{ height: isExpanded ? 'auto' : 0 }}
-                transition={{ type: 'timing', duration: 300 }}
-                style={styles.expandedContent}
-              >
+              <Animated.View style={{
+                maxHeight: heightAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 500]
+                }),
+                opacity: heightAnim,
+                overflow: 'hidden'
+              }}>
                 <View style={styles.statsGrid}>
                   <StatItem
                     icon="bicycle"
@@ -148,7 +165,7 @@ const DeliveryPartnerCard = ({ partner, onApprove, onReject, onSuspend }) => {
                     Suspend Partner
                   </Button>
                 )}
-              </MotiView>
+              </Animated.View>
             </Card.Content>
           </Card>
         </Animated.View>
@@ -179,111 +196,155 @@ const DocumentItem = ({ label, verified }) => (
 export default function DeliveryPartner() {
   const [partners, setPartners] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTab, setSelectedTab] = useState('ACTIVE');
   const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDeliveryPartners = async () => {
-      try {
-        const response = await axios.get('http://192.168.29.165:3500/Adminstore/delivery/getDeliveryPerson');
-        if (response.data.deliveryPersons) {
-          // Transform the data to match our component's structure
-          const formattedPartners = response.data.deliveryPersons.map(partner => ({
-            id: partner.deliveryPersonId,
-            name: partner.name,
-            status: partner.availability ? 'ACTIVE' : 'SUSPENDED',
-            location: partner.location,
-            joinDate: new Date(partner.createdAt).toISOString().split('T')[0],
-            documents: {
-              license: true,
-              insurance: true,
-              registration: true
-            },
-            rating: 4.5, // Default rating since it's not in the model
-            totalDeliveries: 0, // Default deliveries count
-            vehicleType: 'Bike' // Default vehicle type
-          }));
-          setPartners(formattedPartners);
-        }
-      } catch (error) {
-        console.error('Error fetching delivery partners:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDeliveryPartners();
   }, []);
 
+  const fetchDeliveryPartners = async () => {
+    try {
+      const response = await axios.get('https://nati-coco-server.onrender.com/Adminstore/delivery/getDeliveryPerson');
+      if (response.data.deliveryPersons) {
+        const formattedPartners = response.data.deliveryPersons.map(partner => ({
+          id: partner.deliveryPersonId,
+          name: partner.name,
+          status: partner.status || 'PENDING',
+          location: partner.location,
+          joinDate: new Date(partner.createdAt).toISOString().split('T')[0],
+          documents: {
+            license: true,
+            insurance: true,
+            registration: true
+          },
+          rating: 4.5,
+          totalDeliveries: 0,
+          vehicleType: 'Bike'
+        }));
+        setPartners(formattedPartners);
+      }
+    } catch (error) {
+      console.error('Error fetching delivery partners:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleApprove = async (id) => {
     try {
-      // You can add the API call here to update the partner's status
+      await axios.post(`https://nati-coco-server.onrender.com/Adminstore/delivery/updateStatus/${id}`, {
+        status: 'ACTIVE'
+      });
+      
       setPartners(partners.map(p => 
         p.id === id ? { ...p, status: 'ACTIVE' } : p
       ));
+      Alert.alert('Success', 'Rider approved successfully');
+      fetchDeliveryPartners();
     } catch (error) {
       console.error('Error approving partner:', error);
+      Alert.alert('Error', 'Failed to approve rider');
     }
   };
 
   const handleReject = async (id) => {
     try {
-      // You can add the API call here to update the partner's status
+      await axios.post(`https://nati-coco-server.onrender.com/Adminstore/delivery/updateStatus/${id}`, {
+        status: 'REJECTED'
+      });
+      
       setPartners(partners.map(p => 
         p.id === id ? { ...p, status: 'REJECTED' } : p
       ));
+      Alert.alert('Success', 'Rider rejected');
+      fetchDeliveryPartners();
     } catch (error) {
       console.error('Error rejecting partner:', error);
+      Alert.alert('Error', 'Failed to reject rider');
     }
   };
 
   const handleSuspend = async (id) => {
     try {
-      // You can add the API call here to update the partner's status
+      await axios.post(`https://nati-coco-server.onrender.com/Adminstore/delivery/updateStatus/${id}`, {
+        status: 'SUSPENDED'
+      });
+      
       setPartners(partners.map(p => 
         p.id === id ? { ...p, status: 'SUSPENDED' } : p
       ));
+      Alert.alert('Success', 'Rider suspended');
+      fetchDeliveryPartners();
     } catch (error) {
       console.error('Error suspending partner:', error);
+      Alert.alert('Error', 'Failed to suspend rider');
     }
   };
 
   const filteredPartners = partners.filter(partner => {
     const matchesSearch = partner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          partner.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTab = selectedTab === 'REQUESTS' ? 
+                      partner.status === 'PENDING' : 
+                      partner.status !== 'PENDING';
     const matchesFilter = selectedFilter === 'ALL' || partner.status === selectedFilter;
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesTab && (selectedTab === 'REQUESTS' ? true : matchesFilter);
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Delivery Partners</Text>
+        
+        <View style={styles.tabContainer}>
+          <TouchableOpacity 
+            style={[styles.tabButton, selectedTab === 'ACTIVE' && styles.activeTab]}
+            onPress={() => setSelectedTab('ACTIVE')}
+          >
+            <Text style={[styles.tabText, selectedTab === 'ACTIVE' && styles.activeTabText]}>
+              Active Riders
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, selectedTab === 'REQUESTS' && styles.activeTab]}
+            onPress={() => setSelectedTab('REQUESTS')}
+          >
+            <Text style={[styles.tabText, selectedTab === 'REQUESTS' && styles.activeTabText]}>
+              Requests
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <Searchbar
           placeholder="Search by name or ID..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.searchBar}
         />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterContainer}
-        >
-          {['ALL', 'ACTIVE', 'SUSPENDED'].map((filter) => (
-            <Chip
-              key={filter}
-              selected={selectedFilter === filter}
-              onPress={() => setSelectedFilter(filter)}
-              style={[
-                styles.filterChip,
-                selectedFilter === filter && styles.selectedChip
-              ]}
-            >
-              {filter}
-            </Chip>
-          ))}
-        </ScrollView>
+
+        {selectedTab !== 'REQUESTS' && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterContainer}
+          >
+            {['ALL', 'ACTIVE', 'SUSPENDED'].map((filter) => (
+              <Chip
+                key={filter}
+                selected={selectedFilter === filter}
+                onPress={() => setSelectedFilter(filter)}
+                style={[
+                  styles.filterChip,
+                  selectedFilter === filter && styles.selectedChip
+                ]}
+              >
+                {filter}
+              </Chip>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       <ScrollView style={styles.content}>
@@ -468,6 +529,32 @@ const styles = StyleSheet.create({
   noResultsText: {
     fontSize: moderateScale(16),
     color: '#424242',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: verticalScale(15),
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: scale(10),
+    padding: scale(5),
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: scale(15),
+    borderRadius: scale(8),
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: '#F8931F',
+  },
+  tabText: {
+    color: 'white',
+    fontSize: moderateScale(14),
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
