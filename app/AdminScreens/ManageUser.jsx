@@ -1,5 +1,6 @@
-import { View, ScrollView, StyleSheet, Dimensions, FlatList } from 'react-native';
-import { Text, Searchbar, Card, Avatar, Chip, IconButton, ActivityIndicator } from 'react-native-paper';
+// UserManagement.js
+import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { Text, Searchbar, Card, Avatar, Chip, ActivityIndicator } from 'react-native-paper';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
@@ -8,16 +9,13 @@ import axios from 'axios';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const UserStatsCard = ({ totalUsers, activeUsers, newUsers }) => (
+const UserStatsCard = ({ totalUsers, verifiedUsers }) => (
   <MotiView
     from={{ opacity: 0, translateY: 50 }}
     animate={{ opacity: 1, translateY: 0 }}
     transition={{ type: 'spring', delay: 100 }}
   >
-    <LinearGradient
-      colors={['#fff', '#ffff']}
-      style={styles.statsCard}
-    >
+    <LinearGradient colors={['#fff', '#fff']} style={styles.statsCard}>
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{totalUsers}</Text>
@@ -25,102 +23,67 @@ const UserStatsCard = ({ totalUsers, activeUsers, newUsers }) => (
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{activeUsers}</Text>
-          <Text style={styles.statLabel}>Active</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{newUsers}</Text>
-          <Text style={styles.statLabel}>New Today</Text>
+          <Text style={styles.statNumber}>{verifiedUsers}</Text>
+          <Text style={styles.statLabel}>Verified</Text>
         </View>
       </View>
     </LinearGradient>
   </MotiView>
 );
 
-const UserCard = ({ user, index }) => {
-  // Convert orderId object to string if it exists
-  const getOrderCount = (orders) => {
-    if (!orders) return 0;
-    return typeof orders === 'object' ? Object.keys(orders).length : orders;
-  };
-
-  // Convert addresses object to string if it exists
-  const getAddressCount = (addresses) => {
-    if (!addresses) return 0;
-    return typeof addresses === 'object' ? Object.keys(addresses).length : addresses;
-  };
-
-  return (
-    <MotiView
-      from={{ opacity: 0, translateX: -100 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      transition={{ type: 'spring', delay: index * 100 }}
-    >
-      <Card style={styles.userCard}>
-        <Card.Content>
-          <View style={styles.userHeader}>
-            <View style={styles.userInfo}>
-              <Avatar.Text 
-                size={50} 
-                label={user.name ? user.name.split(' ').map(n => n[0]).join('') : '?'} 
-                style={styles.avatar}
-                color='#0f1c57'
-                backgroundColor='white'
-              />
-              <View style={styles.userDetails}>
-                <Text style={styles.userName}>{user.name || 'No Name'}</Text>
-                <Text style={styles.userEmail}>{user.email || 'No Email'}</Text>
-              </View>
+const UserCard = ({ user, index }) => (
+  <MotiView
+    from={{ opacity: 0, translateX: -100 }}
+    animate={{ opacity: 1, translateX: 0 }}
+    transition={{ type: 'spring', delay: index * 100 }}
+  >
+    <Card style={styles.userCard}>
+      <Card.Content>
+        <View style={styles.userHeader}>
+          <View style={styles.userInfo}>
+            <Avatar.Text 
+              size={50} 
+              label={user.name ? user.name.split(' ').map(n => n[0]).join('') : '?'} 
+              style={styles.avatar}
+              color='#0f1c57'
+              backgroundColor='white'
+            />
+            <View style={styles.userDetails}>
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
             </View>
           </View>
-          
-          <View style={styles.userMetrics}>
-            <View style={styles.metric}>
-              <Ionicons name="cart" size={20} color="white" />
-              <Text style={[styles.metricText, { color: 'white' }]}>
-                {getOrderCount(user.orders)} Orders
-              </Text>
-            </View>
-            <View style={styles.metric}>
-              <Ionicons name="location" size={20} color="white" />
-              <Text style={[styles.metricText, { color: 'white' }]}>
-                {getAddressCount(user.addresses)} Addresses
-              </Text>
-            </View>
-            <View style={styles.metric}>
-              <Ionicons name="star" size={20} color="white" />
-              <Text style={[styles.metricText, { color: 'white' }]}>
-                {typeof user.rating === 'number' ? user.rating.toFixed(1) : '0'}/5
-              </Text>
-            </View>
+        </View>
+        
+        <View style={styles.userMetrics}>
+          <View style={styles.metric}>
+            <Ionicons name="call" size={20} color="white" />
+            <Text style={styles.metricText}>{user.mobileno}</Text>
           </View>
-
-          <View style={styles.tagContainer}>
-            {user.isActive && (
-              <Chip 
-                style={[styles.chip, { backgroundColor: '#E8F5E9' }]}
-                textStyle={{ color: '#2E7D32' }}
-              >
-                Active
-              </Chip>
-            )}
-            {user.isPremium && (
-              <Chip 
-                style={[styles.chip, { backgroundColor: '#FFF3E0' }]}
-                textStyle={{ color: '#F8931F' }}
-              >
-                Premium
-              </Chip>
-            )}
+          <View style={styles.metric}>
+            <Ionicons name="checkmark-circle" size={20} color="white" />
+            <Text style={styles.metricText}>
+              {user.verified ? 'Verified' : 'Unverified'}
+            </Text>
           </View>
-        </Card.Content>
-      </Card>
-    </MotiView>
-  );
-};
+        </View>
 
-export default function ManageUser() {
+        <View style={styles.tagContainer}>
+          {user.verified && (
+            <Chip 
+              style={[styles.chip, { backgroundColor: '#E8F5E9' }]}
+              textStyle={{ color: '#2E7D32' }}
+            >
+              Verified
+            </Chip>
+          )}
+        </View>
+      </Card.Content>
+    </Card>
+  </MotiView>
+);
+
+const ManageUser = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -129,12 +92,13 @@ export default function ManageUser() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const existingUsers = await axios.get('http://192.168.29.165:3500/auth/Users');
-        setUsers(existingUsers.data);
-        setFilteredUsers(existingUsers.data); // Initialize filtered users with all users
-        setLoading(false);
+        const response = await axios.get('http://192.168.29.242:3500/auth/users');
+        const usersData = response.data.users;
+        setUsers(usersData);
+        setFilteredUsers(usersData);
       } catch (error) {
         console.error('Error fetching users:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -143,66 +107,34 @@ export default function ManageUser() {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    if (query.trim() === '') {
-      setFilteredUsers(users);
-      return;
-    }
-
     const filtered = users.filter(user => {
-      const name = user.name?.toLowerCase() || '';
-      const email = user.email?.toLowerCase() || '';
-      const userId = user.userId?.toLowerCase() || '';
-      const searchQuery = query.toLowerCase();
-
+      const searchLower = query.toLowerCase();
       return (
-        name.includes(searchQuery) ||
-        email.includes(searchQuery) ||
-        userId.includes(searchQuery)
+        user.name?.toLowerCase().includes(searchLower) ||
+        user.email?.toLowerCase().includes(searchLower) ||
+        user.mobileno?.toString().includes(searchLower)
       );
     });
     setFilteredUsers(filtered);
   };
 
   return (
-    <LinearGradient
-      colors={['#fff', '#ffff']}
-      style={styles.container}
-    >
-      <MotiView
-        from={{ opacity: 0, translateY: -50 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'spring' }}
-      >
-        <Searchbar
-          placeholder="Search by name, email or ID..."
-          onChangeText={handleSearch}
-          value={searchQuery}
-          style={styles.searchBar}
-          textColor='#0f1c57'
-          iconColor="#0f1c57"
-          placeholderTextColor='#0f1c57'
-          // theme={{ colors: { primary: '#0f1c57' } }}
-        />
-      </MotiView>
+    <LinearGradient colors={['#fff', '#fff']} style={styles.container}>
+      <Searchbar
+        placeholder="Search users..."
+        onChangeText={handleSearch}
+        value={searchQuery}
+        style={styles.searchBar}
+        iconColor="#0f1c57"
+      />
 
       <UserStatsCard
         totalUsers={users.length}
-        activeUsers={users.filter(u => u.isActive).length}
-        newUsers={users.filter(u => {
-          const today = new Date();
-          const userDate = new Date(u.createdAt);
-          return today.toDateString() === userDate.toDateString();
-        }).length}
+        verifiedUsers={users.filter(u => u.verified).length}
       />
 
       {loading ? (
         <ActivityIndicator style={styles.loader} color="#F8931F" size="large" />
-      ) : filteredUsers.length === 0 ? (
-        <View style={styles.noResultsContainer}>
-          <Ionicons name="search" size={50} color="#F8931F" />
-          <Text style={styles.noResultsText}>No users found</Text>
-          <Text style={styles.noResultsSubText}>Try a different search term</Text>
-        </View>
       ) : (
         <FlatList
           data={filteredUsers}
@@ -210,11 +142,16 @@ export default function ManageUser() {
           keyExtractor={item => item._id}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.noResultsContainer}>
+              <Text style={styles.noResultsText}>No users found</Text>
+            </View>
+          }
         />
       )}
     </LinearGradient>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -226,10 +163,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: 'white',
     elevation: 4,
-    marginHorizontal: 10,
-    iconColor: '#0f1c57',
-    borderColor:'#0f1c57',
-    borderWidth:3
+    borderColor: '#0f1c57',
+    borderWidth: 3
   },
   statsCard: {
     borderRadius: 12,
@@ -277,7 +212,6 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginRight: 12,
-    
   },
   userDetails: {
     flex: 1,
@@ -288,7 +222,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   userEmail: {
-    color: '#666',
+    color: '#ccc',
     fontSize: 14,
   },
   userMetrics: {
@@ -298,16 +232,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: '#223670',
   },
   metric: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
   },
   metricText: {
-    marginLeft: 4,
-    color: '#666',
+    color: 'white',
   },
   tagContainer: {
     flexDirection: 'row',
@@ -319,8 +252,6 @@ const styles = StyleSheet.create({
   },
   loader: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   listContainer: {
     paddingBottom: 16,
@@ -332,14 +263,9 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
   noResultsText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
     color: '#666',
-    marginTop: 16,
-  },
-  noResultsSubText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 8,
   },
 });
+
+export default ManageUser;

@@ -215,7 +215,7 @@ export default function LoginScreen() {
               style={styles.loginButton} 
               // onPress={handleLogin}
               onPress={() => {
-               if (phoneNumber == 7010871355) {
+               if (phoneNumber == 12345) {
                 navigation.navigate('AdminHome');
                } else if (phoneNumber == 0) {
                 navigation.navigate('DeliveryTab');
