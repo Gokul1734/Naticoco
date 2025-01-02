@@ -29,8 +29,6 @@ export default function SignUpScreen() {
   const otpRefs = useRef([]);
 
   const handlePostData = async () => {
-
-    
     if (!name || !email || !password || !mobileNumber) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -55,8 +53,7 @@ export default function SignUpScreen() {
     };
 
     try {
-      console.log('Attempting registration:', url);
-      const response = await axios.post('http://192.168.29.242:3500/auth/Register', data, {
+      const response = await axios.post('http://192.168.32.227:3500/auth/Register', data, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -67,12 +64,10 @@ export default function SignUpScreen() {
         // After successful registration, generate OTP
         try {
           console.log('Attempting to generate OTP:', mobileNumber);
-          const otpResponse = await axios.post('http://192.168.29.242:3500/auth/generate-otp', {
-            phoneNumber: `+91${mobileNumber}` // Add country code for India
+          const otpResponse = await axios.post('http://192.168.32.227:3500/auth/generate-otp', {
+            phoneNumber: mobileNumber // Using the full number including +91
           });
-          console.log('OTP Request:', {
-            phoneNumber: `+91${mobileNumber}`
-          });
+          
           console.log('OTP Response:', otpResponse.data);
           if (otpResponse.status === 200) {
             setOtpModalVisible(true);
@@ -88,6 +83,7 @@ export default function SignUpScreen() {
       let errorMessage = 'Registration failed. Please try again.';
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
+        console.log(errorMessage)
       }
       if (errorMessage === "User already exists") {
         Alert.alert(
@@ -112,8 +108,8 @@ export default function SignUpScreen() {
 
   const verifyOTP = async (otp) => {
     try {
-      const response = await axios.post('http://192.168.29.242:3500/auth/verify-otp', {
-        phoneNumber: `+91${mobileNumber}`,
+      const response = await axios.post('http://192.168.32.227:3500/auth/verify-otp', {
+        phoneNumber: mobileNumber, // Using the full number including +91
         otp: otp.join('')
       });
 

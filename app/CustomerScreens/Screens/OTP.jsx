@@ -68,6 +68,34 @@ const OTP = () => {
     }
   };
 
+
+  const verifyOTP = async () => {
+    console.log('Verifying OTP:',otp.join(''),email);
+    const url = 'http://192.168.32.227:3500/auth/verify-otp';
+
+    const data = {
+      phoneNumber: mobileNumber,
+      otp: otp.join(''),
+    };
+
+    try {
+      const response = await axios.post(url, data, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 5000,
+      });
+      console.log('OTP verification response:', response.data);
+      if (response.data.success) {
+        setOtpModalVisible(false);
+        navigation.replace('Welcome');
+      } else {
+        Alert.alert('Error', response.data.message || 'OTP verification failed');
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+    }
+  };
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;

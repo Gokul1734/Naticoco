@@ -69,17 +69,17 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      // const response = await axios.post("http://192.168.29.165:3500/auth/login", {
-      //   mobileno: phoneNumber,
-      //   password: password
-      // }, {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+      const response = await axios.post("http://192.168.32.227:3500/auth/login", {
+        mobileno: phoneNumber,
+        password: password
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      // if (response.status === 200) {
-        // Handle different user types
+      if (response.status === 200) {
+      
         if (phoneNumber === '12345') {
           navigation.navigate('AdminHome');
         } else if (phoneNumber === '0') {
@@ -87,16 +87,16 @@ export default function LoginScreen() {
         } else if (phoneNumber === '1') {
           navigation.navigate('StoreStack');
         } else {
-          // await login(response.data.user, response.data.accessToken);
+
           navigation.navigate('StoreType');
         }
-      // }
-    // } catch (error) {
-    //   console.error('Login error:', error);
-    //   Alert.alert(
-    //     'Login Failed',
-    //     error.response?.data?.message || 'Invalid credentials'
-    //   );
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert(
+        'Login Failed',
+        error.response?.data?.message || 'Invalid credentials'
+      );
     } finally {
       setLoading(false);
     }
