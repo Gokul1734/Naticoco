@@ -8,7 +8,6 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import storeData from '../../Backend/Store.json';
 import axios from 'axios';
-import Api from '../Api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

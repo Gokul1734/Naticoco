@@ -62,7 +62,7 @@ export const mockStores = [
         description: 'Tender chicken pieces marinated in special spices and fried to perfection',
         price: 299,
         category: 'Main Course',
-        image: require('../../assets/images/nb1.png'),
+        image: require('../../assets/images/l1.png'),
         inStock: true,
         stockCount: 50
       },
@@ -72,7 +72,7 @@ export const mockStores = [
         description: 'Aromatic basmati rice cooked with tender chicken and authentic spices',
         price: 399,
         category: 'Main Course',
-        image: require('../../assets/images/nb1.png'),
+        image: require('../../assets/images/l1.png'),
         inStock: true,
         stockCount: 30
       }
@@ -108,7 +108,7 @@ export const mockStores = [
         description: 'Traditional country chicken curry cooked with native spices',
         price: 449,
         category: 'Main Course',
-        image: require('../../assets/images/nb1.png'),
+        image: require('../../assets/images/l1.png'),
         inStock: true,
         stockCount: 25
       },
@@ -118,7 +118,7 @@ export const mockStores = [
         description: 'Spicy deep-fried chicken with curry leaves and green chilies',
         price: 349,
         category: 'Starters',
-        image: require('../../assets/images/nb1.png'),
+        image: require('../../assets/images/l1.png'),
         inStock: true,
         stockCount: 40
       }
@@ -156,7 +156,7 @@ export const generateMockStores = (count = 8) => {
       description: 'Delicious chicken preparation with special spices',
       price: Math.floor(Math.random() * 300 + 200),
       category: ['Main Course', 'Starters', 'Sides', 'Beverages'][Math.floor(Math.random() * 4)],
-      image: require('../../assets/images/nb1.png'),
+      image: require('../../assets/images/l1.png'),
       inStock: Math.random() > 0.2,
       stockCount: Math.floor(Math.random() * 50 + 10)
     })),
