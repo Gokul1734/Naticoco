@@ -18,8 +18,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const API_URL = "https://nati-coco-server.onrender.com/auth/login";
-
 // Add image mapping
 const loginImages = {
   eggs: require('../assets/images/eggsLogin.png'),
@@ -70,7 +68,7 @@ export default function LoginScreen() {
   
     setLoading(true);
     try {
-      const response = await axios.post("http://192.168.32.227:3500/auth/login", {
+      const response = await axios.post("http://192.168.29.242:3500/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {
@@ -96,7 +94,7 @@ export default function LoginScreen() {
         } else if (phoneNumber === '1') {
           navigation.navigate('StoreStack');
         } else {
-          navigation.navigate('StoreType');
+          navigation.navigate('Welcome');
         }
       }
     } catch (error) {
