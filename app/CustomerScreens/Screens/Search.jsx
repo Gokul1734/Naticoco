@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +35,27 @@ const productImages = {
   'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
 };
 
+// Add carousel data
+const carouselData = [
+  {
+    id: '1',
+    image: require('../../../assets/images/ad1.png'),
+    title: 'Fresh & Organic',
+    subtitle: 'Chicken',
+    description: 'Every time you try fresh meat, you\'re making meals tastier & better',
+    buttonText: 'Order Now',
+  },
+  {
+   id: '2',
+   image: require('../../../assets/images/ad1.png'),
+   title: 'Fresh & Organic',
+   subtitle: 'Chicken',
+   description: 'Every time you try fresh meat, you\'re making meals tastier & better',
+   buttonText: 'Order Now',
+ },
+  // Add more banner items as needed
+];
+
 export default function SearchScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +65,28 @@ export default function SearchScreen({ navigation }) {
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+
+  const [activeSlide, setActiveSlide] = useState(0);
+  const flatListRef = useRef(null);
+
+  // Auto scroll carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (activeSlide < carouselData.length - 1) {
+        flatListRef.current?.scrollToIndex({
+          index: activeSlide + 1,
+          animated: true,
+        });
+      } else {
+        flatListRef.current?.scrollToIndex({
+          index: 0,
+          animated: true,
+        });
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [activeSlide]);
 
   useEffect(() => {
     // Animate search bar and results on mount
@@ -82,12 +126,54 @@ export default function SearchScreen({ navigation }) {
     }, 500);
   };
 
+  const renderCarouselItem = ({ item }) => (
+    <View style={styles.carouselItem}>
+      <Image 
+        source={item.image} 
+        style={styles.bannerImage}
+        resizeMode="contain"
+      />
+    </View>
+  );
+
   if (isLoadingAssets) {
     return <LoadingScreen />;
   }
 
   return (
     <ScreenBackground style={styles.safeArea}>
+      {/* Add Carousel */}
+      <View style={styles.carouselContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={carouselData}
+          renderItem={renderCarouselItem}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(event) => {
+            const slideIndex = Math.floor(
+              event.nativeEvent.contentOffset.x / 
+              event.nativeEvent.layoutMeasurement.width
+            );
+            setActiveSlide(slideIndex);
+          }}
+          keyExtractor={item => item.id}
+        />
+        {/* Pagination dots */}
+        <View style={styles.paginationContainer}>
+          {carouselData.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.paginationDot,
+                index === activeSlide && styles.paginationDotActive
+              ]}
+            />
+          ))}
+        </View>
+      </View>
+
       <Animated.View 
         style={[
           styles.searchContainer,
@@ -231,5 +317,81 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginTop: 8,
+  },
+  carouselContainer: {
+    height: 200,
+    marginBottom: 16,
+    alignSelf:'center',
+    justifyContent:'center',
+    width : SCREEN_WIDTH - 50
+  },
+  carouselItem: {
+    width: SCREEN_WIDTH - 50,
+    height: 250,
+    position: 'relative',
+  },
+  bannerImage: {
+    alignSelf : 'center',
+    justifyContent : 'center',
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  bannerContent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  bannerTitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 4,
+  },
+  bannerSubtitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0f1c57',
+    marginBottom: 8,
+  },
+  bannerDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+    width: '60%',
+  },
+  bannerButton: {
+    backgroundColor: '#F8931F',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignSelf: 'flex-start',
+  },
+  bannerButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 16,
+    alignSelf: 'center',
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: '#F8931F',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
 });

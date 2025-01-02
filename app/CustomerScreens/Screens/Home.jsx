@@ -28,15 +28,50 @@ import products from '../../../Backend/Products.json';
 import LoadingScreen from '../Components/LoadingScreen';
 import { useLoadAssets } from '../../hooks/useLoadAssets';
 import ScreenBackground from '../Components/ScreenBackground';
+import Egg from '../../../assets/images/Egg.png';
 const categories = [
-  { id: '1', name: 'Eggs', icon: '🥚' },
-  { id: '2', name: 'Marinated', icon: '🍖' },
-  { id: '3', name: 'Heat & Eat', icon: '🍳' },
-  { id: '4', name: 'Mutton', icon: '🥩' },
-  { id: '5', name: 'Spices', icon: '🌶️' },
-  { id: '6', name: 'Pet Food', icon: '🐕' },
-  { id: '7', name: 'Chicken', icon: '🍗' },
-  { id: '8', name: 'Post Order', icon: '⏱️' },
+ { 
+  id: '1', 
+  name: 'Chicken', 
+  image: require('../../../assets/images/HomeCategories/Nati.png')
+},
+
+  { 
+    id: '2', 
+    name: 'Marinated', 
+    image: require('../../../assets/images/HomeCategories/Marinate.png')
+  },
+  { 
+    id: '3', 
+    name: 'Heat & Eat', 
+    image: require('../../../assets/images/HomeCategories/Chicken.png')
+  },
+  { 
+   id: '4', 
+   name: 'Eggs', 
+   image: require('../../../assets/images/HomeCategories/Egg.png') 
+ },
+
+  { 
+    id: '5', 
+    name: 'Spices', 
+    image: require('../../../assets/images/HomeCategories/Spice.png')
+  },
+  { 
+    id: '6', 
+    name: 'Pet Food', 
+    image: require('../../../assets/images/HomeCategories/Petfood.png')
+  },
+  { 
+   id: '7', 
+   name: 'Mutton', 
+   image: require('../../../assets/images/HomeCategories/Steak.png')
+ },
+  { 
+    id: '8', 
+    name: 'Post Order', 
+    image: require('../../../assets/images/HomeCategories/FD.png')
+  },
 ];
 
 const bestSellers = mockFoodItems.filter((item) => item.bestSeller);
@@ -197,17 +232,23 @@ const productImages = {
   'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
 };
 
-const CategoryButton = ({ name, icon, isSelected, onSelect }) => (
+const CategoryButton = ({ name, image, isSelected, onSelect }) => (
   <TouchableOpacity
     onPress={() => onSelect(name)}
     style={[styles.categoryButton, isSelected && styles.selectedCategory]}
   >
-    <Ionicons 
-      name={icon} 
-      size={26} 
-      color={isSelected ? '#F8931F' : '#666'} 
-    />
-    <Text style={[styles.categoryText, isSelected && styles.selectedCategoryText]}>
+      <Image
+        source={image}
+        style={[
+          styles.categoryImage,
+          isSelected && styles.selectedCategoryImage
+        ]}
+        resizeMode="contain"
+      />
+    <Text style={[
+      styles.categoryText,
+      isSelected && styles.selectedCategoryText
+    ]}>
       {name}
     </Text>
   </TouchableOpacity>
@@ -360,10 +401,10 @@ export default function HomeScreen() {
      onPress={() => navigation.navigate('FilteredItems', { category: item.name })}
    >
      <LinearGradient
-              colors={['#F8931F', '#f4a543']}
+              colors={['#FFFEFD', '#F7A02F']}
               style={[styles.profileGradient,styles.categoryButton]}
             >
-     <Text style={styles.categoryIcon}>{item.icon}</Text>
+     <Image resizeMode='contain' source={item.image} style={[styles.categoryImage,{height : 50,width:50}]} />
      <Text style={styles.categoryName}>{item.name}</Text>
      </LinearGradient>
    </TouchableOpacity>
@@ -543,19 +584,53 @@ const styles = StyleSheet.create({
   categoryButton: {
     flex: 1,
     alignItems: 'center',
-    padding: normalize(16),
+    padding: normalize(15),
     margin: normalize(5),
-    backgroundColor: '#df8229',
+    backgroundColor: '#fff',
     borderRadius: normalize(12),
-    minWidth: (SCREEN_WIDTH - normalize(60)) / 3.3, // Account for margins and padding
+    minWidth: (SCREEN_WIDTH - normalize(60)) / 3.3,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    height : 100
   },
-  categoryIcon: {
-    fontSize: normalize(32),
-    marginBottom: normalize(8),
+  selectedCategory: {
+    backgroundColor: '#fff5e6',
+    borderWidth: 1,
+    borderColor: '#F8931F',
   },
-  categoryName: {
+  categoryImageContainer: {
+    width: normalize(60),
+    height: normalize(80),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: normalize(10),
+    borderRadius: normalize(25),
+    backgroundColor: '#f5f5f5',
+  },
+  categoryImage: {
+    width: 48,
+    height: 42,
+    margin:1
+    
+  },
+  selectedCategoryImage: {
+    tintColor: '#F8931F',
+  },
+  categoryText: {
     fontSize: normalize(12),
     fontWeight: '500',
+    color: '#666',
+    textAlign: 'center',
+  },
+  selectedCategoryText: {
+    color: '#F8931F',
+    fontWeight: '600',
   },
   horizontalList: {
     paddingRight: normalize(16),

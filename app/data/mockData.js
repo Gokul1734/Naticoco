@@ -54,18 +54,143 @@ export const mockStores = [
     area: 'Hyderabad Central',
     rating: 4.2,
     totalOrders: 1250,
-    avgDeliveryTime: 28
+    avgDeliveryTime: 28,
+    items: [
+      {
+        id: 'ITEM001',
+        name: 'Crispy Chicken',
+        description: 'Tender chicken pieces marinated in special spices and fried to perfection',
+        price: 299,
+        category: 'Main Course',
+        image: require('../../assets/images/nb1.png'),
+        inStock: true,
+        stockCount: 50
+      },
+      {
+        id: 'ITEM002',
+        name: 'Chicken Biryani',
+        description: 'Aromatic basmati rice cooked with tender chicken and authentic spices',
+        price: 399,
+        category: 'Main Course',
+        image: require('../../assets/images/nb1.png'),
+        inStock: true,
+        stockCount: 30
+      }
+    ],
+    location: {
+      latitude: 17.4485835,
+      longitude: 78.3908034,
+    },
+    address: '123 Food Street, Hyderabad Central',
+    contactNumber: '+91 9876543210',
+    openingHours: {
+      monday: { open: '10:00', close: '22:00' },
+      tuesday: { open: '10:00', close: '22:00' },
+      wednesday: { open: '10:00', close: '22:00' },
+      thursday: { open: '10:00', close: '22:00' },
+      friday: { open: '10:00', close: '23:00' },
+      saturday: { open: '10:00', close: '23:00' },
+      sunday: { open: '11:00', close: '22:00' }
+    },
+    isActive: true
   },
-  // Add more stores
-  ...Array.from({ length: 9 }, (_, i) => ({
-    id: `STR${(i + 2).toString().padStart(3, '0')}`,
-    name: `Store ${i + 2}`,
-    area: ['Hyderabad North', 'Hyderabad South', 'Hyderabad East', 'Hyderabad West'][Math.floor(Math.random() * 4)],
-    rating: Math.floor(Math.random() * 2 + 3) + Math.random(),
-    totalOrders: Math.floor(Math.random() * 1000 + 500),
-    avgDeliveryTime: Math.floor(Math.random() * 15 + 20)
-  }))
+  {
+    id: 'STR002',
+    name: 'Nati Kitchen',
+    area: 'Hyderabad North',
+    rating: 4.5,
+    totalOrders: 980,
+    avgDeliveryTime: 25,
+    items: [
+      {
+        id: 'ITEM003',
+        name: 'Nati Chicken Curry',
+        description: 'Traditional country chicken curry cooked with native spices',
+        price: 449,
+        category: 'Main Course',
+        image: require('../../assets/images/nb1.png'),
+        inStock: true,
+        stockCount: 25
+      },
+      {
+        id: 'ITEM004',
+        name: 'Chicken 65',
+        description: 'Spicy deep-fried chicken with curry leaves and green chilies',
+        price: 349,
+        category: 'Starters',
+        image: require('../../assets/images/nb1.png'),
+        inStock: true,
+        stockCount: 40
+      }
+    ],
+    location: {
+      latitude: 17.4555835,
+      longitude: 78.3928034,
+    },
+    address: '456 Spice Road, Hyderabad North',
+    contactNumber: '+91 9876543211',
+    openingHours: {
+      monday: { open: '11:00', close: '23:00' },
+      tuesday: { open: '11:00', close: '23:00' },
+      wednesday: { open: '11:00', close: '23:00' },
+      thursday: { open: '11:00', close: '23:00' },
+      friday: { open: '11:00', close: '23:30' },
+      saturday: { open: '11:00', close: '23:30' },
+      sunday: { open: '11:00', close: '23:00' }
+    },
+    isActive: true
+  }
 ];
+
+export const generateMockStores = (count = 8) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `STR${(i + 3).toString().padStart(3, '0')}`,
+    name: `Store ${i + 3}`,
+    area: ['Hyderabad North', 'Hyderabad South', 'Hyderabad East', 'Hyderabad West'][Math.floor(Math.random() * 4)],
+    rating: (Math.floor(Math.random() * 2 + 3) + Math.random()).toFixed(1),
+    totalOrders: Math.floor(Math.random() * 1000 + 500),
+    avgDeliveryTime: Math.floor(Math.random() * 15 + 20),
+    items: Array.from({ length: Math.floor(Math.random() * 5 + 5) }, (_, j) => ({
+      id: `ITEM${(i * 10 + j + 5).toString().padStart(3, '0')}`,
+      name: `Product ${i * 10 + j + 5}`,
+      description: 'Delicious chicken preparation with special spices',
+      price: Math.floor(Math.random() * 300 + 200),
+      category: ['Main Course', 'Starters', 'Sides', 'Beverages'][Math.floor(Math.random() * 4)],
+      image: require('../../assets/images/nb1.png'),
+      inStock: Math.random() > 0.2,
+      stockCount: Math.floor(Math.random() * 50 + 10)
+    })),
+    location: {
+      latitude: 17.4485835 + (Math.random() - 0.5) * 0.1,
+      longitude: 78.3908034 + (Math.random() - 0.5) * 0.1,
+    },
+    address: `${Math.floor(Math.random() * 999) + 1} Food Street, Hyderabad`,
+    contactNumber: `+91 ${Math.floor(Math.random() * 9000000000 + 1000000000)}`,
+    openingHours: {
+      monday: { open: '10:00', close: '22:00' },
+      tuesday: { open: '10:00', close: '22:00' },
+      wednesday: { open: '10:00', close: '22:00' },
+      thursday: { open: '10:00', close: '22:00' },
+      friday: { open: '10:00', close: '23:00' },
+      saturday: { open: '10:00', close: '23:00' },
+      sunday: { open: '11:00', close: '22:00' }
+    },
+    isActive: Math.random() > 0.1
+  }));
+};
+
+export const allStores = [...mockStores, ...generateMockStores()];
+
+export const storeItems = allStores.reduce((acc, store) => {
+  store.items.forEach(item => {
+    acc[item.id] = {
+      ...item,
+      storeId: store.id,
+      storeName: store.name
+    };
+  });
+  return acc;
+}, {});
 
 export const mockProducts = [
   {

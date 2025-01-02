@@ -239,18 +239,18 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     paddingHorizontal: 20,
-    marginVertical: 20,
+    marginVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   categoryButton: {
     alignItems: 'center',
-    padding: 20,
+    padding: 10,
     borderRadius: 15,
     backgroundColor: 'white',
     elevation: 3,
     width: SCREEN_WIDTH * 0.43,
-    height: 150,
+    height: 120,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -276,11 +276,10 @@ const styles = StyleSheet.create({
   },
   productsContainer: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 300,
   },
   card: {
     borderRadius: 12,
-    overflow: 'hidden',
     marginBottom: 16,
   },
   productImage: {

@@ -16,7 +16,7 @@ import { useCart } from '../context/CartContext';
 import { useNavigation } from 'expo-router';
 import BackButton from '../../components/BackButton';
 
-const GOOGLE_MAPS_KEY = ''; 
+const GOOGLE_MAPS_KEY = 'AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY'; 
 
 export default function TrackScreen() {
   const navigation = useNavigation();

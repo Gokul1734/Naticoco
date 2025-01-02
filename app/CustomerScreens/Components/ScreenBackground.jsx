@@ -43,7 +43,10 @@ export default function ScreenBackground({ children, style }) {
       source={backgroundImage}
       style={[styles.background, style]}
       resizeMode="cover"
+      imageStyle={{ opacity: 0.7 }}
     >
+      <View style={styles.grayOverlay} />
+      
       <View style={[styles.container, style]}>
         {children}
       </View>
@@ -57,6 +60,10 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT,
     padding: 0,
     margin: 0,
+  },
+  grayOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
   container: {
     flex: 1,

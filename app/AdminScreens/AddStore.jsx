@@ -7,6 +7,8 @@ import { MotiView } from 'moti';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import storeData from '../../Backend/Store.json';
+import axios from 'axios';
+import Api from '../Api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -19,7 +21,9 @@ export default function AddStore({ navigation }) {
     City: '',
     location: [],
     stocks: [],
-    rating: 0
+    rating: 0,
+    email: '',
+    password: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -46,26 +50,34 @@ export default function AddStore({ navigation }) {
   };
 
   const handleSubmit = async () => {
-    if (!store.address || !store.phone || !store.Area || !store.City) {
+    if (!store.address || !store.phone || !store.Area || !store.City || !store.email || !store.password) {
       alert('Please fill all required fields');
       return;
     }
-
+  
     try {
-      // Get existing stores
-      const existingStores = await AsyncStorage.getItem('stores');
-      let stores = existingStores ? JSON.parse(existingStores) : storeData;
-
-      // Add new store
-      stores.push(store);
-
-      // Save updated stores
-      await AsyncStorage.setItem('stores', JSON.stringify(stores));
-      Alert.alert('Store added successfully');
-      navigation.navigate('ManageStore', { newStore: store });
+      const response = await Api.post('api/admin/addstore', {
+        name: store.Area,
+        email: store.email,
+        password: store.password,
+        mobileno: store.phone,
+        locations: {
+          latitude: store.location[0],
+          longitude: store.location[1]
+        },
+        cityName: store.City
+      });
+  
+      if (response.status === 201) {
+        Alert.alert('Success', 'Store added successfully');
+        navigation.navigate('ManageStore', { newStore: store });
+      }
     } catch (error) {
       console.error('Error saving store:', error);
-      alert('Error saving store');
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Error saving store'
+      );
     }
   };
 
@@ -102,6 +114,8 @@ export default function AddStore({ navigation }) {
             { label: 'City', value: 'City', icon: 'business' },
             { label: 'Full Address', value: 'address', icon: 'home' },
             { label: 'Phone Number', value: 'phone', icon: 'call' },
+            { label: 'Email', value: 'email', icon: 'mail' },
+            { label: 'Password', value: 'password', icon: 'lock' },
           ].map((field, index) => (
             <MotiView
               key={field.value}
@@ -130,6 +144,7 @@ export default function AddStore({ navigation }) {
                   outlineColor="#20348f"
                   activeOutlineColor="#20348f"
                   multiline={field.value === 'address'}
+                  secureTextEntry={field.value === 'password'}
                 />
               </View>
             </MotiView>
