@@ -225,14 +225,14 @@ export default function SignUpScreen() {
 
         <TouchableOpacity 
           style={styles.signupButton}
-          onPress={() => {
-           handlePostData();
+          // onPress={() => {
+          //  handlePostData();
            
-          }}
-          // onPress={() => navigation.navigate('OTP')}
+          // }}
+          onPress={() => navigation.navigate('OTP')}
 
         >
-         <Text style={styles.signupButtonText} >Signup</Text>
+         <Text style={styles.signupButtonText} >GET OTP</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 

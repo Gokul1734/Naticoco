@@ -93,7 +93,8 @@ const ManageUser = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('http://192.168.29.165:3500/auth/users');
-        const usersData = response.data.users;
+        const usersData = response.data;
+        console.log(usersData);
         setUsers(usersData);
         setFilteredUsers(usersData);
       } catch (error) {

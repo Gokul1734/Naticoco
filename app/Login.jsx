@@ -32,8 +32,8 @@ export default function LoginScreen() {
   const navigation = useNavigation();
   const { login } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const circleAnimation = new Animated.Value(0);
   const isLoading = useLoadAssets(loginImages);
@@ -61,72 +61,46 @@ export default function LoginScreen() {
     };
   }, []);
 
-  // const handleLogin = async () => {
-  //   if (!email || !password) {
-  //     Alert.alert('Error', 'Please fill in all fields');
-  //     return;
-  //   }
+  const handleLogin = async () => {
+    if (!phoneNumber || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
 
-  //   if (email == 'admin@gmail.com' && password == 'admin') {
-  //     navigation.replace('AdminHome');
-  //     return;
-  //   }else {
-  //     setLoading(true);
-  //     try {
-  //       console.log(`Attempting to connect to http://localhost:3500/auth/login`);
+    setLoading(true);
+    try {
+      // const response = await axios.post("http://192.168.29.165:3500/auth/login", {
+      //   mobileno: phoneNumber,
+      //   password: password
+      // }, {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
 
-  //       console.log(`Entered Email and Password ${email} - ${password}`)
-        
-  //       const response = await axios.post("http://192.168.29.165:3500/auth/login",{
-  //        email : email,
-  //        password : password
-  //       }, {
-  //        headers: {
-  //          'Content-Type': 'application/json',
-  //        },
-  //        timeout: 5000,
-  //        validateStatus: function (status) {
-  //          return status >= 200 && status < 500;
-  //        },
-  //      });
-
-  //       console.log('Login response:', response.data);
-
-  //       if (response.data.accessToken) {
-  //         await login(response.data.user, response.data.accessToken);
-  //         navigation.replace('StoreType');
-          
-  //       } else {
-  //         Alert.alert('Error', 'Invalid credentials');
-  //       }
-  //     } catch (error) {
-  //       console.error('Login error details:', {
-  //         message: error.message,
-  //         code: error.code,
-  //         response: error.response?.data,
-  //         config: error.config
-  //       });
-
-  //       if (!error.response) {
-  //         Alert.alert(
-  //           'Connection Error',
-  //           'Unable to connect to the server. Please check:\n\n' +
-  //           '1. Your internet connection\n' +
-  //           '2. Server is running\n' +
-  //           '3. Correct server address is used\n\n' +
-  //           `Current server: ${API_URL}`
-  //         );
-  //       } else {
-  //         Alert.alert(
-  //           'Login Failed',
-  //           error.response.data?.message || 'Invalid credentials'
-  //         );
-  //       }
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-  // };
+      // if (response.status === 200) {
+        // Handle different user types
+        if (phoneNumber === '12345') {
+          navigation.navigate('AdminHome');
+        } else if (phoneNumber === '0') {
+          navigation.navigate('DeliveryTab');
+        } else if (phoneNumber === '1') {
+          navigation.navigate('StoreStack');
+        } else {
+          // await login(response.data.user, response.data.accessToken);
+          navigation.navigate('StoreType');
+        }
+      // }
+    // } catch (error) {
+    //   console.error('Login error:', error);
+    //   Alert.alert(
+    //     'Login Failed',
+    //     error.response?.data?.message || 'Invalid credentials'
+    //   );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -185,7 +159,7 @@ export default function LoginScreen() {
               />
             </View>
 
-            {/* <View style={styles.inputContainer}>
+            <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color="#666" />
               <TextInput
                 style={styles.input}
@@ -202,36 +176,17 @@ export default function LoginScreen() {
                   color="#666"
                 />
               </TouchableOpacity>
-            </View> */}
-{/* 
-            <TouchableOpacity 
-              style={styles.forgotPassword}
-              // onPress={() => navigation.navigate('ForgotPassword')}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity> */}
+            </View>
 
             <TouchableOpacity 
               style={styles.loginButton} 
-              // onPress={handleLogin}
-              onPress={() => {
-               if (phoneNumber == 12345) {
-                navigation.navigate('AdminHome');
-               } else if (phoneNumber == 0) {
-                navigation.navigate('DeliveryTab');
-               }else if (phoneNumber == 1) {
-                navigation.navigate('StoreStack');
-               }
-               else {
-                navigation.navigate('OTP');
-               }
-              }}
+              onPress={handleLogin}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text style={styles.loginButtonText}>GET OTP</Text>
+                <Text style={styles.loginButtonText}>LOGIN</Text>
               )}
             </TouchableOpacity>
 
@@ -282,7 +237,7 @@ const styles = StyleSheet.create({
     borderColor: '#F8931F',
     position: 'absolute',
     left: -200,
-    bottom: -450, // Adjusted position
+    bottom: -350, // Adjusted position
     width: '197%',
     height: 800,
     backgroundColor: '#E6E6E6',
@@ -293,7 +248,6 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     zIndex: 2,
-    top: 60,
   },
   title: {
     fontSize: 30,
