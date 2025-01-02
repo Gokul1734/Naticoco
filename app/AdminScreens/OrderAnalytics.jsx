@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Dimensions, Platform } from 'react-native';
-import { Text, Card, Button, Chip, DataTable } from 'react-native-paper';
+import { Text, Card, Button, Chip, DataTable, ActivityIndicator } from 'react-native-paper';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { MotiView } from 'moti';
-import { mockOrders, mockStores, mockProducts } from '../data/mockData';
+import axios from 'axios';
 import { scale, verticalScale, moderateScale } from '../utils/responsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -57,7 +57,7 @@ const calculateStorePerformance = (orders) => {
     if (!storeStats[order.storeId]) {
       storeStats[order.storeId] = {
         id: order.storeId,
-        name: mockStores.find(store => store.id === order.storeId)?.name || 'Unknown Store',
+        name: 'Unknown Store',
         orders: 0,
         revenue: 0,
         ratings: []
@@ -74,6 +74,7 @@ const calculateStorePerformance = (orders) => {
   // Calculate average ratings and sort by orders
   return Object.values(storeStats)
     .map(store => ({
+
       ...store,
       rating: store.ratings.length > 0 
         ? store.ratings.reduce((a, b) => a + b) / store.ratings.length 
@@ -111,23 +112,70 @@ const StatCard = ({ title, value, percentageChange, isPositive }) => (
 export default function OrderAnalytics() {
   const [timeFilter, setTimeFilter] = useState('WEEK');
   const [selectedMetric, setSelectedMetric] = useState('ORDERS');
-  const [orderData, setOrderData] = useState([]);
-  const [storePerformance, setStorePerformance] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState({
+    totalStats: {
+      orders: 0,
+      revenue: 0,
+      avgOrderValue: 0,
+      percentageChanges: {
+        orders: 0,
+        revenue: 0,
+        avgOrderValue: 0
+      }
+    },
+    dailyData: [],
+    topStores: []
+  });
 
   useEffect(() => {
-    // Process mock data based on filters
-    processData();
-  }, [timeFilter, selectedMetric]);
+    fetchAnalytics();
+  }, [timeFilter]);
 
-  const processData = () => {
-    // Process orders based on timeFilter
-    const filteredOrders = filterOrdersByTime(mockOrders, timeFilter);
-    setOrderData(aggregateOrderData(filteredOrders));
-    setStorePerformance(calculateStorePerformance(filteredOrders));
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://192.168.29.242:3500/api/orders/analytics?timeFilter=${timeFilter}`);
+      if (response.data) {
+        setAnalytics({
+          totalStats: response.data.totalStats || {
+            orders: 0,
+            revenue: 0,
+            avgOrderValue: 0,
+            percentageChanges: {
+              orders: 0,
+              revenue: 0,
+              avgOrderValue: 0
+            }
+          },
+          dailyData: response.data.dailyData || [],
+          topStores: response.data.topStores || []
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      // Set default values on error
+      setAnalytics({
+        totalStats: {
+          orders: 0,
+          revenue: 0,
+          avgOrderValue: 0,
+          percentageChanges: {
+            orders: 0,
+            revenue: 0,
+            avgOrderValue: 0
+          }
+        },
+        dailyData: [],
+        topStores: []
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderRevenueChart = () => {
-    const chartData = orderData.slice(-7);
+    const chartData = analytics.dailyData.slice(-7);
     
     return (
       <View style={styles.chartCardWrapper}>
@@ -139,30 +187,37 @@ export default function OrderAnalytics() {
           <Card style={styles.chartCard}>
             <Card.Content>
               <Text style={styles.chartTitle}>Revenue Trend</Text>
-              <LineChart
-                data={{
-                  labels: chartData.map((_, index) => 
-                    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]
-                  ),
-                  datasets: [{
-                    data: chartData.map(day => day.revenue)
-                  }]
-                }}
-                width={SCREEN_WIDTH - 60}
-                height={220}
-                chartConfig={{
-                  backgroundColor: '#0f1c57',
-                  backgroundGradientFrom: '#0f1c57',
-                  backgroundGradientTo: '#20348f',
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  style: {
-                    borderRadius: 16
-                  }
-                }}
-                bezier
-                style={styles.chart}
-              />
+              {loading ? (
+                <ActivityIndicator size="large" color="#0f1c57" />
+              ) : (
+                <LineChart
+                  data={{
+                    labels: chartData.map((_, index) => 
+                      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]
+                    ),
+                    datasets: [{
+                      data: chartData.length > 0 
+                        ? chartData.map(day => Number(day.revenue) || 0)
+                        : [0] // Provide default data if no data available
+                    }]
+                  }}
+                  width={SCREEN_WIDTH - 60}
+                  height={220}
+                  chartConfig={{
+                    backgroundColor: '#0f1c57',
+                    backgroundGradientFrom: '#0f1c57',
+                    backgroundGradientTo: '#20348f',
+                    decimalPlaces: 0,
+                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    formatYLabel: (value) => Math.round(value).toString(),
+                    style: {
+                      borderRadius: 16
+                    }
+                  }}
+                  bezier
+                  style={styles.chart}
+                />
+              )}
             </Card.Content>
           </Card>
         </MotiView>
@@ -180,21 +235,25 @@ export default function OrderAnalytics() {
         <Card style={styles.tableCard}>
           <Card.Content>
             <Text style={styles.tableTitle}>Top Performing Stores</Text>
-            <DataTable>
-              <DataTable.Header>
-                <DataTable.Title textColor='#0f1c57'>Store</DataTable.Title>
-                <DataTable.Title numeric textColor='#0f1c57'>Orders</DataTable.Title>
-                <DataTable.Title numeric textColor='#0f1c57'>Rating</DataTable.Title>
-              </DataTable.Header>
+            {loading ? (
+              <ActivityIndicator size="large" color="#0f1c57" />
+            ) : (
+              <DataTable>
+                <DataTable.Header>
+                  <DataTable.Title textColor='#0f1c57'>Store</DataTable.Title>
+                  <DataTable.Title numeric textColor='#0f1c57'>Orders</DataTable.Title>
+                  <DataTable.Title numeric textColor='#0f1c57'>Rating</DataTable.Title>
+                </DataTable.Header>
 
-              {storePerformance.slice(0, 5).map((store, index) => (
-                <DataTable.Row key={store.id}>
-                  <DataTable.Cell textColor='#0f1c57'>{store.name}</DataTable.Cell>
-                  <DataTable.Cell numeric textColor='#0f1c57'>{store.orders}</DataTable.Cell>
-                  <DataTable.Cell numeric textColor='#0f1c57'>{store.rating.toFixed(1)}</DataTable.Cell>
-                </DataTable.Row>
-              ))}
-            </DataTable>
+                {analytics.topStores.map((store) => (
+                  <DataTable.Row key={store.id}>
+                    <DataTable.Cell textColor='#0f1c57'>{store.name}</DataTable.Cell>
+                    <DataTable.Cell numeric textColor='#0f1c57'>{store.orders}</DataTable.Cell>
+                    <DataTable.Cell numeric textColor='#0f1c57'>{store.rating.toFixed(1)}</DataTable.Cell>
+                  </DataTable.Row>
+                ))}
+              </DataTable>
+            )}
           </Card.Content>
         </Card>
       </MotiView>
@@ -225,21 +284,21 @@ export default function OrderAnalytics() {
       <View style={styles.statsContainer}>
         <StatCard
           title="Total Orders"
-          value="1,234"
-          percentageChange={12.5}
-          isPositive={true}
+          value={analytics.totalStats.orders.toString()}
+          percentageChange={analytics.totalStats.percentageChanges.orders}
+          isPositive={analytics.totalStats.percentageChanges.orders > 0}
         />
         <StatCard
           title="Revenue"
-          value="₹45,678"
-          percentageChange={8.3}
-          isPositive={true}
+          value={`₹${analytics.totalStats.revenue.toFixed(2)}`}
+          percentageChange={analytics.totalStats.percentageChanges.revenue}
+          isPositive={analytics.totalStats.percentageChanges.revenue > 0}
         />
         <StatCard
           title="Avg. Order Value"
-          value="₹370"
-          percentageChange={-2.1}
-          isPositive={false}
+          value={`₹${analytics.totalStats.avgOrderValue.toFixed(2)}`}
+          percentageChange={analytics.totalStats.percentageChanges.avgOrderValue}
+          isPositive={analytics.totalStats.percentageChanges.avgOrderValue > 0}
         />
       </View>
 
