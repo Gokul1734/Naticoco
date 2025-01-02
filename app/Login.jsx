@@ -77,7 +77,7 @@ export default function LoginScreen() {
 
   //       console.log(`Entered Email and Password ${email} - ${password}`)
         
-  //       const response = await axios.post("http://192.168.29.165:3500/auth/login",{
+  //       const response = await axios.post("https://nati-coco-server.onrender.com/auth/login",{
   //        email : email,
   //        password : password
   //       }, {

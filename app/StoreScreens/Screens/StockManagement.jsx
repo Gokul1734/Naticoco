@@ -171,7 +171,7 @@ export default function StockManagement({ navigation }) {
         });
       }
 
-      const response = await axios.post('http://192.168.29.165:3500/citystore/Addmenu', formData, {
+      const response = await axios.post('https://nati-coco-server.onrender.com/citystore/Addmenu', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

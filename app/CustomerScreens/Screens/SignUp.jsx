@@ -29,9 +29,9 @@ export default function SignUpScreen() {
   const otpRefs = useRef([]);
 
   const generateOTP = async () => {
-     console.log('Connecting to:', `http://192.168.29.165:3500/auth/generate-otp`);
+     console.log('Connecting to:', `https://nati-coco-server.onrender.com/auth/generate-otp`);
       try {
-        const res = await axios.post(`http://192.168.29.165:3500/auth/generate-otp`, {
+        const res = await axios.post(`https://nati-coco-server.onrender.com/auth/generate-otp`, {
           email: email
         }, {
           headers: {
@@ -92,7 +92,7 @@ export default function SignUpScreen() {
 
   const verifyOTP = async (otp) => {
     console.log('Verifying OTP:',otp.join(''),email);
-    const url = 'http://192.168.29.165:3500/auth/verify-otp';
+    const url = 'https://nati-coco-server.onrender.com/auth/verify-otp';
 
     const data = {
       email: email,
@@ -118,7 +118,7 @@ export default function SignUpScreen() {
   };
 
   const handlePostData = async () => {
-    const url = 'http://192.168.29.165:3500/auth/Register';
+    const url = 'https://nati-coco-server.onrender.com/auth/Register';
     
     if (!name || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
