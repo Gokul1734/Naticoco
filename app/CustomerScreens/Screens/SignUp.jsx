@@ -23,35 +23,116 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('+91');
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
   const otpRefs = useRef([]);
 
-  const generateOTP = async () => {
-     console.log('Connecting to:', `http://192.168.29.165:3500/auth/generate-otp`);
-      try {
-        const res = await axios.post(`http://192.168.29.165:3500/auth/generate-otp`, {
-          email: email
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 5000
-        });
+  const handlePostData = async () => {
+    if (!name || !email || !password || !mobileNumber) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
 
-        console.log('Server response:', res.data);
-        if (res.data.success) {
-         // Alert.alert('Success', res.data.message);
-          setOtpModalVisible(true);
-        } else {
-          Alert.alert('Error', res.data.message || 'Failed to send OTP');
-        }
-      } catch (error) {
-        console.error('Full error:', error);
-        handleAxiosError(error, 'OTP generation');
-      }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (mobileNumber.length !== 13) {
+      Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    const data = {
+      name: name,
+      email: email,
+      password: password,
+      mobileno: mobileNumber
     };
+
+    try {
+      const response = await axios.post('http://192.168.32.227:3500/auth/Register', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 5000
+      });
+      
+      if (response.status === 200) {
+        // After successful registration, generate OTP
+        try {
+          console.log('Attempting to generate OTP:', mobileNumber);
+          const otpResponse = await axios.post('http://192.168.32.227:3500/auth/generate-otp', {
+            phoneNumber: mobileNumber // Using the full number including +91
+          });
+          
+          console.log('OTP Response:', otpResponse.data);
+          if (otpResponse.status === 200) {
+            setOtpModalVisible(true);
+          } else {
+            Alert.alert('Error', otpResponse.data.message || 'Failed to send OTP');
+          }
+        } catch (otpError) {
+          console.error('OTP Error:', otpError);
+          Alert.alert('Error', 'Failed to send OTP. Please try again.');
+        }
+      }
+    } catch (error) {
+      let errorMessage = 'Registration failed. Please try again.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        console.log(errorMessage)
+      }
+      if (errorMessage === "User already exists") {
+        Alert.alert(
+          'Account Exists',
+          'An account with this email already exists. Please try logging in or use a different email.',
+          [
+            {
+              text: 'Login',
+              onPress: () => navigation.navigate('Login')
+            },
+            {
+              text: 'OK',
+              style: 'cancel'
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
+    }
+  };
+
+  const verifyOTP = async (otp) => {
+    try {
+      const response = await axios.post('http://192.168.32.227:3500/auth/verify-otp', {
+        phoneNumber: mobileNumber, // Using the full number including +91
+        otp: otp.join('')
+      });
+
+      if (response.status === 200) {
+        setOtpModalVisible(false);
+        Alert.alert(
+          'Success',
+          'Registration successful! Please login to continue.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.replace('Login')
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', response.data.message || 'OTP verification failed');
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+    }
+  };
 
   const handleOtpChange = (value, index) => {
     const newOtp = [...otpInput];
@@ -87,76 +168,6 @@ export default function SignUpScreen() {
         setOtpInput(newOtp);
         otpRefs.current[index - 1].focus();
       }
-    }
-  };
-
-  const verifyOTP = async (otp) => {
-    console.log('Verifying OTP:',otp.join(''),email);
-    const url = 'http://192.168.29.165:3500/auth/verify-otp';
-
-    const data = {
-      email: email,
-      otp: otp.join(''),
-    };
-
-    try {
-      const response = await axios.post(url, data, {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 5000,
-      });
-      console.log('OTP verification response:', response.data);
-      if (response.data.success) {
-        setOtpModalVisible(false);
-        navigation.replace('Welcome');
-      } else {
-        Alert.alert('Error', response.data.message || 'OTP verification failed');
-      }
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
-    }
-  };
-
-  const handlePostData = async () => {
-    const url = 'http://192.168.29.165:3500/auth/Register';
-    
-    if (!name || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
-    const data = {
-      name: name,
-      email: email,
-      password: password,
-      mobileno: parseInt(mobileNumber),
-    };
-
-    try {
-      console.log('Attempting connection to:', url);
-      const response = await axios.post(url, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 5000,
-        validateStatus: function (status) {
-          return status >= 200 && status < 500;
-        },
-      });
-      console.log('Response received:', response.data);
-      if (response.status == 200) {
-        generateOTP();
-      } else {
-        Alert.alert('Error', response.data.message || 'Registration failed');
-      }
-    } catch (error) {
-      console.log('Error message:', error.message);
     }
   };
 
@@ -219,25 +230,19 @@ export default function SignUpScreen() {
             value={mobileNumber}
             onChangeText={setMobileNumber}
             keyboardType="numeric"
-            maxLength={10}
+            maxLength={13}
           />
         </View>
 
         <TouchableOpacity 
           style={styles.signupButton}
-          // onPress={() => {
-          //  handlePostData();
-           
-          // }}
-          onPress={() => navigation.navigate('OTP')}
-
+          onPress={handlePostData}
         >
-         <Text style={styles.signupButtonText} >GET OTP</Text>
+         <Text style={styles.signupButtonText}>GET OTP</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.loginButton}
-          // onPress={() => navigation.navigate('Login')}
           onPress={() => navigation.navigate('Welcome')}
         >
           <Text style={styles.loginButtonText}>
@@ -257,7 +262,7 @@ export default function SignUpScreen() {
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Enter Verification Code</Text>
           <Text style={styles.modalSubtitle}>
-            Please enter the 6-digit verification code sent to your email
+            Please enter the 6-digit verification code sent to your mobile number
           </Text>
 
           <View style={styles.otpContainer}>
@@ -289,7 +294,7 @@ export default function SignUpScreen() {
 
           <TouchableOpacity 
             style={styles.resendButton}
-            onPress={generateOTP}
+            onPress={handlePostData}
           >
             <Text style={styles.resendText}>Resend Code</Text>
           </TouchableOpacity>
