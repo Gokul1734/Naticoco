@@ -29,6 +29,8 @@ import LoadingScreen from '../Components/LoadingScreen';
 import { useLoadAssets } from '../../hooks/useLoadAssets';
 import ScreenBackground from '../Components/ScreenBackground';
 import Egg from '../../../assets/images/Egg.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const categories = [
  { 
   id: '1', 
@@ -78,6 +80,8 @@ const bestSellers = mockFoodItems.filter((item) => item.bestSeller);
 
 const newArrivals = mockFoodItems.filter((item) => item.newArrival)
 
+
+
 // Get device dimensions and scaling factors
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 375; // Base width on iPhone 8
@@ -92,7 +96,8 @@ const normalize = (size) => {
   return Math.round(PixelRatio.roundToNearestPixel(newSize)) - 2;
 };
 
-const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) => {
+const AnimatedHeader = ({ address, cartCount, navigation}) => {
+  const [name, setName] = useState('');
   const locationAnimation = useRef(new Animated.Value(0)).current;
   const cartBounce = useRef(new Animated.Value(1)).current;
   const welcomeOpacity = useRef(new Animated.Value(0)).current;
@@ -132,6 +137,23 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) 
     }
   }, [cartCount]);
 
+  const fetchName = async () => {
+    try {
+      const loginData = await AsyncStorage.getItem('logincre'); // Fetch data from AsyncStorage
+  
+      if (loginData) {
+        const parsedData = JSON.parse(loginData); // Parse the JSON string
+  
+        const name = parsedData.token.name; // Fetch the name or fallback to 'Guest'
+        setName(name); // Assuming setName is a state setter function
+      }
+    } catch (error) {
+      console.error('Error fetching login data:', error);
+    }
+  };
+  
+  // Call the function
+  fetchName();
   return (
     <LinearGradient
       colors={['#fff', '#fff5e6']}
@@ -175,7 +197,7 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName = "Guest" }) 
               { opacity: welcomeOpacity }
             ]}
           >
-            Hi, {userName}
+            Hi, {name}
           </Animated.Text>
         </View>
         <View style={styles.headerActions}>
