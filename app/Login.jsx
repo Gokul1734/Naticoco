@@ -14,6 +14,7 @@ import { Dimensions } from 'react-native';
 import golos from '../assets/fonts/gt.ttf';
 import { useLoadAssets } from './hooks/useLoadAssets';
 import LoadingScreen from './CustomerScreens/Components/LoadingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -66,20 +67,28 @@ export default function LoginScreen() {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await axios.post("http://192.168.32.227:3500/auth/login", {
         mobileno: phoneNumber,
-        password: password
+        password: password,
       }, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-
+  
       if (response.status === 200) {
-      
+        // Save credentials in AsyncStorage
+        await AsyncStorage.setItem('logincre', JSON.stringify({
+          phoneNumber,
+          token: response.data?.user, 
+        }));
+  
+        console.log('Stored user credentials:', await AsyncStorage.getItem('logincre'));
+  
+        // Navigation logic
         if (phoneNumber === '12345') {
           navigation.navigate('AdminHome');
         } else if (phoneNumber === '0') {
@@ -87,7 +96,6 @@ export default function LoginScreen() {
         } else if (phoneNumber === '1') {
           navigation.navigate('StoreStack');
         } else {
-
           navigation.navigate('StoreType');
         }
       }
