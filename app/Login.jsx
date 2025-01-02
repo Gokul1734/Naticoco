@@ -17,7 +17,7 @@ import LoadingScreen from './CustomerScreens/Components/LoadingScreen';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const API_URL = "http://localhost:3500/auth/login";
+const API_URL = "https://nati-coco-server.onrender.com/auth/login";
 
 // Add image mapping
 const loginImages = {
