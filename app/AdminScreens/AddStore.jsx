@@ -55,7 +55,7 @@ export default function AddStore({ navigation }) {
     }
   
     try {
-      const response = await axios.post('http://192.168.29.242:3500/Admin/addcitystore', {
+      const response = await axios.post('http://192.168.29.165:3500/Admin/addcitystore', {
         name: store.Area,
         email: store.email,
         password: store.password,

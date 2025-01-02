@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
 import { Text, Card, TextInput, Button, IconButton } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
 // import StoreBackground from '../../CustomerScreens/Components/ScreenBackground';
 
 const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
@@ -124,54 +126,181 @@ export default function StockManagement({ navigation }) {
     activeCategory === 'ALL' || item.category === activeCategory
   );
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newItem, setNewItem] = useState({
+    storeId: '123', // Replace with actual store ID from context/props
+    itemName: '',
+    description: '',
+    price: '',
+    image: null,
+    availability: true
+  });
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setNewItem(prev => ({ ...prev, image: result.assets[0].uri }));
+    }
+  };
+
+  const handleAddItem = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('storeId', newItem.storeId);
+      formData.append('itemName', newItem.itemName);
+      formData.append('description', newItem.description);
+      formData.append('price', newItem.price);
+      formData.append('availability', newItem.availability);
+      
+      if (newItem.image) {
+        const imageUri = newItem.image;
+        const filename = imageUri.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image';
+        
+        formData.append('image', {
+          uri: imageUri,
+          name: filename,
+          type
+        });
+      }
+
+      const response = await axios.post('http://192.168.29.165:3500/citystore/Addmenu', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.status === 200) {
+       console.log("Data sent Successfully")
+        setModalVisible(false);
+        // Refresh stock items list
+        // You might want to add the new item to stockItems state
+      }
+    } catch (error) {
+      console.error('Error adding item:', error);
+      alert('Failed to add item');
+    }
+  };
+
   return (
-
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Stock Management</Text>
-          <TouchableOpacity onPress={() => {/* Add new item */}}>
-            <Ionicons name="add-circle-outline" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesContainer}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryTab,
-                activeCategory === category && styles.activeCategoryTab
-              ]}
-              onPress={() => setActiveCategory(category)}
-            >
-              <Text style={[
-                styles.categoryText,
-                activeCategory === category && styles.activeCategoryText
-              ]}>
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <ScrollView style={styles.stockList}>
-          {filteredItems.map((item) => (
-            <StockItem
-              key={item.id}
-              item={item}
-              onUpdateStock={handleUpdateStock}
-              onUpdatePrice={handleUpdatePrice}
-            />
-          ))}
-        </ScrollView>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Stock Management</Text>
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <Ionicons name="add-circle-outline" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
+
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriesContainer}
+      >
+        {categories.map((category) => (
+          <TouchableOpacity
+            key={category}
+            style={[
+              styles.categoryTab,
+              activeCategory === category && styles.activeCategoryTab
+            ]}
+            onPress={() => setActiveCategory(category)}
+          >
+            <Text style={[
+              styles.categoryText,
+              activeCategory === category && styles.activeCategoryText
+            ]}>
+              {category}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <ScrollView style={styles.stockList}>
+        {filteredItems.map((item) => (
+          <StockItem
+            key={item.id}
+            item={item}
+            onUpdateStock={handleUpdateStock}
+            onUpdatePrice={handleUpdatePrice}
+          />
+        ))}
+      </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add New Item</Text>
+            
+            <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+              {newItem.image ? (
+                <Image source={{ uri: newItem.image }} style={styles.previewImage} />
+              ) : (
+                <Ionicons name="camera" size={40} color="#666" />
+              )}
+            </TouchableOpacity>
+
+            <TextInput
+              label="Item Name"
+              value={newItem.itemName}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, itemName: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+            />
+
+            <TextInput
+              label="Description"
+              value={newItem.description}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, description: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+              multiline
+            />
+
+            <TextInput
+              label="Price"
+              value={newItem.price}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, price: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+              keyboardType="numeric"
+              left={<TextInput.Affix text="₹" />}
+            />
+
+            <View style={styles.modalButtons}>
+              <Button 
+                mode="outlined" 
+                onPress={() => setModalVisible(false)}
+                style={styles.modalButton}
+              >
+                Cancel
+              </Button>
+              <Button 
+                mode="contained" 
+                onPress={handleAddItem}
+                style={styles.modalButton}
+              >
+                Add Item
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
@@ -262,5 +391,47 @@ const styles = StyleSheet.create({
     flex: 1,
     height: verticalScale(40),
     backgroundColor: 'white',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: scale(20),
+    borderRadius: scale(10),
+    width: '90%',
+  },
+  modalTitle: {
+    fontSize: moderateScale(18),
+    fontWeight: 'bold',
+    marginBottom: verticalScale(15),
+    textAlign: 'center',
+  },
+  modalInput: {
+    marginBottom: verticalScale(10),
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: verticalScale(15),
+  },
+  modalButton: {
+    width: '45%',
+  },
+  imagePickerButton: {
+    height: verticalScale(150),
+    backgroundColor: '#f0f0f0',
+    borderRadius: scale(10),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: verticalScale(15),
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: scale(10),
   },
 }); 
