@@ -8,7 +8,6 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import storeData from '../../Backend/Store.json';
 import axios from 'axios';
-import Api from '../Api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -56,7 +55,7 @@ export default function AddStore({ navigation }) {
     }
   
     try {
-      const response = await Api.post('api/admin/addstore', {
+      const response = await axios.post('http://192.168.29.165:3500/Admin/addcitystore', {
         name: store.Area,
         email: store.email,
         password: store.password,
@@ -115,7 +114,7 @@ export default function AddStore({ navigation }) {
             { label: 'Full Address', value: 'address', icon: 'home' },
             { label: 'Phone Number', value: 'phone', icon: 'call' },
             { label: 'Email', value: 'email', icon: 'mail' },
-            { label: 'Password', value: 'password', icon: 'lock' },
+            { label: 'Password', value: 'password', icon: 'password' },
           ].map((field, index) => (
             <MotiView
               key={field.value}

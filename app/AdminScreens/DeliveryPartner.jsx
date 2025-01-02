@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, ScrollView, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, ScrollView, Animated, ActivityIndicator } from 'react-native';
 import { Text, Card, Avatar, Button, Chip, IconButton, Searchbar } from 'react-native-paper';
 import { MotiView, AnimatePresence } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,28 +7,9 @@ import { scale, verticalScale, moderateScale } from '../utils/responsive';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import { Platform } from 'react-native';
 import { State } from 'react-native-gesture-handler';
+import axios from 'axios';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const mockDeliveryPartners = [
-  {
-    id: 'DP001',
-    name: 'John Doe',
-    status: 'PENDING',
-    rating: 4.5,
-    totalDeliveries: 150,
-    vehicleType: 'Bike',
-    phone: '+91 9876543210',
-    documents: {
-      license: true,
-      insurance: true,
-      registration: false
-    },
-    location: 'Hyderabad Central',
-    joinDate: '2024-02-15'
-  },
-  // Add more mock data...
-];
 
 const DeliveryPartnerCard = ({ partner, onApprove, onReject, onSuspend }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -196,30 +177,80 @@ const DocumentItem = ({ label, verified }) => (
 );
 
 export default function DeliveryPartner() {
-  const [partners, setPartners] = useState(mockDeliveryPartners);
+  const [partners, setPartners] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('ALL');
+  const [loading, setLoading] = useState(true);
 
-  const handleApprove = (id) => {
-    setPartners(partners.map(p => 
-      p.id === id ? { ...p, status: 'ACTIVE' } : p
-    ));
+  useEffect(() => {
+    const fetchDeliveryPartners = async () => {
+      try {
+        const response = await axios.get('http://192.168.29.165:3500/Adminstore/delivery/getDeliveryPerson');
+        if (response.data.deliveryPersons) {
+          // Transform the data to match our component's structure
+          const formattedPartners = response.data.deliveryPersons.map(partner => ({
+            id: partner.deliveryPersonId,
+            name: partner.name,
+            status: partner.availability ? 'ACTIVE' : 'SUSPENDED',
+            location: partner.location,
+            joinDate: new Date(partner.createdAt).toISOString().split('T')[0],
+            documents: {
+              license: true,
+              insurance: true,
+              registration: true
+            },
+            rating: 4.5, // Default rating since it's not in the model
+            totalDeliveries: 0, // Default deliveries count
+            vehicleType: 'Bike' // Default vehicle type
+          }));
+          setPartners(formattedPartners);
+        }
+      } catch (error) {
+        console.error('Error fetching delivery partners:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeliveryPartners();
+  }, []);
+
+  const handleApprove = async (id) => {
+    try {
+      // You can add the API call here to update the partner's status
+      setPartners(partners.map(p => 
+        p.id === id ? { ...p, status: 'ACTIVE' } : p
+      ));
+    } catch (error) {
+      console.error('Error approving partner:', error);
+    }
   };
 
-  const handleReject = (id) => {
-    setPartners(partners.map(p => 
-      p.id === id ? { ...p, status: 'REJECTED' } : p
-    ));
+  const handleReject = async (id) => {
+    try {
+      // You can add the API call here to update the partner's status
+      setPartners(partners.map(p => 
+        p.id === id ? { ...p, status: 'REJECTED' } : p
+      ));
+    } catch (error) {
+      console.error('Error rejecting partner:', error);
+    }
   };
 
-  const handleSuspend = (id) => {
-    setPartners(partners.map(p => 
-      p.id === id ? { ...p, status: 'SUSPENDED' } : p
-    ));
+  const handleSuspend = async (id) => {
+    try {
+      // You can add the API call here to update the partner's status
+      setPartners(partners.map(p => 
+        p.id === id ? { ...p, status: 'SUSPENDED' } : p
+      ));
+    } catch (error) {
+      console.error('Error suspending partner:', error);
+    }
   };
 
   const filteredPartners = partners.filter(partner => {
-    const matchesSearch = partner.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = partner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         partner.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = selectedFilter === 'ALL' || partner.status === selectedFilter;
     return matchesSearch && matchesFilter;
   });
@@ -229,7 +260,7 @@ export default function DeliveryPartner() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Delivery Partners</Text>
         <Searchbar
-          placeholder="Search partners..."
+          placeholder="Search by name or ID..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.searchBar}
@@ -239,7 +270,7 @@ export default function DeliveryPartner() {
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
         >
-          {['ALL', 'PENDING', 'ACTIVE', 'SUSPENDED', 'REJECTED'].map((filter) => (
+          {['ALL', 'ACTIVE', 'SUSPENDED'].map((filter) => (
             <Chip
               key={filter}
               selected={selectedFilter === filter}
@@ -257,15 +288,23 @@ export default function DeliveryPartner() {
 
       <ScrollView style={styles.content}>
         <AnimatePresence>
-          {filteredPartners.map((partner, index) => (
-            <DeliveryPartnerCard
-              key={partner.id}
-              partner={partner}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onSuspend={handleSuspend}
-            />
-          ))}
+          {loading ? (
+            <ActivityIndicator size="large" color="#0f1c57" style={styles.loader} />
+          ) : filteredPartners.length === 0 ? (
+            <View style={styles.noResultsContainer}>
+              <Text style={styles.noResultsText}>No delivery partners found</Text>
+            </View>
+          ) : (
+            filteredPartners.map((partner, index) => (
+              <DeliveryPartnerCard
+                key={partner.id}
+                partner={partner}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onSuspend={handleSuspend}
+              />
+            ))
+          )}
         </AnimatePresence>
       </ScrollView>
     </View>
@@ -415,6 +454,20 @@ const styles = StyleSheet.create({
   suspendButton: {
     backgroundColor: '#FF9800',
     marginTop: verticalScale(15),
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noResultsText: {
+    fontSize: moderateScale(16),
+    color: '#424242',
   },
 });
 
