@@ -69,8 +69,17 @@ export default function LoginScreen() {
     }
   
     setLoading(true);
+    if (phoneNumber === '12345') {
+     navigation.navigate('AdminHome');
+   } else if (phoneNumber === '0') {
+     navigation.navigate('DeliveryTab');
+   } else if (phoneNumber === '1') {
+     navigation.navigate('StoreStack');
+   } else {
+     navigation.navigate('StoreType');
+   }
     try {
-      const response = await axios.post("http://192.168.32.227:3500/auth/login", {
+      const response = await axios.post("https://nati-coco-server.onrender.com/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {
@@ -100,15 +109,7 @@ export default function LoginScreen() {
 
       // if (response.status === 200) {
         // Handle different user types
-        if (phoneNumber === '12345') {
-          navigation.navigate('AdminHome');
-        } else if (phoneNumber === '0') {
-          navigation.navigate('DeliveryTab');
-        } else if (phoneNumber === '1') {
-          navigation.navigate('StoreStack');
-        } else {
-          navigation.navigate('StoreType');
-        }
+        
       }
     } catch (error) {
       console.error('Login error:', error);

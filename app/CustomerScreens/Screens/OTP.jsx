@@ -71,7 +71,7 @@ const OTP = () => {
 
   const verifyOTP = async () => {
     console.log('Verifying OTP:',otp.join(''),email);
-    const url = 'http://192.168.32.227:3500/auth/verify-otp';
+    const url = 'https://nati-coco-server.onrender.com/auth/verify-otp';
 
     const data = {
       phoneNumber: mobileNumber,

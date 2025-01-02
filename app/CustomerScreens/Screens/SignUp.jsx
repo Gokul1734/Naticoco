@@ -28,30 +28,7 @@ export default function SignUpScreen() {
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
   const otpRefs = useRef([]);
 
-  const generateOTP = async () => {
-     console.log('Connecting to:', `https://nati-coco-server.onrender.com/auth/generate-otp`);
-      try {
-        const res = await axios.post(`https://nati-coco-server.onrender.com/auth/generate-otp`, {
-          email: email
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 5000
-        });
 
-        console.log('Server response:', res.data);
-        if (res.data.success) {
-         // Alert.alert('Success', res.data.message);
-          setOtpModalVisible(true);
-        } else {
-          Alert.alert('Error', res.data.message || 'Failed to send OTP');
-        }
-      } catch (error) {
-        console.error('Full error:', error);
-        handleAxiosError(error, 'OTP generation');
-      }
-    };
   const handlePostData = async () => {
     if (!name || !email || !password || !mobileNumber) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -77,7 +54,7 @@ export default function SignUpScreen() {
     };
 
     try {
-      const response = await axios.post('http://192.168.32.227:3500/auth/Register', data, {
+      const response = await axios.post('https://nati-coco-server.onrender.com/auth/Register', data, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -88,7 +65,7 @@ export default function SignUpScreen() {
         // After successful registration, generate OTP
         try {
           console.log('Attempting to generate OTP:', mobileNumber);
-          const otpResponse = await axios.post('http://192.168.32.227:3500/auth/generate-otp', {
+          const otpResponse = await axios.post('https://nati-coco-server.onrender.com/auth/generate-otp', {
             phoneNumber: mobileNumber // Using the full number including +91
           });
           
@@ -132,7 +109,7 @@ export default function SignUpScreen() {
 
   const verifyOTP = async (otp) => {
     try {
-      const response = await axios.post('http://192.168.32.227:3500/auth/verify-otp', {
+      const response = await axios.post('https://nati-coco-server.onrender.com/auth/verify-otp', {
         phoneNumber: mobileNumber, // Using the full number including +91
         otp: otp.join('')
       });
@@ -192,76 +169,6 @@ export default function SignUpScreen() {
         setOtpInput(newOtp);
         otpRefs.current[index - 1].focus();
       }
-    }
-  };
-
-  const verifyOTP = async (otp) => {
-    console.log('Verifying OTP:',otp.join(''),email);
-    const url = 'https://nati-coco-server.onrender.com/auth/verify-otp';
-
-    const data = {
-      email: email,
-      otp: otp.join(''),
-    };
-
-    try {
-      const response = await axios.post(url, data, {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 5000,
-      });
-      console.log('OTP verification response:', response.data);
-      if (response.data.success) {
-        setOtpModalVisible(false);
-        navigation.replace('Welcome');
-      } else {
-        Alert.alert('Error', response.data.message || 'OTP verification failed');
-      }
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
-    }
-  };
-
-  const handlePostData = async () => {
-    const url = 'https://nati-coco-server.onrender.com/auth/Register';
-    
-    if (!name || !email || !password || !mobileNumber) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
-    const data = {
-      name: name,
-      email: email,
-      password: password,
-      mobileno: parseInt(mobileNumber),
-    };
-
-    try {
-      console.log('Attempting connection to:', url);
-      const response = await axios.post(url, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 5000,
-        validateStatus: function (status) {
-          return status >= 200 && status < 500;
-        },
-      });
-      console.log('Response received:', response.data);
-      if (response.status == 200) {
-        generateOTP();
-      } else {
-        Alert.alert('Error', response.data.message || 'Registration failed');
-      }
-    } catch (error) {
-      console.log('Error message:', error.message);
     }
   };
 
@@ -330,12 +237,6 @@ export default function SignUpScreen() {
 
         <TouchableOpacity 
           style={styles.signupButton}
-          onPress={() => {
-           handlePostData();
-           
-          }}
-          // onPress={() => navigation.navigate('OTP')}
-
           onPress={handlePostData}
         >
          <Text style={styles.signupButtonText}>GET OTP</Text>
