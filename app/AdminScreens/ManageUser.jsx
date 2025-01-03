@@ -93,12 +93,14 @@ const ManageUser = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('http://192.168.29.165:3500/auth/users');
-        const usersData = response.data;
-        console.log(usersData);
+        const usersData = response.data.users || [];
+        console.log('Users data:', usersData);
         setUsers(usersData);
         setFilteredUsers(usersData);
       } catch (error) {
         console.error('Error fetching users:', error);
+        setUsers([]);
+        setFilteredUsers([]);
       } finally {
         setLoading(false);
       }
@@ -108,12 +110,14 @@ const ManageUser = () => {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    if (!users || !Array.isArray(users)) return;
+
     const filtered = users.filter(user => {
       const searchLower = query.toLowerCase();
       return (
-        user.name?.toLowerCase().includes(searchLower) ||
-        user.email?.toLowerCase().includes(searchLower) ||
-        user.mobileno?.toString().includes(searchLower)
+        user?.name?.toLowerCase().includes(searchLower) ||
+        user?.email?.toLowerCase().includes(searchLower) ||
+        user?.mobileno?.toString().includes(searchLower)
       );
     });
     setFilteredUsers(filtered);
@@ -130,8 +134,8 @@ const ManageUser = () => {
       />
 
       <UserStatsCard
-        totalUsers={users.length}
-        verifiedUsers={users.filter(u => u.verified).length}
+        totalUsers={Array.isArray(users) ? users.length : 0}
+        verifiedUsers={Array.isArray(users) ? users.filter(u => u?.verified).length : 0}
       />
 
       {loading ? (
@@ -140,7 +144,7 @@ const ManageUser = () => {
         <FlatList
           data={filteredUsers}
           renderItem={({ item, index }) => <UserCard user={item} index={index} />}
-          keyExtractor={item => item._id}
+          keyExtractor={item => item._id?.toString() || index.toString()}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={

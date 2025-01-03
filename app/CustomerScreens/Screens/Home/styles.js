@@ -15,6 +15,9 @@ const styles = StyleSheet.create({
    backgroundColor: 'transparent',
    marginBottom: 60
  },
+ scrollView : {
+   marginBottom : 100
+ },
  flexcont: {
   justifyContent : "space-between",
   alignItems: 'center',

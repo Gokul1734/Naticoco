@@ -93,7 +93,11 @@ const AnimatedHeader = ({ address, cartCount, navigation}) => {
         <View style={styles.flexcont}>
           <View style={styles.welcomeSection}>
             <Animated.Text style={[styles.userName, { opacity: welcomeOpacity }]}>
-              Hi, {name}
+              Hi, {name?.split(' ')[0]?.length > 10 ? (
+                <Text numberOfLines={1} ellipsizeMode="marquee" style={{width: 100}}>
+                  {name?.split(' ')[0]}
+                </Text>
+              ) : name?.split(' ')[0]}
             </Animated.Text>
           </View>
           <View style={styles.headerActions}>

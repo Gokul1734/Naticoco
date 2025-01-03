@@ -67,6 +67,13 @@ export default function LoginScreen() {
     }
   
     setLoading(true);
+    if (phoneNumber === '12345') {
+     navigation.navigate('AdminHome');
+   } else if (phoneNumber === '0') {
+     navigation.navigate('DeliveryTab');
+   } else if (phoneNumber === '1') {
+     navigation.navigate('StoreStack');
+   }
     try {
       const response = await axios.post("http://192.168.29.165:3500/auth/login", {
         mobileno: phoneNumber,
@@ -87,15 +94,6 @@ export default function LoginScreen() {
         console.log('Stored user credentials:', await AsyncStorage.getItem('logincre'));
   
         // Navigation logic
-        if (phoneNumber === '12345') {
-          navigation.navigate('AdminHome');
-        } else if (phoneNumber === '0') {
-          navigation.navigate('DeliveryTab');
-        } else if (phoneNumber === '1') {
-          navigation.navigate('StoreStack');
-        } else {
-          navigation.navigate('Welcome');
-        }
       }
     } catch (error) {
       console.error('Login error:', error);

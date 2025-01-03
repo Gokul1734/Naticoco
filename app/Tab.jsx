@@ -129,8 +129,8 @@ export default function TabNavigator() {
       tabBar={(props) => <CustomTabBar {...props} />}
       initialRouteName='Home'
     > 
-      <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Orders" component={MyOrders} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

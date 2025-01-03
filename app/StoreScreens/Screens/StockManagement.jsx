@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image, Switch } from 'react-native';
 import { Text, Card, TextInput, Button, IconButton } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
@@ -128,12 +128,14 @@ export default function StockManagement({ navigation }) {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [newItem, setNewItem] = useState({
-    storeId: '123', // Replace with actual store ID from context/props
+    storeId: '123',
     itemName: '',
     description: '',
     price: '',
     image: null,
-    availability: true
+    availability: true,
+    BestSeller: false,
+    newArrival: false
   });
 
   const pickImage = async () => {
@@ -157,6 +159,8 @@ export default function StockManagement({ navigation }) {
       formData.append('description', newItem.description);
       formData.append('price', newItem.price);
       formData.append('availability', newItem.availability);
+      formData.append('BestSeller', newItem.BestSeller);
+      formData.append('newArrival', newItem.newArrival);
       
       if (newItem.image) {
         const imageUri = newItem.image;
@@ -178,14 +182,13 @@ export default function StockManagement({ navigation }) {
       });
 
       if (response.status === 200) {
-       console.log("Data sent Successfully")
         setModalVisible(false);
-        // Refresh stock items list
-        // You might want to add the new item to stockItems state
+        Alert.alert('Success', 'Item added successfully');
+        // Refresh your items list here
       }
     } catch (error) {
       console.error('Error adding item:', error);
-      alert('Failed to add item');
+      Alert.alert('Error', 'Failed to add item');
     }
   };
 
@@ -280,6 +283,30 @@ export default function StockManagement({ navigation }) {
               keyboardType="numeric"
               left={<TextInput.Affix text="₹" />}
             />
+
+            <View style={styles.togglesContainer}>
+              <View style={styles.toggleRow}>
+                <Text style={styles.toggleLabel}>Best Seller</Text>
+                <Switch
+                  value={newItem.BestSeller}
+                  onValueChange={(value) => 
+                    setNewItem(prev => ({ ...prev, BestSeller: value }))
+                  }
+                  color="#F8931F"
+                />
+              </View>
+
+              <View style={styles.toggleRow}>
+                <Text style={styles.toggleLabel}>New Arrival</Text>
+                <Switch
+                  value={newItem.newArrival}
+                  onValueChange={(value) => 
+                    setNewItem(prev => ({ ...prev, newArrival: value }))
+                  }
+                  color="#F8931F"
+                />
+              </View>
+            </View>
 
             <View style={styles.modalButtons}>
               <Button 
@@ -433,5 +460,24 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: scale(10),
+  },
+  togglesContainer: {
+    marginVertical: verticalScale(15),
+    backgroundColor: '#f5f5f5',
+    borderRadius: scale(8),
+    padding: scale(10),
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: verticalScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  toggleLabel: {
+    fontSize: moderateScale(14),
+    color: '#333',
+    fontWeight: '500',
   },
 }); 

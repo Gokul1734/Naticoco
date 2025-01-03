@@ -17,7 +17,7 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
         onPress={onPress}
       >
         <Image 
-          source={getItemImage(item.image)}
+          source={(item.image) ? item.image :getItemImage(item.image) }
           style={styles.productImage}
           resizeMode="cover"
         />
