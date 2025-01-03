@@ -6,7 +6,7 @@ import styles from '../styles';
 
 const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getItemImage, cardWidth }) => {
   // Construct the image URL using the server ImageStore path
-  const imageUrl = `http://192.168.29.165:3500/ImageStore/1735838844695-Chicken.png`;
+  const imageUrl = `http://192.168.29.242:3500/ImageStore/1735838844695-Chicken.png`;
   console.log(imageUrl);
   return (
     <MotiView

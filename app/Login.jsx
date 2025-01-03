@@ -75,7 +75,7 @@ export default function LoginScreen() {
      navigation.navigate('StoreStack');
    }
     try {
-      const response = await axios.post("http://192.168.29.165:3500/auth/login", {
+      const response = await axios.post("http://192.168.29.242:3500/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {
@@ -93,7 +93,7 @@ export default function LoginScreen() {
   
         console.log('Stored user credentials:', await AsyncStorage.getItem('logincre'));
   
-        // Navigation logic
+        navigation.navigate('Welcome');
       }
     } catch (error) {
       console.error('Login error:', error);

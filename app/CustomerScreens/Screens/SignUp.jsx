@@ -53,7 +53,7 @@ export default function SignUpScreen() {
     };
 
     try {
-      const response = await axios.post('http://192.168.29.165:3500/auth/Register', data, {
+      const response = await axios.post('http://192.168.29.242:3500/auth/Register', data, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -64,7 +64,7 @@ export default function SignUpScreen() {
         // After successful registration, generate OTP
         try {
           console.log('Attempting to generate OTP:', mobileNumber);
-          const otpResponse = await axios.post('http://192.168.29.165:3500/auth/generate-otp', {
+          const otpResponse = await axios.post('http://192.168.29.242:3500/auth/generate-otp', {
             phoneNumber: mobileNumber // Using the full number including +91
           });
           
@@ -108,7 +108,7 @@ export default function SignUpScreen() {
 
   const verifyOTP = async (otp) => {
     try {
-      const response = await axios.post('http://192.168.29.165:3500/auth/verify-otp', {
+      const response = await axios.post('http://192.168.29.242:3500/auth/verify-otp', {
         phoneNumber: mobileNumber, // Using the full number including +91
         otp: otp.join('')
       });

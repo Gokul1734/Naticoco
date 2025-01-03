@@ -49,29 +49,42 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/SplashScreen.jpg",
-          "imageResizeMode": "contain",
-          "backgroundColor": "#FFFFFF",
-          "imageWidth": 300
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
-        }
-      ]
-    ],
+  [
+    "react-native-razorpay",
+    {
+      "merchantId": "J1VLfAsjxS050ZN7Jco2SCv5",
+      "keyId": "rzp_test_epPmzNozAIcJcC" 
+    }
+  ],
+  "expo-router",
+  [
+    "expo-splash-screen",
+    {
+      "image": "./assets/images/SplashScreen.jpg",
+      "imageResizeMode": "contain",
+      "backgroundColor": "#FFFFFF",
+      "imageWidth": 300
+    }
+  ],
+  [
+    "expo-image-picker",
+    {
+      "photosPermission": "The app accesses your photos to let you share them with your friends."
+    }
+  ],
+  [
+    "expo-web-browser",
+    {
+      "package": "com.yourpackage.name"
+    }
+  ],
+  [
+    "expo-location",
+    {
+      "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+    }
+  ]
+],
     "experiments": {
       "typedRoutes": true
     },

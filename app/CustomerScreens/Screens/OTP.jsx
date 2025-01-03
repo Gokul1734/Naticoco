@@ -71,7 +71,7 @@ const OTP = () => {
 
   const verifyOTP = async () => {
     console.log('Verifying OTP:',otp.join(''),email);
-    const url = 'http://192.168.29.165:3500/auth/verify-otp';
+    const url = 'http://192.168.29.242:3500/auth/verify-otp';
 
     const data = {
       phoneNumber: mobileNumber,
