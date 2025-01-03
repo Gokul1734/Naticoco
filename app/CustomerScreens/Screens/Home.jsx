@@ -66,6 +66,7 @@ export default function HomeScreen() {
         
         // Cache the store data
         await AsyncStorage.setItem('storeMenu', JSON.stringify(response.data.menu));
+        console.log(JSON.stringify(response.data.menu));
       }
     } catch (error) {
       console.error('Error fetching store data:', error.response?.data || error.message);

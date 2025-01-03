@@ -5,10 +5,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styles } from '../styles';
 
-const AnimatedHeader = ({ address, cartCount, navigation, userName }) => {
+const AnimatedHeader = ({ address, cartCount, navigation}) => {
   const locationAnimation = useRef(new Animated.Value(0)).current;
   const cartBounce = useRef(new Animated.Value(1)).current;
   const welcomeOpacity = useRef(new Animated.Value(0)).current;
+  const [name, setName] = useState('');
 
   useEffect(() => {
     Animated.spring(locationAnimation, {
@@ -92,7 +93,7 @@ const AnimatedHeader = ({ address, cartCount, navigation, userName }) => {
         <View style={styles.flexcont}>
           <View style={styles.welcomeSection}>
             <Animated.Text style={[styles.userName, { opacity: welcomeOpacity }]}>
-              Hi, {userName}
+              Hi, {name}
             </Animated.Text>
           </View>
           <View style={styles.headerActions}>
