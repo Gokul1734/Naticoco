@@ -22,8 +22,7 @@ import LoadingScreen from './CustomerScreens/Components/LoadingScreen';
 import ScreenBackground from './CustomerScreens/Components/ScreenBackground';
 import DeliveryTab from './DeliveryScreens/DeliveryTab';
 import StoreStack from './StoreScreens/StoreStack';
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
+import { useAuth } from './Authcontext';
 //Admin Screens
 import ManageStore from './AdminScreens/ManageStore';
 import AdminHome from './AdminScreens/AdminHome';
@@ -36,19 +35,30 @@ import AddStore from './AdminScreens/AddStore';
 import DeliveryHome from './DeliveryScreens/DeliveryHome';
 import ActiveDeliveries from './DeliveryScreens/ActiveDeliveries';
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const Stack = createNativeStackNavigator();
 
 export default function StackNavigator() {
+  const { user, location } = useAuth();
   const isLoadingGlobal = useGlobalAssets();
 
   if (isLoadingGlobal) {
     return <LoadingScreen />;
   }
 
+  const getInitialRoute = () => {
+    if (!user) return 'Login';
+    if (!location) return 'Location'; // Redirect to Location if not set
+    if (user.token?.role === 'admin') return 'AdminHome';
+    if (user.token?.role === 'delivery') return 'DeliveryTab';
+    if (user.token?.role === 'store') return 'StoreStack';
+    return 'Welcome';
+  };
+
   return (
     <ScreenBackground>
       <Stack.Navigator 
-        initialRouteName='Login'
+        initialRouteName={getInitialRoute()}
         screenOptions={{
           headerShown: false,
           contentStyle: {
@@ -58,141 +68,46 @@ export default function StackNavigator() {
             height: SCREEN_HEIGHT,
             padding: 0,
             margin: 0,
-          },
-          animation: 'default',
-          safeAreaInsets: {
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-          },
+          }
         }}
       >
-        <Stack.Screen 
-          name="Login" 
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="SignUp" 
-          component={SignUpScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="Cart" 
-          component={CartScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="Checkout" 
-          component={CheckoutScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="Success" 
-          component={SuccessSplash}
-          options={{ headerShown: false,
-            animation:'fade'
-          }}
-        />
-        <Stack.Screen 
-          name="Track" 
-          component={TrackScreen}
-          options={{ headerShown: false}}
-        />
-        <Stack.Screen 
-          name="ItemDisplay" 
-          component={ItemDisplay}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="MainTabs" 
-          component={TabNavigator}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-         name='MyOrders'
-         component={MyOrders}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='MyAddresses'
-         component={MyAddresses}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='FilteredItems'
-         component={FilteredItems}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='AdminHome'
-         component={AdminHome}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='ManageStore'
-         component={ManageStore}
-         options={{
-           title: "Manage Stores"
-         }}
-        />
-        <Stack.Screen 
-         name='UserManagement'
-         component={UserManagement}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='OrderAnalytics'
-         component={OrderAnalytics}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='DeliveryPartners'
-         component={DeliveryPartner}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='AddStore'
-         component={AddStore}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='Profile'
-         component={Profile}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='Welcome'
-         component={Welcome}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='Location'
-         component={Location}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='StoreType'
-         component={StoreType}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-         name='CrispyHome'
-         component={CrispyHome}
-         options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="DeliveryTab" 
-          component={DeliveryTab}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="StoreStack" 
-          component={StoreStack}
-          options={{ headerShown: false }}
-        />
+        {!user ? (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
+          </>
+        ) : user.token?.role === 'admin' ? (
+          <>
+            <Stack.Screen name="AdminHome" component={AdminHome} />
+            <Stack.Screen name="ManageStore" component={ManageStore} />
+            <Stack.Screen name="UserManagement" component={UserManagement} />
+            <Stack.Screen name="OrderAnalytics" component={OrderAnalytics} />
+            <Stack.Screen name="DeliveryPartners" component={DeliveryPartner} />
+            <Stack.Screen name="AddStore" component={AddStore} />
+          </>
+        ) : user.token?.role === 'delivery' ? (
+          <Stack.Screen name="DeliveryTab" component={DeliveryTab} />
+        ) : user.token?.role === 'store' ? (
+          <Stack.Screen name="StoreStack" component={StoreStack} />
+        ) : (
+          <>
+            <Stack.Screen name="Welcome" component={Welcome} />
+            <Stack.Screen name="Location" component={Location} />
+            <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen name="Cart" component={CartScreen} />
+            <Stack.Screen name="Checkout" component={CheckoutScreen} />
+            <Stack.Screen name="Success" component={SuccessSplash} />
+            <Stack.Screen name="Track" component={TrackScreen} />
+            <Stack.Screen name="ItemDisplay" component={ItemDisplay} />
+            <Stack.Screen name="MyOrders" component={MyOrders} />
+            <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="MyAddresses" component={MyAddresses} />
+            <Stack.Screen name="FilteredItems" component={FilteredItems} />
+            <Stack.Screen name="StoreType" component={StoreType} />
+            <Stack.Screen name="CrispyHome" component={CrispyHome} />
+          </>
+        )}
       </Stack.Navigator>
     </ScreenBackground>
   );
-} 
+}

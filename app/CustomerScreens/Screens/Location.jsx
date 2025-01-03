@@ -6,10 +6,12 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useAuth from '../../Authcontext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function LocationScreen({ navigation }) {
+  const { saveLocation } = useAuth();
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,8 +30,30 @@ export default function LocationScreen({ navigation }) {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    getCurrentLocation();
+    checkExistingLocation();
   }, []);
+
+  const checkExistingLocation = async () => {
+    try {
+      const storedLocation = await AsyncStorage.getItem('userLocation');
+      const nearestStore = await AsyncStorage.getItem('nearestStore');
+      
+      if (storedLocation && nearestStore) {
+        const locationData = JSON.parse(storedLocation);
+        const storeData = JSON.parse(nearestStore);
+        navigation.replace('StoreType', {
+          screen: 'Menu',
+          params: { storeData }
+        });
+        return;
+      }
+      
+      getCurrentLocation();
+    } catch (error) {
+      console.error('Error checking location:', error);
+      getCurrentLocation();
+    }
+  };
 
   const getCurrentLocation = async () => {
     try {
@@ -114,7 +138,6 @@ export default function LocationScreen({ navigation }) {
       addresses.push(newAddress);
       await AsyncStorage.setItem('userAddresses', JSON.stringify(addresses));
 
-      // Create mock nearest store data
       const mockNearestStore = {
         id: '1',
         name: 'Local Store',
@@ -125,19 +148,13 @@ export default function LocationScreen({ navigation }) {
         }
       };
 
-      // Store the mock nearest store data
       await AsyncStorage.setItem('nearestStore', JSON.stringify(mockNearestStore));
-      console.log('Address saved:', JSON.stringify(mockNearestStore));
-
-      Alert.alert('Success', 'Address saved successfully', [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('MainTabs', {
-            screen: 'Menu',
-            params: { storeData: mockNearestStore }
-          })
-        }
-      ]);
+      await saveLocation(newAddress);
+      
+      navigation.replace('MainTabs', {
+        screen: 'Menu',
+        params: { storeData: mockNearestStore }
+      });
     } catch (error) {
       Alert.alert('Error', 'Could not save address');
     }
@@ -218,7 +235,7 @@ export default function LocationScreen({ navigation }) {
           >
             <Ionicons name="arrow-back" size={24} color="#F8931F" />
           </TouchableOpacity>
-          <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
             <TextInput
               placeholder="Search location..."
               value={searchQuery}
@@ -227,42 +244,42 @@ export default function LocationScreen({ navigation }) {
                 searchLocation(text);
               }}
               style={styles.searchInput}
-              right={searching ? <TextInput.Icon icon="loading" /> : null}
             />
-            {searchResults.length > 0 && (
-              <View style={styles.searchResults}>
-                {searchResults.map((result, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.resultItem}
-                    onPress={() => {
-                      const newLocation = {
-                        latitude: result.latitude,
-                        longitude: result.longitude,
-                        latitudeDelta: 0.005,
-                        longitudeDelta: 0.005,
-                      };
-                      setLocation(newLocation);
-                      mapRef.current?.animateToRegion(newLocation);
-                      getAddressFromCoords(result.latitude, result.longitude);
-                      setSearchResults([]);
-                      setSearchQuery('');
-                    }}
-                  >
-                    <Ionicons name="location-outline" size={20} color="#F8931F" />
-                    <Text style={styles.resultText}>
-                      {result.address?.street || ''} {result.address?.name || ''}{'\n'}
-                      <Text style={styles.subText}>
-                        {result.address?.district || result.address?.subregion || ''}
-                      </Text>
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
         </View>
       </MotiView>
+
+      {searchResults.length > 0 && (
+        <View style={styles.searchResults}>
+          {searchResults.map((result, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.resultItem}
+              onPress={() => {
+                const newLocation = {
+                  latitude: result.latitude,
+                  longitude: result.longitude,
+                  latitudeDelta: 0.005,
+                  longitudeDelta: 0.005,
+                };
+                setLocation(newLocation);
+                mapRef.current?.animateToRegion(newLocation);
+                getAddressFromCoords(result.latitude, result.longitude);
+                setSearchResults([]);
+                setSearchQuery('');
+              }}
+            >
+              <Ionicons name="location-outline" size={20} color="#F8931F" />
+              <Text style={styles.resultText}>
+                {result.address?.street || ''} {result.address?.name || ''}{'\n'}
+                <Text style={styles.subText}>
+                  {result.address?.district || result.address?.subregion || ''}
+                </Text>
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       <MotiView
         from={{ translateY: 0, opacity: 0 }}
@@ -338,14 +355,16 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT,
   },
   searchContainer: {
-    flex: 1,
-    position: 'relative',
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
   backButton: {
     padding: 10,
@@ -358,21 +377,33 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  searchInputContainer: {
+    flex: 1,
+  },
   searchInput: {
     backgroundColor: 'white',
     borderRadius: 8,
-    elevation: 3,
-    height: 45,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   searchResults: {
     position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
+    top: 100,
+    left: 15,
+    right: 15,
     backgroundColor: 'white',
     borderRadius: 8,
-    elevation: 4,
+    zIndex: 2,
     maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   resultItem: {
     flexDirection: 'row',
@@ -392,11 +423,12 @@ const styles = StyleSheet.create({
   },
   bottomSheet: {
     position: 'absolute',
-    width: '100%',
-    top: -100,
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: 'white',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },

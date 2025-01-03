@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { useCart } from '../context/CartContext';
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../Authcontext";
 import { Asset } from 'expo-asset';
 import LoadingScreen from '../Components/LoadingScreen';
 import { useLoadAssets } from '../../hooks/useLoadAssets';
@@ -49,7 +49,7 @@ export default function HomeScreen() {
       const parsedLoginData = loginData ? JSON.parse(loginData) : null;
       const authToken = parsedLoginData?.token?.token || token;
   
-      const response = await axios.get("http://192.168.32.227:3500/api/user/nearest", {
+      const response = await axios.get("http://192.168.29.242:3500/api/user/nearest", {
         params: { latitude, longitude },
         headers: {
           'Authorization': `Bearer ${authToken}`,

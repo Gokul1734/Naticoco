@@ -16,7 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState, useRef, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../Authcontext';
 import ScreenBackground from '../Components/ScreenBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
