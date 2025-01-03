@@ -15,7 +15,9 @@ import Animated, {
 import { useCart } from '../context/CartContext';
 import { useNavigation } from 'expo-router';
 import BackButton from '../../components/BackButton';
+import { scale, verticalScale, moderateScale } from '../../utils/responsive';
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GOOGLE_MAPS_KEY = 'AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY'; 
 
 export default function TrackScreen() {
@@ -134,7 +136,7 @@ export default function TrackScreen() {
             description="Your location"
           >
             <View style={styles.driverMarker}>
-              <Ionicons name="location" size={24} color="white" />
+              <Ionicons name="location" size={scale(24)} color="white" />
             </View>
           </Marker>
           
@@ -144,7 +146,7 @@ export default function TrackScreen() {
             description="Your delivery partner"
           >
             <View style={styles.driverMarker}>
-              <Ionicons name="bicycle" size={24} color="white" />
+              <Ionicons name="bicycle" size={scale(24)} color="white" />
             </View>
           </Marker>
 
@@ -168,7 +170,7 @@ export default function TrackScreen() {
 
             <View style={styles.driverInfo}>
               <View style={styles.driverDetails}>
-                <Ionicons name="person-circle-outline" size={40} color="#666" />
+                <Ionicons name="person-circle-outline" size={scale(40)} color="#666" />
                 <View style={styles.driverTextContainer}>
                   <Text style={styles.driverName}>{deliveryInfo.driverName}</Text>
                   <Text style={styles.driverRole}>Delivery Partner</Text>
@@ -176,21 +178,21 @@ export default function TrackScreen() {
               </View>
 
               <TouchableOpacity onPress={handleCall} style={styles.callButton}>
-                <Ionicons name="call" size={24} color="white" />
+                <Ionicons name="call" size={scale(24)} color="white" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.timeline}>
               <View style={styles.timelineItem}>
-                <Ionicons name="checkmark-circle" size={24} color="#89C73A" />
+                <Ionicons name="checkmark-circle" size={scale(24)} color="#89C73A" />
                 <Text style={styles.timelineText}>Order Confirmed</Text>
               </View>
               <View style={styles.timelineItem}>
-                <Ionicons name="checkmark-circle" size={24} color="#89C73A" />
+                <Ionicons name="checkmark-circle" size={scale(24)} color="#89C73A" />
                 <Text style={styles.timelineText}>Order Picked Up</Text>
               </View>
               <View style={styles.timelineItem}>
-                <Ionicons name="time" size={24} color="#F8931F" />
+                <Ionicons name="time" size={scale(24)} color="#F8931F" />
                 <Text style={styles.timelineText}>On the Way</Text>
               </View>
             </View>
@@ -243,26 +245,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  button:{
-    backgroundColor:'#89C73A',
-    padding:15,
-    borderRadius:10,
-    width:'40%',
+  button: {
+    backgroundColor: '#89C73A',
+    padding: scale(15),
+    borderRadius: scale(10),
+    width: '40%',
   },
-  buttonText:{
-    color:'white',
-    fontWeight:'600',
-    fontSize:16,
+  buttonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: moderateScale(16),
   },
   map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height * 0.8,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.8,
   },
   driverMarker: {
     backgroundColor: '#F8931F',
-    padding: 8,
-    borderRadius: 20,
-    borderWidth: 2,
+    padding: scale(8),
+    borderRadius: scale(20),
+    borderWidth: scale(2),
     borderColor: 'white',
   },
   deliveryCard: {
@@ -270,10 +272,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingTop: 10,
+    borderTopLeftRadius: scale(20),
+    borderTopRightRadius: scale(20),
+    padding: scale(20),
+    paddingTop: scale(10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -285,115 +287,115 @@ const styles = StyleSheet.create({
     maxHeight: '70%',
   },
   statusContainer: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   statusText: {
-    fontSize: 20,
+    fontSize: moderateScale(20),
     fontWeight: 'bold',
     color: '#F8931F',
   },
   timeText: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     color: '#666',
-    marginTop: 4,
+    marginTop: verticalScale(4),
   },
   driverInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   driverDetails: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   driverTextContainer: {
-    marginLeft: 12,
+    marginLeft: scale(12),
   },
   driverName: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '600',
   },
   driverRole: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     color: '#666',
   },
   callButton: {
     backgroundColor: '#89C73A',
-    padding: 12,
-    borderRadius: 25,
+    padding: scale(12),
+    borderRadius: scale(25),
   },
   timeline: {
-    borderTopWidth: 1,
+    borderTopWidth: scale(1),
     borderTopColor: '#eee',
-    paddingTop: 20,
+    paddingTop: verticalScale(20),
   },
   timelineItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
   },
   timelineText: {
-    marginLeft: 12,
-    fontSize: 16,
+    marginLeft: scale(12),
+    fontSize: moderateScale(16),
     color: '#333',
   },
   pullBar: {
-    width: 40,
-    height: 4,
+    width: scale(40),
+    height: verticalScale(4),
     backgroundColor: '#DDD',
-    borderRadius: 2,
+    borderRadius: scale(2),
     alignSelf: 'center',
-    marginBottom: 15,
+    marginBottom: verticalScale(15),
   },
   expandedContent: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    marginTop: verticalScale(20),
+    borderTopWidth: scale(1),
+    borderBottomWidth: scale(1),
     borderTopColor: '#eee',
     borderBottomColor: '#eee',
-    paddingTop: 20,
-    paddingBottom:20,
+    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(20),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '600',
-    marginBottom: 15,
+    marginBottom: verticalScale(15),
   },
   orderDetails: {
-    gap: 12,
+    gap: scale(12),
   },
   detailItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  cart:{
+  cart: {
     justifyContent: 'space-between',
     alignItems: 'start',
-    flexWrap:'wrap',
-    gap:10,
+    flexWrap: 'wrap',
+    gap: scale(10),
   },
-  cancel:{
-   backgroundColor:'#de0303',
-   padding:15,
-   borderRadius:10,
-   alignItems:'center',
-   justifyContent:'center',
-   width:'40%',
- },
+  cancel: {
+    backgroundColor: '#de0303',
+    padding: scale(15),
+    borderRadius: scale(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40%',
+  },
   detailLabel: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     color: '#666',
   },
   detailValue: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     fontWeight: '600',
   },
-  detailValueItem:{
-    fontSize: 14,
+  detailValueItem: {
+    fontSize: moderateScale(14),
     fontWeight: '600',
-    padding:5,
-    borderRadius:5,
+    padding: scale(5),
+    borderRadius: scale(5),
   }
 });

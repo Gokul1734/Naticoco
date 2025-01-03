@@ -94,6 +94,16 @@ export default function LoginScreen() {
         console.log('Stored user credentials:', await AsyncStorage.getItem('logincre'));
   
         navigation.navigate('Welcome');
+        // Navigation logic
+        if (phoneNumber === '12345') {
+          navigation.navigate('AdminHome');
+        } else if (phoneNumber === '0') {
+          navigation.navigate('DeliveryTab');
+        } else if (phoneNumber === '1') {
+          navigation.navigate('StoreStack');
+        } else {
+          navigation.navigate('StoreType');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -8,7 +8,6 @@ import CheckoutScreen from './CustomerScreens/Screens/Checkout';
 import SuccessSplash from './CustomerScreens/Components/SuccessSplash';
 import TrackScreen from './CustomerScreens/Screens/Track';
 import ItemDisplay from './CustomerScreens/Components/ItemDisplay';
-import OTP from './CustomerScreens/Screens/OTP';
 import MyOrders from "./CustomerScreens/Screens/MyOrders"
 import Profile from "./CustomerScreens/Screens/Profile"
 import MyAddresses from './CustomerScreens/Screens/MyAddresses';
@@ -106,12 +105,6 @@ export default function StackNavigator() {
           component={ItemDisplay}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="OTP" 
-          component={OTP}
-          options={{ headerShown: false }}
-        />
-
         <Stack.Screen 
           name="MainTabs" 
           component={TabNavigator}

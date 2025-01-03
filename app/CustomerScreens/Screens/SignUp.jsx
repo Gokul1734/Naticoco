@@ -28,6 +28,7 @@ export default function SignUpScreen() {
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
   const otpRefs = useRef([]);
 
+
   const handlePostData = async () => {
     if (!name || !email || !password || !mobileNumber) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -112,11 +113,7 @@ export default function SignUpScreen() {
         phoneNumber: mobileNumber, // Using the full number including +91
         otp: otp.join('')
       });
-
       if (response.status === 200) {
-        setOtpModalVisible(false);
-        Alert.alert(
-          'Success',
           'Registration successful! Please login to continue.',
           [
             {
@@ -124,7 +121,6 @@ export default function SignUpScreen() {
               onPress: () => navigation.replace('Login')
             }
           ]
-        );
       } else {
         Alert.alert('Error', response.data.message || 'OTP verification failed');
       }
