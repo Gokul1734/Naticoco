@@ -11,8 +11,9 @@ import {
   Platform,
   Alert,
   Modal,
+  TextInput,
+  Linking,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import { useCart } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -49,8 +50,8 @@ function CartScreen({ navigation }) {
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showWebView, setShowWebView] = useState(false);
-  const [paymentData, setPaymentData] = useState(null);
+  const [upiId, setUpiId] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState(null);
   const slideAnim = useRef(cartItems.map(() => new Animated.Value(0))).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -85,37 +86,29 @@ function CartScreen({ navigation }) {
     });
   }, [cartItems, slideAnim]);
 
-  const handleOnlinePayment = async () => {
+  const handleGPayPayment = async () => {
+    if (!upiId) {
+      Alert.alert('Error', 'Please enter UPI ID');
+      return;
+    }
+
     try {
-      // Create order on your backend
-      const orderResponse = await axios.post('http://192.168.29.242:3500/payment/orders', {
-        amount: totalAmount * 100,
+      setIsLoading(true);
+      
+      const orderResponse = await axios.post('http://192.168.29.242:3500/payment/create-upi-order', {
+        amount: totalAmount,
+        upiId: upiId,
+        description: 'Order payment'
       });
 
-      if (!orderResponse.data || !orderResponse.data.data || !orderResponse.data.data.id) {
-        throw new Error('Invalid order response from server');
+      if (!orderResponse.data || !orderResponse.data.success) {
+        throw new Error(orderResponse.data?.message || 'Failed to create payment order');
       }
 
-      // Prepare payment data
-      const options = {
-        description: 'Payment for your order',
-        image: 'your_logo_url',
-        currency: 'INR',
-        key: 'rzp_test_epPmzNozAIcJcC',
-        amount: totalAmount * 100,
-        name: 'Nati Coco',
-        order_id: orderResponse.data.data.id,
-        prefill: {
-          email: 'user@example.com',
-          contact: '9999999999',
-          name: 'John Doe'
-        },
-        theme: { color: '#F8931F' }
-      };
+      startPaymentStatusCheck(orderResponse.data.orderId);
 
-      setPaymentData(options);
-      setShowWebView(true);
-      setShowPaymentModal(false);
+      const upiUrl = `upi://pay?pa=${upiId}&pn=NatiCoco&am=${totalAmount}&cu=INR&tn=Order%20Payment`;
+      await Linking.openURL(upiUrl);
 
     } catch (error) {
       console.error('Payment Error:', error);
@@ -123,36 +116,62 @@ function CartScreen({ navigation }) {
         'Payment Failed',
         error?.message || 'Unable to process payment. Please try again later.'
       );
+      setIsLoading(false);
     }
   };
 
-  const handlePaymentResponse = async (response) => {
-    try {
-      if (response.error) {
-        throw new Error(response.error.description);
+  const startPaymentStatusCheck = async (orderId) => {
+    let attempts = 0;
+    const maxAttempts = 30;
+    
+    const checkStatus = async () => {
+      try {
+        const response = await axios.get(`http://192.168.29.242:3500/payment/status/${orderId}`);
+        
+        if (response.data.status === 'SUCCESS') {
+          handlePaymentSuccess(orderId);
+          return true;
+        } else if (response.data.status === 'FAILED') {
+          handlePaymentFailure('Payment failed');
+          return true;
+        }
+        
+        attempts++;
+        if (attempts >= maxAttempts) {
+          handlePaymentFailure('Payment timeout');
+          return true;
+        }
+        
+        return false;
+      } catch (error) {
+        handlePaymentFailure(error.message);
+        return true;
       }
+    };
 
-      // Verify payment on your backend
-      await axios.post('http://192.168.29.242:3500/payment/verify', {
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature
-      });
+    const poll = async () => {
+      const isDone = await checkStatus();
+      if (!isDone) {
+        setTimeout(poll, 1000);
+      }
+    };
 
-      // Handle success
-      Alert.alert('Success', 'Payment successful!');
-      clearCart();
-      navigation.navigate('OrderConfirmation', {
-        paymentMethod: 'online',
-        orderId: response.razorpay_order_id
-      });
+    poll();
+  };
 
-    } catch (error) {
-      Alert.alert('Error', error?.message || 'Payment verification failed');
-    } finally {
-      setShowWebView(false);
-      setIsLoading(false);
-    }
+  const handlePaymentSuccess = (orderId) => {
+    setIsLoading(false);
+    setShowPaymentModal(false);
+    clearCart();
+    navigation.navigate('OrderConfirmation', {
+      paymentMethod: 'gpay',
+      orderId: orderId
+    });
+  };
+
+  const handlePaymentFailure = (message) => {
+    setIsLoading(false);
+    Alert.alert('Payment Failed', message);
   };
 
   const handleCOD = () => {
@@ -308,12 +327,28 @@ function CartScreen({ navigation }) {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Payment Method</Text>
             
+            <View style={styles.upiContainer}>
+              <TextInput
+                style={styles.upiInput}
+                placeholder="Enter UPI ID (e.g., name@upi)"
+                value={upiId}
+                onChangeText={setUpiId}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+
             <TouchableOpacity
-              style={[styles.paymentButton, styles.onlinePaymentButton]}
-              onPress={handleOnlinePayment}
+              style={[styles.paymentButton, styles.gpayButton]}
+              onPress={handleGPayPayment}
             >
-              <Ionicons name="card-outline" size={24} color="#fff" />
-              <Text style={styles.paymentButtonText}>Pay Online</Text>
+              <Image
+                // source={require('../assets/images/gpay-logo.png')}
+                style={styles.gpayLogo}
+              />
+              <Text style={[styles.paymentButtonText, { color: '#000' }]}>
+                Pay ₹{totalAmount}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -333,101 +368,6 @@ function CartScreen({ navigation }) {
           </View>
         </View>
       </Modal>
-{showWebView && paymentData && (
-  <Modal
-    animationType="slide"
-    transparent={false}
-    visible={showWebView}
-    onRequestClose={() => {
-      setShowWebView(false);
-      setIsLoading(false);
-    }}
-  >
-    <View style={{ flex: 1 }}>
-      <WebView
-        source={{
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                  body { margin: 0; padding: 16px; font-family: Arial, sans-serif; }
-                  .loading { text-align: center; margin-top: 20px; }
-                </style>
-              </head>
-              <body>
-                <div id="payment_div">
-                  <p class="loading">Initializing payment...</p>
-                </div>
-                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-                <script>
-                  const options = ${JSON.stringify(paymentData)};
-                  options.handler = function(response) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                      razorpay_payment_id: response.razorpay_payment_id,
-                      razorpay_order_id: response.razorpay_order_id,
-                      razorpay_signature: response.razorpay_signature
-                    }));
-                  };
-                  
-                  options.modal = {
-                    ondismiss: function() {
-                      window.ReactNativeWebView.postMessage(JSON.stringify({
-                        error: { description: 'Payment cancelled by user' }
-                      }));
-                    }
-                  };
-                  
-                  const rzp = new Razorpay(options);
-                  
-                  rzp.on('payment.failed', function(response) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                      error: response.error
-                    }));
-                  });
-                  
-                  // Start payment automatically
-                  setTimeout(function() {
-                    rzp.open();
-                  }, 1000);
-                </script>
-              </body>
-            </html>
-          `
-        }}
-        onMessage={(event) => {
-          const response = JSON.parse(event.nativeEvent.data);
-          handlePaymentResponse(response);
-        }}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-          Alert.alert('Error', 'Something went wrong with the payment. Please try again.');
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-        onHttpError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView HTTP error: ', nativeEvent);
-          Alert.alert('Error', 'Network error. Please check your connection and try again.');
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-        style={{ flex: 1 }}
-      />
-      <TouchableOpacity
-        style={[styles.closeWebView, { position: 'absolute', top: 40, right: 20 }]}
-        onPress={() => {
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-      >
-        <Ionicons name="close" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
-  </Modal>
-)}
     </ScreenBackground>
   );
 }
@@ -437,22 +377,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  closeWebView: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 8,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    marginTop: Platform.OS === 'ios' ? 40 : 0,
   },
   backButton: {
     padding: 8,
@@ -528,20 +459,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
-    marginBottom: 60,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   totalContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
   totalLabel: {
     fontSize: 16,
     color: '#666',
+    fontWeight: '500',
   },
   totalAmount: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#F8931F',
   },
   checkoutButton: {
@@ -565,11 +498,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
   emptyText: {
     fontSize: 18,
     color: '#666',
     marginTop: 16,
+    textAlign: 'center',
   },
   shopButton: {
     marginTop: 24,
@@ -581,53 +516,85 @@ const styles = StyleSheet.create({
   shopButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',},
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      justifyContent: 'flex-end',
-    },
-    modalContent: {
-      backgroundColor: '#fff',
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      padding: 20,
-      minHeight: 300,
-    },
-    modalTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      textAlign: 'center',
-      marginBottom: 20,
-    },
-    paymentButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 16,
-      borderRadius: 12,
-      marginBottom: 12,
-    },
-    onlinePaymentButton: {
-      backgroundColor: '#F8931F',
-    },
-    codButton: {
-      backgroundColor: '#4CAF50',
-    },
-    paymentButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-      marginLeft: 8,
-    },
-    cancelButton: {
-      padding: 16,
-      alignItems: 'center',
-    },
-    cancelButtonText: {
-      color: '#666',
-      fontSize: 16,
-    },
-  });
-  
-  export default CartScreen;
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  upiContainer: {
+    marginBottom: 20,
+  },
+  upiInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  paymentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  gpayButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#4285f4',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  gpayLogo: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
+  codButton: {
+    backgroundColor: '#4CAF50',
+  },
+  paymentButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginLeft: 8,
+  },
+  cancelButton: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+});
+
+export default CartScreen;
