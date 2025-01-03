@@ -68,7 +68,7 @@ export default function LoginScreen() {
   
     setLoading(true);
     try {
-      const response = await axios.post("http://192.168.29.242:3500/auth/login", {
+      const response = await axios.post("http://192.168.29.165:3500/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {

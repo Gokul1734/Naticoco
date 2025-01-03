@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { styles } from '../styles';
+import styles  from '../styles';
 
 const AnimatedHeader = ({ address, cartCount, navigation}) => {
   const locationAnimation = useRef(new Animated.Value(0)).current;

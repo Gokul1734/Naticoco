@@ -185,7 +185,7 @@ export default function DeliveryPartner() {
   useEffect(() => {
     const fetchDeliveryPartners = async () => {
       try {
-        const response = await axios.get('https://nati-coco-server.onrender.com/Adminstore/delivery/getDeliveryPerson');
+        const response = await axios.get('http://192.168.29.165:3500/Adminstore/delivery/getDeliveryPerson');
         if (response.data.deliveryPersons) {
           // Transform the data to match our component's structure
           const formattedPartners = response.data.deliveryPersons.map(partner => ({

@@ -149,7 +149,7 @@ export default function CartScreen({ navigation }) {
   const handleCheckout = async () => {
     try {
       // Create order
-      const orderResponse = await axios.post('http://192.168.137.1:3500/payment/orders', {
+      const orderResponse = await axios.post('http://192.168.29.165:3500:3500/payment/orders', {
         amount: totalAmount * 100, // Convert to paise
       });
       console.log(amount);
@@ -172,7 +172,7 @@ export default function CartScreen({ navigation }) {
 
       RazorpayCheckout.open(options).then((data) => {
         // Verify payment
-        return axios.post('http://192.168.137.1:3500/payment/verify', {
+        return axios.post('http://192.168.29.165:3500:3500/payment/verify', {
           razorpay_order_id: data.razorpay_order_id,
           razorpay_payment_id: data.razorpay_payment_id,
           razorpay_signature: data.razorpay_signature

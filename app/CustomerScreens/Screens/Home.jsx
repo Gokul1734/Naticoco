@@ -19,7 +19,7 @@ import ProductCard from './Home/components/ProductCard';
 
 // Import constants and styles
 import { categories, productImages } from './Home/constants';
-import { styles } from './Home/styles';
+import styles from './Home/styles'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -49,7 +49,7 @@ export default function HomeScreen() {
       const parsedLoginData = loginData ? JSON.parse(loginData) : null;
       const authToken = parsedLoginData?.token?.token || token;
   
-      const response = await axios.get("http://192.168.137.1:3500/api/user/nearest", {
+      const response = await axios.get("http://192.168.29.165:3500/api/user/nearest", {
         params: { latitude, longitude },
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -57,16 +57,17 @@ export default function HomeScreen() {
         }
       });
   
-      console.log('Store API Response:', response.data); // Add this for debugging
+      // console.log('Store API Response:', response.data); // Add this for debugging
   
       if (response.data && response.data.menu) {
-        setMenuItems(response.data.menu);
-        setBestSellers(response.data.menu.filter(item => item.isBestSeller));
-        setNewArrivals(response.data.menu.filter(item => item.isNewArrival));
-        
+        const menu = response.data.menu;
+        setMenuItems(menu);
+        setBestSellers(menu.filter(item => item.BestSeller === true));
+        setNewArrivals(menu.filter(item => item.newArrival === true));
+        setIsDataLoading(false);
         // Cache the store data
         await AsyncStorage.setItem('storeMenu', JSON.stringify(response.data.menu));
-        console.log(JSON.stringify(response.data.menu));
+        // setMenuItems(JSON.stringify(response.data.menu));
       }
     } catch (error) {
       console.error('Error fetching store data:', error.response?.data || error.message);
@@ -152,7 +153,7 @@ export default function HomeScreen() {
         cartItem={cartItem}
         addToCart={addToCart}
         updateQuantity={updateQuantity}
-        getItemImage={(item) => item.imageUrl ? { uri: item.imageUrl } : productImages[item.image]}
+        getItemImage={(item) => ({ uri: item.image })}
         cardWidth={cardWidth}
       />
     );

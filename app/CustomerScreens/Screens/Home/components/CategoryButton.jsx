@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Image, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { styles } from '../styles';
+import styles from '../styles';
 
 const CategoryButton = ({ name, image, isSelected, onSelect, navigation }) => (
   <TouchableOpacity 
