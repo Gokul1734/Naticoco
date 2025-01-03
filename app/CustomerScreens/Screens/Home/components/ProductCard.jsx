@@ -5,8 +5,10 @@ import { MotiView } from 'moti';
 import styles from '../styles';
 
 const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getItemImage, cardWidth }) => {
-
- return (
+  // Construct the image URL using the server ImageStore path
+  const imageUrl = `http://192.168.29.165:3500/ImageStore/1735838844695-Chicken.png`;
+  console.log(imageUrl);
+  return (
     <MotiView
       from={{ opacity: 0, translateY: 50 }}
       animate={{ opacity: 1, translateY: 0 }}
@@ -17,9 +19,10 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
         onPress={onPress}
       >
         <Image 
-          source={(item.image) ? item.image :getItemImage(item.image) }
+          // source={{ uri: imageUrl }}
           style={styles.productImage}
           resizeMode="cover"
+          source={require('../../../../../assets/images/Chicken65.jpg')} // Fallback image
         />
         <Text style={styles.productName}>{item.itemName}</Text>
         <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingHorizontal:10 ,marginBottom:10}}>

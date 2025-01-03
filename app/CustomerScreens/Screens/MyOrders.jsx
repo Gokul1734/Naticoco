@@ -1,34 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
-// Mock data for orders (replace with actual API data)
-const mockOrders = [
-  {
-    id: '1',
-    orderNumber: 'ORD001',
-    date: '2024-03-15',
-    status: 'Delivered',
-    items: [
-      { name: 'Chicken Breast', quantity: 2, price: 250 },
-      { name: 'Eggs', quantity: 30, price: 180 },
-    ],
-    total: 430,
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD002',
-    date: '2024-03-14',
-    status: 'Processing',
-    items: [
-      { name: 'Mutton', quantity: 1, price: 550 },
-    ],
-    total: 550,
-  },
-  // Add more mock orders as needed
-];
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrderCard = ({ order }) => {
   const navigation = useNavigation();
@@ -36,12 +12,12 @@ const OrderCard = ({ order }) => {
   return (
     <TouchableOpacity 
       style={styles.orderCard}
-      onPress={() => navigation.navigate('Track', { orderId: order.id })}
+      onPress={() => navigation.navigate('Track', { orderId: order._id })}
     >
       <View style={styles.orderHeader}>
         <View>
-          <Text style={styles.orderNumber}>Order #{order.orderNumber}</Text>
-          <Text style={styles.orderDate}>{new Date(order.date).toLocaleDateString()}</Text>
+          <Text style={styles.orderNumber}>Order #{order.orderId}</Text>
+          <Text style={styles.orderDate}>{new Date(order.createdAt).toLocaleDateString()}</Text>
         </View>
         <View style={[
           styles.statusBadge,
@@ -52,23 +28,25 @@ const OrderCard = ({ order }) => {
       </View>
 
       <View style={styles.itemsList}>
-        {order.items.map((item, index) => (
+        {order.items && order.items.map((item, index) => (
           <View key={index} style={styles.itemRow}>
-            <Text style={styles.itemName}>{item.name} x{item.quantity}</Text>
-            <Text style={styles.itemPrice}>₹{item.price}</Text>
+            <Text style={styles.itemName}>{typeof item === 'object' ? item.name : item}</Text>
+            {typeof item === 'object' && (
+              <Text style={styles.itemPrice}>₹{item.price}</Text>
+            )}
           </View>
         ))}
       </View>
 
       <View style={styles.orderFooter}>
         <Text style={styles.totalLabel}>Total Amount:</Text>
-        <Text style={styles.totalAmount}>₹{order.total}</Text>
+        <Text style={styles.totalAmount}>₹{order.amount}</Text>
       </View>
 
       <View style={styles.actionRow}>
         <TouchableOpacity 
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Track', { orderId: order.id })}
+          onPress={() => navigation.navigate('Track', { orderId: order._id })}
         >
           <Ionicons name="location-outline" size={20} color="#F8931F" />
           <Text style={styles.actionButtonText}>Track Order</Text>
@@ -85,6 +63,24 @@ const OrderCard = ({ order }) => {
 
 export default function MyOrders() {
   const navigation = useNavigation();
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const credentials = await AsyncStorage.getItem('logincre');
+        const parsedCredentials = credentials ? JSON.parse(credentials) : null;
+        const userId = parsedCredentials?.token?.userId;
+        console.log(userId);
+        const response = await axios.get(`http://192.168.29.165:3500/api/orders/myorder/${userId}`);
+        setOrders(response.data.orders);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -97,9 +93,9 @@ export default function MyOrders() {
       </View>
 
       <FlatList
-        data={mockOrders}
+        data={orders}
         renderItem={({ item }) => <OrderCard order={item} />}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id}
         contentContainerStyle={styles.ordersList}
         showsVerticalScrollIndicator={false}
       />
@@ -219,6 +215,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: '#F8931F',
     fontSize: 14,
-    fontWeight: '600',
-  },
-}); 
+    fontWeight: '600',
+  },
+});
