@@ -75,7 +75,7 @@ export default function LoginScreen() {
      navigation.navigate('StoreStack');
    }
     try {
-      const response = await axios.post("http://192.168.29.242:3500/auth/login", {
+      const response = await axios.post("http://192.168.32.227:3500/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {
