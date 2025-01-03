@@ -23,6 +23,7 @@
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.14",
     "axios": "^1.7.9",
+    "buffer": "^6.0.3",
     "dotenv": "^16.4.7",
     "eas": "^0.1.0",
     "expo": "~52.0.20",

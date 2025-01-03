@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Image, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import styles from '../styles';
+import axios from 'axios';
+import { Buffer } from 'buffer';
 
 const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getItemImage, cardWidth }) => {
-  // Construct the image URL using the server ImageStore path
-  const imageUrl = `http://192.168.29.242:3500/ImageStore/1735838844695-Chicken.png`;
-  console.log(imageUrl);
+  const image = item.image.replace('/ImageStore/', '');
+  // console.log(image);
+  const [images, setImage] = useState(null);
+  useEffect(() => {
+    axios.get(`http:/192.168.29.242:3500/images/${image}`, {
+      responseType:'arraybuffer'
+    })
+      .then(response => {
+       const base64Image = `data:image/jpeg;base64,${Buffer.from(response.data, 'binary').toString('base64')}`;
+       setImage(base64Image);
+      })
+      .catch(error => console.error(error));
+  }, []);
+
   return (
     <MotiView
       from={{ opacity: 0, translateY: 50 }}
@@ -19,10 +32,9 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
         onPress={onPress}
       >
         <Image 
-          // source={{ uri: imageUrl }}
+          source={{uri : images}}
           style={styles.productImage}
           resizeMode="cover"
-          source={require('../../../../../assets/images/Chicken65.jpg')} // Fallback image
         />
         <Text style={styles.productName}>{item.itemName}</Text>
         <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingHorizontal:10 ,marginBottom:10}}>
