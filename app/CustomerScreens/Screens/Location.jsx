@@ -8,7 +8,6 @@ import { MotiView } from 'moti';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const GOOGLE_PLACES_API_KEY = ''; // Replace with your API key
 
 export default function LocationScreen({ navigation }) {
   const [location, setLocation] = useState(null);
@@ -64,9 +63,13 @@ export default function LocationScreen({ navigation }) {
       if (response[0]) {
         const addr = response[0];
         setAddress(addr);
+        const street = addr.street || '';
+        const name = addr.name || '';
+        const fullAddress = (street + ' ' + name).trim();
+        
         setAddressDetails({
           ...addressDetails,
-          address: `${addr.street || ''} ${addr.name || ''}`.trim(),
+          address: fullAddress,
           area: addr.district || addr.subregion || '',
           city: addr.city || '',
           pincode: addr.postalCode || '',
@@ -110,8 +113,31 @@ export default function LocationScreen({ navigation }) {
 
       addresses.push(newAddress);
       await AsyncStorage.setItem('userAddresses', JSON.stringify(addresses));
-      Alert.alert('Success', 'Address saved successfully');
-      navigation.navigate('MainTabs');
+
+      // Create mock nearest store data
+      const mockNearestStore = {
+        id: '1',
+        name: 'Local Store',
+        address: addressDetails.address,
+        coordinates: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        }
+      };
+
+      // Store the mock nearest store data
+      await AsyncStorage.setItem('nearestStore', JSON.stringify(mockNearestStore));
+      console.log('Address saved:', JSON.stringify(mockNearestStore));
+
+      Alert.alert('Success', 'Address saved successfully', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('MainTabs', {
+            screen: 'Menu',
+            params: { storeData: mockNearestStore }
+          })
+        }
+      ]);
     } catch (error) {
       Alert.alert('Error', 'Could not save address');
     }

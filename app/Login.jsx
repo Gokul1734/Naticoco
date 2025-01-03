@@ -18,8 +18,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const API_URL = "https://nati-coco-server.onrender.com/auth/login";
-
 // Add image mapping
 const loginImages = {
   eggs: require('../assets/images/eggsLogin.png'),
@@ -79,7 +77,7 @@ export default function LoginScreen() {
      navigation.navigate('StoreType');
    }
     try {
-      const response = await axios.post("https://nati-coco-server.onrender.com/auth/login", {
+      const response = await axios.post("http://192.168.32.227:3500/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {
@@ -98,18 +96,15 @@ export default function LoginScreen() {
         console.log('Stored user credentials:', await AsyncStorage.getItem('logincre'));
   
         // Navigation logic
-      // const response = await axios.post("https://nati-coco-server.onrender.com/auth/login", {
-      //   mobileno: phoneNumber,
-      //   password: password
-      // }, {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
-
-      // if (response.status === 200) {
-        // Handle different user types
-        
+        if (phoneNumber === '12345') {
+          navigation.navigate('AdminHome');
+        } else if (phoneNumber === '0') {
+          navigation.navigate('DeliveryTab');
+        } else if (phoneNumber === '1') {
+          navigation.navigate('StoreStack');
+        } else {
+          navigation.navigate('StoreType');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -38,7 +39,7 @@ const WelcomeIcon = ({ name, delay, size = 40 }) => (
 export default function Welcome({ route }) {
   const navigation = useNavigation();
   const [quote] = useState(quotes[Math.floor(Math.random() * quotes.length)]);
-  const { userName } = (route.params) ? route.params : { userName: 'Gokul' };
+  const [name, setName] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -47,6 +48,26 @@ export default function Welcome({ route }) {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const fetchName = async () => {
+    try {
+      const loginData = await AsyncStorage.getItem('logincre'); // Fetch data from AsyncStorage
+  
+      if (loginData) {
+        const parsedData = JSON.parse(loginData); // Parse the JSON string
+  
+        const name = parsedData.token.name || 'Guest'; // Fetch the name or fallback to 'Guest'
+        setName(name); // Assuming setName is a state setter function
+      }
+    } catch (error) {
+      console.error('Error fetching login data:', error);
+    }
+  };
+  
+  // Call the function
+  fetchName();
+  
+  
 
   return (
     <LinearGradient
@@ -67,7 +88,7 @@ export default function Welcome({ route }) {
             Welcome
           </Text>
           <Text variant="headlineMedium" style={styles.nameText}>
-            {userName}
+            {name}
           </Text>
         </MotiView>
 

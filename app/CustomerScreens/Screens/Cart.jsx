@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   Platform,
+  Alert,
 } from 'react-native';
 import { useCart } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import LoadingScreen from '../Components/LoadingScreen';
 import ScreenBackground from '../Components/ScreenBackground';
+import axios from 'axios';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -144,17 +146,49 @@ export default function CartScreen({ navigation }) {
     );
   };
 
-  const handleCheckout = () => {
-    Animated.sequence([
-      Animated.spring(scaleAnim, {
-        toValue: 0.95,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-    ]).start(() => navigation.navigate('Checkout'));
+  const handleCheckout = async () => {
+    try {
+      // Create order
+      const orderResponse = await axios.post('http://192.168.137.1:3500/payment/orders', {
+        amount: totalAmount * 100, // Convert to paise
+      });
+      console.log(amount);
+
+      const options = {
+        description: 'Payment for your order',
+        image: 'your_logo_url',
+        currency: 'INR',
+        key: process.env.KEY_ID,
+        amount: totalAmount * 100,
+        name: 'Nati Coco',
+        order_id: orderResponse.data.data.id,
+        prefill: {
+          email: 'user@example.com',
+          contact: '9999999999',
+          name: 'John Doe'
+        },
+        theme: { color: '#F8931F' }
+      };
+
+      RazorpayCheckout.open(options).then((data) => {
+        // Verify payment
+        return axios.post('http://192.168.137.1:3500/payment/verify', {
+          razorpay_order_id: data.razorpay_order_id,
+          razorpay_payment_id: data.razorpay_payment_id,
+          razorpay_signature: data.razorpay_signature
+        });
+      }).then(() => {
+        Alert.alert('Success', 'Payment successful!');
+        navigation.navigate('OrderConfirmation');
+      }).catch((error) => {
+        Alert.alert('Error', 'Payment failed. Please try again.');
+        console.error(error);
+      });
+
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.error(error);
+    }
   };
 
   if (cartItems.length === 0) {

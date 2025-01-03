@@ -18,12 +18,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import ScreenBackground from '../Components/ScreenBackground';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const [image, setImage] = useState(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
   // Sample user data
   const sampleUser = {
@@ -137,6 +140,27 @@ export default function ProfileScreen() {
     );
   };
 
+  const fetchName = async () => {
+    try {
+      const loginData = await AsyncStorage.getItem('logincre'); // Fetch data from AsyncStorage
+  
+      if (loginData) {
+        const parsedData = JSON.parse(loginData); // Parse the JSON string
+  
+        const name = parsedData.token.name || 'Guest';
+        const email = parsedData.token.email;
+        setEmail(email);
+        setName(name); // Assuming setName is a state setter function
+      }
+    } catch (error) {
+      console.error('Error fetching login data:', error);
+    }
+  };
+  
+  // Call the function
+  fetchName();
+  
+
   return (
     <ImageBackground source={require('../../../assets/images/profileBackdrop.png')} resizeMode='cover' style={styles.container}>
         <Animated.View 
@@ -168,8 +192,8 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
 
-          <Text style={styles.username}>{sampleUser.name}</Text>
-          <Text style={styles.email}>{sampleUser.email}</Text>
+          <Text style={styles.username}>{name}</Text>
+          <Text style={styles.email}>{email}</Text>
 
           <View style={styles.infoContainer}>
             <View style={styles.infoItem}>
