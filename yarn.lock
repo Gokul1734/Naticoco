@@ -2213,6 +2213,11 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
+"@stripe/stripe-react-native@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.npmjs.org/@stripe/stripe-react-native/-/stripe-react-native-0.41.0.tgz"
+  integrity sha512-yIu9JvxstvlpMo+3bE/8bwaxRS57+MBUdVXHdLJMtqUoTnl3gSJdHWyGxBCPp+vZk88hvGiIQ3TsZeDPnsdTkw==
+
 "@tootallnate/once@2":
   version "2.0.0"
   resolved "https://registry.npmjs.org/@tootallnate/once/-/once-2.0.0.tgz"
@@ -4340,7 +4345,7 @@ expo-web-browser@~14.0.1:
   resolved "https://registry.npmjs.org/expo-web-browser/-/expo-web-browser-14.0.1.tgz"
   integrity sha512-QM9F3ie+UyIOoBvqFmT6CZojb1vMc2H+7ZlMT5dEu1PL2jtYyOeK2hLfbt/EMt7CBm/w+P29H9W9Y9gdebOkuQ==
 
-expo@*, expo@>=50.0.0, expo@~52.0.20:
+expo@*, expo@>=46.0.9, expo@>=50.0.0, expo@~52.0.20:
   version "52.0.23"
   resolved "https://registry.npmjs.org/expo/-/expo-52.0.23.tgz"
   integrity sha512-DR36Vkpz/ZLPci4fxDBG/pLk26nGK63vcZ+X4RZJfNBzi14DXZ939loP8YzWGV78Qp23qdPINczpo2727tqLxg==

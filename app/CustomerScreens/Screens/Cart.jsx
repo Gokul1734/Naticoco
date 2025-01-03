@@ -11,8 +11,9 @@ import {
   Platform,
   Alert,
   Modal,
+  KeyboardAvoidingView,
+  SafeAreaView
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import { useCart } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,6 +21,8 @@ import * as Haptics from 'expo-haptics';
 import LoadingScreen from '../Components/LoadingScreen';
 import ScreenBackground from '../Components/ScreenBackground';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useStripe } from '@stripe/stripe-react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -49,15 +52,37 @@ function CartScreen({ navigation }) {
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showWebView, setShowWebView] = useState(false);
-  const [paymentData, setPaymentData] = useState(null);
-  const slideAnim = useRef(cartItems.map(() => new Animated.Value(0))).current;
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState('');
+  const slideAnim = useRef(new Array(cartItems.length).fill(0).map(() => new Animated.Value(0))).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const shakeAnimation = useRef(new Animated.Value(0)).current;
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const startShake = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 100,
+        useNativeDriver: true
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true
+      })
+    ]).start();
+  };
 
   useEffect(() => {
     const loadCartData = async () => {
@@ -74,8 +99,20 @@ function CartScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    cartItems.forEach((_, index) => {
-      Animated.spring(slideAnim[index], {
+    const loadUser = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem('logincre');
+        const userDetails = userStr ? JSON.parse(userStr) : null;
+        setUser(userDetails);
+      } catch (error) {
+        console.error('Error loading user:', error);
+      }
+    };
+
+    loadUser();
+
+    slideAnim.forEach((anim, index) => {
+      Animated.spring(anim, {
         toValue: 1,
         tension: 50,
         friction: 7,
@@ -83,79 +120,66 @@ function CartScreen({ navigation }) {
         delay: index * 100,
       }).start();
     });
-  }, [cartItems, slideAnim]);
+  }, [cartItems]);
 
   const handleOnlinePayment = async () => {
-    try {
-      // Create order on your backend
-      const orderResponse = await axios.post('http://192.168.32.227:3500/payment/orders', {
-        amount: totalAmount * 100,
-      });
-
-      if (!orderResponse.data || !orderResponse.data.data || !orderResponse.data.data.id) {
-        throw new Error('Invalid order response from server');
-      }
-
-      // Prepare payment data
-      const options = {
-        description: 'Payment for your order',
-        image: 'your_logo_url',
-        currency: 'INR',
-        key: 'rzp_test_epPmzNozAIcJcC',
-        amount: totalAmount * 100,
-        name: 'Nati Coco',
-        order_id: orderResponse.data.data.id,
-        prefill: {
-          email: 'user@example.com',
-          contact: '9999999999',
-          name: 'John Doe'
-        },
-        theme: { color: '#F8931F' }
-      };
-
-      setPaymentData(options);
-      setShowWebView(true);
-      setShowPaymentModal(false);
-
-    } catch (error) {
-      console.error('Payment Error:', error);
-      Alert.alert(
-        'Payment Failed',
-        error?.message || 'Unable to process payment. Please try again later.'
-      );
+    if (!user?.token) {
+      setError('Please login to continue');
+      startShake();
+      return;
     }
-  };
 
-  const handlePaymentResponse = async (response) => {
+    setIsLoading(true);
     try {
-      if (response.error) {
-        throw new Error(response.error.description);
-      }
-
-      // Verify payment on your backend
-      await axios.post('http://192.168.32.227:3500/payment/verify', {
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature
+      // Create payment intent on your backend
+      const response = await axios.post('http://192.168.32.227:3500/payment/create-payment-intent', {
+        amount: totalAmount * 100, // Convert to cents
+        currency: 'inr'
       });
 
-      // Handle success
-      Alert.alert('Success', 'Payment successful!');
+      // Initialize the Payment Sheet
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: response.data.clientSecret,
+        merchantDisplayName: 'Nati Coco',
+        style: 'automatic',
+        googlePay: true,
+      });
+
+      if (initError) {
+        throw new Error(initError.message);
+      }
+
+      // Present the Payment Sheet
+      const { error: paymentError } = await presentPaymentSheet();
+
+      if (paymentError) {
+        throw new Error(paymentError.message);
+      }
+
+      // Payment successful
+      Alert.alert('Success', 'Payment completed successfully!');
       clearCart();
       navigation.navigate('OrderConfirmation', {
         paymentMethod: 'online',
-        orderId: response.razorpay_order_id
+        orderId: response.data.paymentIntentId
       });
 
     } catch (error) {
-      Alert.alert('Error', error?.message || 'Payment verification failed');
+      console.error('Payment Error:', error);
+      setError(error?.message || 'Unable to process payment');
+      startShake();
     } finally {
-      setShowWebView(false);
       setIsLoading(false);
     }
   };
 
   const handleCOD = () => {
+    if (!user?.token) {
+      setError('Please login to continue');
+      startShake();
+      return;
+    }
+
     Alert.alert(
       'Confirm Order',
       'Do you want to place this order with Cash on Delivery?',
@@ -179,13 +203,13 @@ function CartScreen({ navigation }) {
   };
 
   const renderItem = ({ item, index }) => {
-    const translateX = slideAnim[index].interpolate({
+    const translateX = slideAnim[index]?.interpolate({
       inputRange: [0, 1],
       outputRange: [-SCREEN_WIDTH, 0],
-    });
+    }) || new Animated.Value(0);
 
     return (
-      <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]}>
+      <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]} key={item.id}>
         <Image 
           source={getItemImage(item.image)} 
           style={styles.itemImage} 
@@ -257,185 +281,135 @@ function CartScreen({ navigation }) {
   }
 
   return (
-    <ScreenBackground style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={['#F8931F', '#f4a543']}
+        style={styles.gradient}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.content}
         >
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Cart</Text>
-      </View>
-
-      <FlatList
-        data={cartItems}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
-
-      <View style={styles.footer}>
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>Total Amount</Text>
-          <Text style={styles.totalAmount}>₹{totalAmount}</Text>
-        </View>
-
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <TouchableOpacity
-            style={styles.checkoutButton}
-            onPress={() => setShowPaymentModal(true)}
-          >
-            <LinearGradient
-              colors={['#F8931F', '#f4a543']}
-              style={styles.gradientButton}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
             >
-              <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showPaymentModal}
-        onRequestClose={() => setShowPaymentModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Payment Method</Text>
-            
-            <TouchableOpacity
-              style={[styles.paymentButton, styles.onlinePaymentButton]}
-              onPress={handleOnlinePayment}
-            >
-              <Ionicons name="card-outline" size={24} color="#fff" />
-              <Text style={styles.paymentButtonText}>Pay Online</Text>
+              <Ionicons name="arrow-back" size={24} color="#333" />
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.paymentButton, styles.codButton]}
-              onPress={handleCOD}
-            >
-              <Ionicons name="cash-outline" size={24} color="#fff" />
-              <Text style={styles.paymentButtonText}>Cash on Delivery</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowPaymentModal(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+            <Text style={styles.headerTitle}>My Cart</Text>
           </View>
-        </View>
-      </Modal>
-{showWebView && paymentData && (
-  <Modal
-    animationType="slide"
-    transparent={false}
-    visible={showWebView}
-    onRequestClose={() => {
-      setShowWebView(false);
-      setIsLoading(false);
-    }}
-  >
-    <View style={{ flex: 1 }}>
-      <WebView
-        source={{
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                  body { margin: 0; padding: 16px; font-family: Arial, sans-serif; }
-                  .loading { text-align: center; margin-top: 20px; }
-                </style>
-              </head>
-              <body>
-                <div id="payment_div">
-                  <p class="loading">Initializing payment...</p>
-                </div>
-                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-                <script>
-                  const options = ${JSON.stringify(paymentData)};
-                  options.handler = function(response) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                      razorpay_payment_id: response.razorpay_payment_id,
-                      razorpay_order_id: response.razorpay_order_id,
-                      razorpay_signature: response.razorpay_signature
-                    }));
-                  };
-                  
-                  options.modal = {
-                    ondismiss: function() {
-                      window.ReactNativeWebView.postMessage(JSON.stringify({
-                        error: { description: 'Payment cancelled by user' }
-                      }));
-                    }
-                  };
-                  
-                  const rzp = new Razorpay(options);
-                  
-                  rzp.on('payment.failed', function(response) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                      error: response.error
-                    }));
-                  });
-                  
-                  // Start payment automatically
-                  setTimeout(function() {
-                    rzp.open();
-                  }, 1000);
-                </script>
-              </body>
-            </html>
-          `
-        }}
-        onMessage={(event) => {
-          const response = JSON.parse(event.nativeEvent.data);
-          handlePaymentResponse(response);
-        }}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-          Alert.alert('Error', 'Something went wrong with the payment. Please try again.');
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-        onHttpError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView HTTP error: ', nativeEvent);
-          Alert.alert('Error', 'Network error. Please check your connection and try again.');
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-        style={{ flex: 1 }}
-      />
-      <TouchableOpacity
-        style={[styles.closeWebView, { position: 'absolute', top: 40, right: 20 }]}
-        onPress={() => {
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-      >
-        <Ionicons name="close" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
-  </Modal>
-)}
-    </ScreenBackground>
+
+          {error ? (
+            <Animated.View
+              style={[
+                styles.errorContainer,
+                {transform: [{translateX: shakeAnimation}]}
+              ]}
+            >
+              <Text style={styles.error}>{error}</Text>
+            </Animated.View>
+          ) : null}
+
+          <FlatList
+            data={cartItems}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+          />
+
+          <View style={styles.footer}>
+            <View style={styles.totalContainer}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalAmount}>₹{totalAmount}</Text>
+            </View>
+
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity
+                style={styles.checkoutButton}
+                onPress={() => {
+                  if (!user?.token) {
+                    setError('Please login to continue');
+                    startShake();
+                    return;
+                  }
+                  setShowPaymentModal(true);
+                }}
+              >
+                <LinearGradient
+                  colors={['#F8931F', '#f4a543']}
+                  style={styles.gradientButton}
+                >
+                  <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#fff" />
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={showPaymentModal}
+            onRequestClose={() => setShowPaymentModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select Payment Method</Text>
+                
+                <TouchableOpacity
+                  style={[styles.paymentButton, styles.onlinePaymentButton]}
+                  onPress={handleOnlinePayment}
+                >
+                  <Ionicons name="card-outline" size={24} color="#fff" />
+                  <Text style={styles.paymentButtonText}>Pay Online</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.paymentButton, styles.codButton]}
+                  onPress={handleCOD}
+                >
+                  <Ionicons name="cash-outline" size={24} color="#fff" />
+                  <Text style={styles.paymentButtonText}>Cash on Delivery</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowPaymentModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  gradient: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
+  error: {
+    color: '#dc2626',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   closeWebView: {
     backgroundColor: '#fff',
@@ -581,53 +555,54 @@ const styles = StyleSheet.create({
   shopButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',},
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      justifyContent: 'flex-end',
-    },
-    modalContent: {
-      backgroundColor: '#fff',
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      padding: 20,
-      minHeight: 300,
-    },
-    modalTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      textAlign: 'center',
-      marginBottom: 20,
-    },
-    paymentButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 16,
-      borderRadius: 12,
-      marginBottom: 12,
-    },
-    onlinePaymentButton: {
-      backgroundColor: '#F8931F',
-    },
-    codButton: {
-      backgroundColor: '#4CAF50',
-    },
-    paymentButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-      marginLeft: 8,
-    },
-    cancelButton: {
-      padding: 16,
-      alignItems: 'center',
-    },
-    cancelButtonText: {
-      color: '#666',
-      fontSize: 16,
-    },
-  });
-  
-  export default CartScreen;
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: 300,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  paymentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  onlinePaymentButton: {
+    backgroundColor: '#F8931F',
+  },
+  codButton: {
+    backgroundColor: '#4CAF50',
+  },
+  paymentButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  cancelButton: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+  },
+});
+
+export default CartScreen;
