@@ -76,11 +76,11 @@ const styles = StyleSheet.create({
  categoryButton: {
    flex: 1,
    alignItems: 'center',
-   padding: normalize(15),
-   margin: normalize(5),
+   padding: normalize(17),
+   margin: normalize(7),
    backgroundColor: '#fff',
    borderRadius: normalize(12),
-   minWidth: (SCREEN_WIDTH - normalize(60)) / 3.3,
+   minWidth: (SCREEN_WIDTH - normalize(60)) / 3.2,
    elevation: 2,
    shadowColor: '#000',
    shadowOffset: {

@@ -75,7 +75,7 @@ export default function LoginScreen() {
      navigation.navigate('StoreStack');
    }
     try {
-      const response = await axios.post("http://192.168.32.227:3500/auth/login", {
+      const response = await axios.post("http://192.168.29.165:3500/auth/login", {
         mobileno: phoneNumber,
         password: password,
       }, {
@@ -102,7 +102,7 @@ export default function LoginScreen() {
         } else if (phoneNumber === '1') {
           navigation.navigate('StoreStack');
         } else {
-          navigation.navigate('StoreType');
+          navigation.navigate('Welcome');
         }
       }
     } catch (error) {

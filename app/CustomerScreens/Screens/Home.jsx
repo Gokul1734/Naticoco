@@ -49,7 +49,7 @@ export default function HomeScreen() {
       const parsedLoginData = loginData ? JSON.parse(loginData) : null;
       const authToken = parsedLoginData?.token?.token || token;
   
-      const response = await axios.get("http://192.168.32.227:3500/api/user/nearest", {
+      const response = await axios.get("http://192.168.29.165:3500/api/user/nearest", {
         params: { latitude, longitude },
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -149,7 +149,7 @@ export default function HomeScreen() {
     return (
       <ProductCard
         item={item}
-        onPress={() => navigation.navigate('ItemDisplay', { item })}
+        onPress={() => navigation.navigate('ItemDisplay',item)}
         cartItem={cartItem}
         addToCart={addToCart}
         updateQuantity={updateQuantity}

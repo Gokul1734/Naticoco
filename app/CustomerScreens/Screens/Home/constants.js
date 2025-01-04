@@ -12,12 +12,12 @@ export const categories = [
   },
   { 
     id: '2', 
-    name: 'Marinated', 
+    name: 'marinated', 
     image: require('../../../../assets/images/HomeCategories/Marinate.png')
   },
   { 
     id: '3', 
-    name: 'Heat & Eat', 
+    name: 'heatandeat', 
     image: require('../../../../assets/images/HomeCategories/Chicken.png')
   },
   { 

@@ -92,7 +92,7 @@ const ManageUser = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://192.168.29.242:3500/auth/users');
+        const response = await axios.get('http://192.168.29.165:3500/auth/users');
         const usersData = response.data.users || [];
         console.log('Users data:', usersData);
         setUsers(usersData);
