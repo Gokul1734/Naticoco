@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,38 +11,39 @@ import {
   Platform,
   Alert,
   Modal,
-} from 'react-native';
-import { WebView } from 'react-native-webview';
-import { useCart } from '../context/CartContext';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
-import LoadingScreen from '../Components/LoadingScreen';
-import ScreenBackground from '../Components/ScreenBackground';
-import axios from 'axios';
+} from "react-native";
+import { WebView } from "react-native-webview";
+import { useCart } from "../context/CartContext";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
+import LoadingScreen from "../Components/LoadingScreen";
+import ScreenBackground from "../Components/ScreenBackground";
+import axios from "axios";
+// import RazorpayCheckout from "react-native-razorpay";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const productImages = {
-  'cp3.jpg': require('../../../assets/images/cp3.jpg'),
-  'cp2.jpg': require('../../../assets/images/cp2.jpg'),
-  'cp.jpg': require('../../../assets/images/cp.jpg'),
-  'salad.jpg': require('../../../assets/images/salad.jpg'),
-  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
-  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
-  'classic nati eggs(pack of 6.jpg': require('../../../assets/images/classic nati eggs(pack of 6.jpg'),
-  'classsic white eggs(pack of 6).jpg': require('../../../assets/images/classsic white eggs(pack of 6).jpg'),
-  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
-  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
-  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
-  'wob.jpg': require('../../../assets/images/wob.jpeg'),
-  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
-  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
-  'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
+  "cp3.jpg": require("../../../assets/images/cp3.jpg"),
+  "cp2.jpg": require("../../../assets/images/cp2.jpg"),
+  "cp.jpg": require("../../../assets/images/cp.jpg"),
+  "salad.jpg": require("../../../assets/images/salad.jpg"),
+  "heat and eat.jpeg": require("../../../assets/images/heat and eat.jpeg"),
+  "classic chicken momos.jpg": require("../../../assets/images/classic chicken momos.jpg"),
+  "classic nati eggs(pack of 6.jpg": require("../../../assets/images/classic nati eggs(pack of 6.jpg"),
+  "classsic white eggs(pack of 6).jpg": require("../../../assets/images/classsic white eggs(pack of 6).jpg"),
+  "logoo.jpg": require("../../../assets/images/logoo.jpg"),
+  "ChickenKebab.jpg": require("../../../assets/images/ChickenKebab.jpg"),
+  "tandoori.jpg": require("../../../assets/images/tandoori.jpg"),
+  "wob.jpg": require("../../../assets/images/wob.jpeg"),
+  "thighs.jpg": require("../../../assets/images/thighs.jpeg"),
+  "ggp.jpg": require("../../../assets/images/ggp.jpg"),
+  "natiChicken.jpg": require("../../../assets/images/natiChicken.jpg"),
 };
 
 const getItemImage = (imageName) => {
-  return productImages[imageName] || productImages['logoo.jpg'];
+  return productImages[imageName] || productImages["logoo.jpg"];
 };
 
 function CartScreen({ navigation }) {
@@ -62,9 +63,9 @@ function CartScreen({ navigation }) {
   useEffect(() => {
     const loadCartData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 800));
       } catch (error) {
-        console.error('Error loading cart:', error);
+        console.error("Error loading cart:", error);
       } finally {
         setIsLoading(false);
       }
@@ -85,92 +86,127 @@ function CartScreen({ navigation }) {
     });
   }, [cartItems, slideAnim]);
 
-  const handleOnlinePayment = async () => {
-    try {
-      // Create order on your backend
-      const orderResponse = await axios.post('http://192.168.29.165:3500/payment/orders', {
-        amount: totalAmount * 100,
+  // const handleOnlinePayment = async () => {
+  //   try {
+  //     // Create order on your backend
+  //     const orderResponse = await axios.post(
+  //       "http://192.168.29.165:3500/payment/orders",
+  //       {
+  //         amount: totalAmount * 100,
+  //       }
+  //     );
+
+  //     if (
+  //       !orderResponse.data ||
+  //       !orderResponse.data.data ||
+  //       !orderResponse.data.data.id
+  //     ) {
+  //       throw new Error("Invalid order response from server");
+  //     }
+
+  //     // Prepare payment data
+  //     const options = {
+  //       description: "Payment for your order",
+  //       image: "your_logo_url",
+  //       currency: "INR",
+  //       key: "rzp_test_epPmzNozAIcJcC",
+  //       amount: totalAmount * 100,
+  //       name: "Nati Coco",
+  //       order_id: orderResponse.data.data.id,
+  //       prefill: {
+  //         email: "user@example.com",
+  //         contact: "9999999999",
+  //         name: "John Doe",
+  //       },
+  //       theme: { color: "#F8931F" },
+  //     };
+
+  //     setPaymentData(options);
+  //     setShowWebView(true);
+  //     setShowPaymentModal(false);
+  //   } catch (error) {
+  //     console.error("Payment Error:", error);
+  //     Alert.alert(
+  //       "Payment Failed",
+  //       error?.message || "Unable to process payment. Please try again later."
+  //     );
+  //   }
+  // };
+
+  // const handlePaymentResponse = async (response) => {
+  //   try {
+  //     if (response.error) {
+  //       throw new Error(response.error.description);
+  //     }
+
+  //     // Verify payment on your backend
+  //     await axios.post("http://192.168.29.165:3500/payment/verify", {
+  //       razorpay_order_id: response.razorpay_order_id,
+  //       razorpay_payment_id: response.razorpay_payment_id,
+  //       razorpay_signature: response.razorpay_signature,
+  //     });
+
+  //     // Handle success
+  //     Alert.alert("Success", "Payment successful!");
+  //     clearCart();
+  //     navigation.navigate("OrderConfirmation", {
+  //       paymentMethod: "online",
+  //       orderId: response.razorpay_order_id,
+  //     });
+  //   } catch (error) {
+  //     Alert.alert("Error", error?.message || "Payment verification failed");
+  //   } finally {
+  //     setShowWebView(false);
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handlePayment = () => {
+    const options = {
+      description: "Test Transaction",
+      image: "https://your-logo-url.com/logo.png", // optional logo
+      currency: "INR",
+      key: "rzp_test_epPmzNozAIcJcC", // Replace with your Razorpay Key ID
+      amount: "50000", // Amount in paise (50000 paise = ₹500)
+      name: "Naticoco",
+      prefill: {
+        email: "test@example.com",
+        contact: "9876543210",
+        name: "Test User",
+      },
+      theme: { color: "#F37254" },
+    };
+
+    RazorpayCheckout.open(options)
+      .then((data) => {
+        // Handle successful payment
+        Alert.alert(
+          "Payment Success",
+          `Payment ID: ${data.razorpay_payment_id}`
+        );
+      })
+      .catch((error) => {
+        // Handle payment failure
+        Alert.alert("Payment Failed", error.description);
       });
-
-      if (!orderResponse.data || !orderResponse.data.data || !orderResponse.data.data.id) {
-        throw new Error('Invalid order response from server');
-      }
-
-      // Prepare payment data
-      const options = {
-        description: 'Payment for your order',
-        image: 'your_logo_url',
-        currency: 'INR',
-        key: 'rzp_test_epPmzNozAIcJcC',
-        amount: totalAmount * 100,
-        name: 'Nati Coco',
-        order_id: orderResponse.data.data.id,
-        prefill: {
-          email: 'user@example.com',
-          contact: '9999999999',
-          name: 'John Doe'
-        },
-        theme: { color: '#F8931F' }
-      };
-
-      setPaymentData(options);
-      setShowWebView(true);
-      setShowPaymentModal(false);
-
-    } catch (error) {
-      console.error('Payment Error:', error);
-      Alert.alert(
-        'Payment Failed',
-        error?.message || 'Unable to process payment. Please try again later.'
-      );
-    }
-  };
-
-  const handlePaymentResponse = async (response) => {
-    try {
-      if (response.error) {
-        throw new Error(response.error.description);
-      }
-
-      // Verify payment on your backend
-      await axios.post('http://192.168.29.165:3500/payment/verify', {
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature
-      });
-
-      // Handle success
-      Alert.alert('Success', 'Payment successful!');
-      clearCart();
-      navigation.navigate('OrderConfirmation', {
-        paymentMethod: 'online',
-        orderId: response.razorpay_order_id
-      });
-
-    } catch (error) {
-      Alert.alert('Error', error?.message || 'Payment verification failed');
-    } finally {
-      setShowWebView(false);
-      setIsLoading(false);
-    }
   };
 
   const handleCOD = () => {
     Alert.alert(
-      'Confirm Order',
-      'Do you want to place this order with Cash on Delivery?',
+      "Confirm Order",
+      "Do you want to place this order with Cash on Delivery?",
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Confirm',
+          text: "Confirm",
           onPress: () => {
             clearCart();
-            navigation.navigate('OrderConfirmation', {
-              paymentMethod: 'cod',
-              orderId: `COD${Date.now()}`
+            navigation.navigate("OrderConfirmation", {
+              paymentMethod: "cod",
+              orderId: `COD${Date.now()}`,
             });
           },
         },
@@ -186,17 +222,17 @@ function CartScreen({ navigation }) {
 
     return (
       <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]}>
-        <Image 
-          source={getItemImage(item.image)} 
-          style={styles.itemImage} 
+        <Image
+          source={getItemImage(item.image)}
+          style={styles.itemImage}
           resizeMode="cover"
         />
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>{item.name}</Text>
           <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
-          
+
           <View style={styles.quantityContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.quantityButton}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -207,10 +243,10 @@ function CartScreen({ navigation }) {
             >
               <Ionicons name="remove" size={20} color="#F8931F" />
             </TouchableOpacity>
-            
+
             <Text style={styles.quantityText}>{item.quantity}</Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.quantityButton}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -222,7 +258,7 @@ function CartScreen({ navigation }) {
           </View>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.removeButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -259,7 +295,7 @@ function CartScreen({ navigation }) {
   return (
     <ScreenBackground style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
@@ -271,7 +307,7 @@ function CartScreen({ navigation }) {
       <FlatList
         data={cartItems}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
@@ -288,7 +324,7 @@ function CartScreen({ navigation }) {
             onPress={() => setShowPaymentModal(true)}
           >
             <LinearGradient
-              colors={['#F8931F', '#f4a543']}
+              colors={["#F8931F", "#f4a543"]}
               style={styles.gradientButton}
             >
               <Text style={styles.checkoutText}>Proceed to Checkout</Text>
@@ -307,10 +343,10 @@ function CartScreen({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Payment Method</Text>
-            
+
             <TouchableOpacity
               style={[styles.paymentButton, styles.onlinePaymentButton]}
-              onPress={handleOnlinePayment}
+              onPress={handlePayment}
             >
               <Ionicons name="card-outline" size={24} color="#fff" />
               <Text style={styles.paymentButtonText}>Pay Online</Text>
@@ -333,20 +369,20 @@ function CartScreen({ navigation }) {
           </View>
         </View>
       </Modal>
-{showWebView && paymentData && (
-  <Modal
-    animationType="slide"
-    transparent={false}
-    visible={showWebView}
-    onRequestClose={() => {
-      setShowWebView(false);
-      setIsLoading(false);
-    }}
-  >
-    <View style={{ flex: 1 }}>
-      <WebView
-        source={{
-          html: `
+      {showWebView && paymentData && (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={showWebView}
+          onRequestClose={() => {
+            setShowWebView(false);
+            setIsLoading(false);
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <WebView
+              source={{
+                html: `
             <!DOCTYPE html>
             <html>
               <head>
@@ -394,40 +430,49 @@ function CartScreen({ navigation }) {
                 </script>
               </body>
             </html>
-          `
-        }}
-        onMessage={(event) => {
-          const response = JSON.parse(event.nativeEvent.data);
-          handlePaymentResponse(response);
-        }}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-          Alert.alert('Error', 'Something went wrong with the payment. Please try again.');
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-        onHttpError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView HTTP error: ', nativeEvent);
-          Alert.alert('Error', 'Network error. Please check your connection and try again.');
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-        style={{ flex: 1 }}
-      />
-      <TouchableOpacity
-        style={[styles.closeWebView, { position: 'absolute', top: 40, right: 20 }]}
-        onPress={() => {
-          setShowWebView(false);
-          setIsLoading(false);
-        }}
-      >
-        <Ionicons name="close" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
-  </Modal>
-)}
+          `,
+              }}
+              onMessage={(event) => {
+                const response = JSON.parse(event.nativeEvent.data);
+                handlePaymentResponse(response);
+              }}
+              onError={(syntheticEvent) => {
+                const { nativeEvent } = syntheticEvent;
+                console.warn("WebView error: ", nativeEvent);
+                Alert.alert(
+                  "Error",
+                  "Something went wrong with the payment. Please try again."
+                );
+                setShowWebView(false);
+                setIsLoading(false);
+              }}
+              onHttpError={(syntheticEvent) => {
+                const { nativeEvent } = syntheticEvent;
+                console.warn("WebView HTTP error: ", nativeEvent);
+                Alert.alert(
+                  "Error",
+                  "Network error. Please check your connection and try again."
+                );
+                setShowWebView(false);
+                setIsLoading(false);
+              }}
+              style={{ flex: 1 }}
+            />
+            <TouchableOpacity
+              style={[
+                styles.closeWebView,
+                { position: "absolute", top: 40, right: 20 },
+              ]}
+              onPress={() => {
+                setShowWebView(false);
+                setIsLoading(false);
+              }}
+            >
+              <Ionicons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
     </ScreenBackground>
   );
 }
@@ -435,45 +480,45 @@ function CartScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   closeWebView: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 20,
     padding: 8,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 16,
   },
   listContainer: {
     padding: 16,
   },
   cartItem: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -487,7 +532,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   itemDetails: {
     flex: 1,
@@ -495,29 +540,29 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
   itemPrice: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#F8931F',
+    fontWeight: "600",
+    color: "#F8931F",
     marginBottom: 8,
   },
   quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   quantityButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 8,
     borderWidth: 1,
-    borderColor: '#F8931F',
+    borderColor: "#F8931F",
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginHorizontal: 16,
   },
   removeButton: {
@@ -526,108 +571,109 @@ const styles = StyleSheet.create({
   footer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
     marginBottom: 60,
   },
   totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   totalLabel: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   totalAmount: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#F8931F',
+    fontWeight: "600",
+    color: "#F8931F",
   },
   checkoutButton: {
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 12,
   },
   gradientButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
     borderRadius: 12,
   },
   checkoutText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 8,
   },
   emptyContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyText: {
     fontSize: 18,
-    color: '#666',
+    color: "#666",
     marginTop: 16,
   },
   shopButton: {
     marginTop: 24,
-    backgroundColor: '#F8931F',
+    backgroundColor: "#F8931F",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   shopButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',},
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      justifyContent: 'flex-end',
-    },
-    modalContent: {
-      backgroundColor: '#fff',
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      padding: 20,
-      minHeight: 300,
-    },
-    modalTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      textAlign: 'center',
-      marginBottom: 20,
-    },
-    paymentButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 16,
-      borderRadius: 12,
-      marginBottom: 12,
-    },
-    onlinePaymentButton: {
-      backgroundColor: '#F8931F',
-    },
-    codButton: {
-      backgroundColor: '#4CAF50',
-    },
-    paymentButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-      marginLeft: 8,
-    },
-    cancelButton: {
-      padding: 16,
-      alignItems: 'center',
-    },
-    cancelButtonText: {
-      color: '#666',
-      fontSize: 16,
-    },
-  });
-  
-  export default CartScreen;
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: 300,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  paymentButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  onlinePaymentButton: {
+    backgroundColor: "#F8931F",
+  },
+  codButton: {
+    backgroundColor: "#4CAF50",
+  },
+  paymentButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  cancelButton: {
+    padding: 16,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#666",
+    fontSize: 16,
+  },
+});
+
+export default CartScreen;
