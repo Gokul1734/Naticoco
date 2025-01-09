@@ -8,7 +8,7 @@ function getImage(item) {
   // console.log(image);
   const [images, setImage] = useState(null);
   useEffect(() => {
-    axios.get(`http://192.168.29.165:3500/images/${img}`, {
+    axios.get(`https://nati-coco-server.onrender.com/images/${img}`, {
       responseType:'arraybuffer'
     })
       .then(response => {

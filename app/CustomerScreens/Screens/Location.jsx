@@ -1,13 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
-import { Text, ActivityIndicator } from 'react-native-paper';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import * as Location from 'expo-location';
-import { Ionicons } from '@expo/vector-icons';
-import { MotiView } from 'moti';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useState, useEffect, useRef } from "react";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  Platform,
+} from "react-native";
+import { Text, ActivityIndicator } from "react-native-paper";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
+import { MotiView } from "moti";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function LocationScreen({ navigation }) {
   const [location, setLocation] = useState(null);
@@ -16,14 +24,14 @@ export default function LocationScreen({ navigation }) {
   const mapRef = useRef(null);
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [addressDetails, setAddressDetails] = useState({
-    tag: '',
-    address: '',
-    area: '',
-    city: '',
-    pincode: '',
+    tag: "",
+    address: "",
+    area: "",
+    city: "",
+    pincode: "",
   });
   const [mapReady, setMapReady] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
 
@@ -34,8 +42,8 @@ export default function LocationScreen({ navigation }) {
   const getCurrentLocation = async () => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission denied', 'Allow location access to continue');
+      if (status !== "granted") {
+        Alert.alert("Permission denied", "Allow location access to continue");
         return;
       }
 
@@ -49,7 +57,7 @@ export default function LocationScreen({ navigation }) {
       getAddressFromCoords(location.coords.latitude, location.coords.longitude);
       setLoading(false);
     } catch (error) {
-      Alert.alert('Error', 'Could not fetch location');
+      Alert.alert("Error", "Could not fetch location");
       setLoading(false);
     }
   };
@@ -58,25 +66,25 @@ export default function LocationScreen({ navigation }) {
     try {
       const response = await Location.reverseGeocodeAsync({
         latitude,
-        longitude
+        longitude,
       });
       if (response[0]) {
         const addr = response[0];
         setAddress(addr);
-        const street = addr.street || '';
-        const name = addr.name || '';
-        const fullAddress = (street + ' ' + name).trim();
-        
+        const street = addr.street || "";
+        const name = addr.name || "";
+        const fullAddress = (street + " " + name).trim();
+
         setAddressDetails({
           ...addressDetails,
           address: fullAddress,
-          area: addr.district || addr.subregion || '',
-          city: addr.city || '',
-          pincode: addr.postalCode || '',
+          area: addr.district || addr.subregion || "",
+          city: addr.city || "",
+          pincode: addr.postalCode || "",
         });
       }
     } catch (error) {
-      console.error('Error getting address:', error);
+      console.error("Error getting address:", error);
     }
   };
 
@@ -92,54 +100,58 @@ export default function LocationScreen({ navigation }) {
 
   const saveAddress = async () => {
     if (!addressDetails.tag || !addressDetails.address) {
-      Alert.alert('Error', 'Please fill all required fields');
+      Alert.alert("Error", "Please fill all required fields");
       return;
     }
 
     try {
-      const existingAddresses = await AsyncStorage.getItem('userAddresses');
+      const existingAddresses = await AsyncStorage.getItem("userAddresses");
       let addresses = existingAddresses ? JSON.parse(existingAddresses) : [];
-      
+
       const newAddress = {
         id: new Date().getTime().toString(),
-        type: 'Custom',
+        type: "Custom",
         ...addressDetails,
         isDefault: addresses.length === 0,
         coordinates: {
           latitude: location.latitude,
           longitude: location.longitude,
-        }
+        },
       };
 
       addresses.push(newAddress);
-      await AsyncStorage.setItem('userAddresses', JSON.stringify(addresses));
+      await AsyncStorage.setItem("userAddresses", JSON.stringify(addresses));
 
       // Create mock nearest store data
       const mockNearestStore = {
-        id: '1',
-        name: 'Local Store',
+        id: "1",
+        name: "Local Store",
         address: addressDetails.address,
         coordinates: {
           latitude: location.latitude,
           longitude: location.longitude,
-        }
+        },
       };
 
       // Store the mock nearest store data
-      await AsyncStorage.setItem('nearestStore', JSON.stringify(mockNearestStore));
-      console.log('Address saved:', JSON.stringify(mockNearestStore));
+      await AsyncStorage.setItem(
+        "nearestStore",
+        JSON.stringify(mockNearestStore)
+      );
+      console.log("Address saved:", JSON.stringify(mockNearestStore));
 
-      Alert.alert('Success', 'Address saved successfully', [
+      Alert.alert("Success", "Address saved successfully", [
         {
-          text: 'OK',
-          onPress: () => navigation.navigate('MainTabs', {
-            screen: 'Menu',
-            params: { storeData: mockNearestStore }
-          })
-        }
+          text: "OK",
+          onPress: () =>
+            navigation.navigate("StoreType", {
+              screen: "Menu",
+              params: { storeData: mockNearestStore },
+            }),
+        },
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Could not save address');
+      Alert.alert("Error", "Could not save address");
     }
   };
 
@@ -167,7 +179,7 @@ export default function LocationScreen({ navigation }) {
         setSearchResults(results);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
     }
     setSearching(false);
   };
@@ -208,11 +220,11 @@ export default function LocationScreen({ navigation }) {
       <MotiView
         from={{ translateY: 100, opacity: 0 }}
         animate={{ translateY: 0, opacity: 1 }}
-        transition={{ type: 'spring', delay: 300 }}
+        transition={{ type: "spring", delay: 300 }}
         style={styles.searchContainer}
       >
         <View style={styles.headerContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
@@ -246,14 +258,22 @@ export default function LocationScreen({ navigation }) {
                       mapRef.current?.animateToRegion(newLocation);
                       getAddressFromCoords(result.latitude, result.longitude);
                       setSearchResults([]);
-                      setSearchQuery('');
+                      setSearchQuery("");
                     }}
                   >
-                    <Ionicons name="location-outline" size={20} color="#F8931F" />
+                    <Ionicons
+                      name="location-outline"
+                      size={20}
+                      color="#F8931F"
+                    />
                     <Text style={styles.resultText}>
-                      {result.address?.street || ''} {result.address?.name || ''}{'\n'}
+                      {result.address?.street || ""}{" "}
+                      {result.address?.name || ""}
+                      {"\n"}
                       <Text style={styles.subText}>
-                        {result.address?.district || result.address?.subregion || ''}
+                        {result.address?.district ||
+                          result.address?.subregion ||
+                          ""}
                       </Text>
                     </Text>
                   </TouchableOpacity>
@@ -267,7 +287,7 @@ export default function LocationScreen({ navigation }) {
       <MotiView
         from={{ translateY: 0, opacity: 0 }}
         animate={{ translateY: 100, opacity: 1 }}
-        transition={{ type: 'spring', delay: 500 }}
+        transition={{ type: "spring", delay: 500 }}
         style={styles.bottomSheet}
       >
         {!showSaveForm ? (
@@ -289,32 +309,37 @@ export default function LocationScreen({ navigation }) {
               placeholder="Address Tag (e.g., Home, Office)"
               placeholderTextColor="#666"
               value={addressDetails.tag}
-              onChangeText={(text) => setAddressDetails({ ...addressDetails, tag: text })}
+              onChangeText={(text) =>
+                setAddressDetails({ ...addressDetails, tag: text })
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="Complete Address"
               value={addressDetails.address}
-              onChangeText={(text) => setAddressDetails({ ...addressDetails, address: text })}
+              onChangeText={(text) =>
+                setAddressDetails({ ...addressDetails, address: text })
+              }
               multiline
             />
             <TextInput
               style={styles.input}
               placeholder="Area"
               value={addressDetails.area}
-              onChangeText={(text) => setAddressDetails({ ...addressDetails, area: text })}
+              onChangeText={(text) =>
+                setAddressDetails({ ...addressDetails, area: text })
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="Pincode"
               value={addressDetails.pincode}
-              onChangeText={(text) => setAddressDetails({ ...addressDetails, pincode: text })}
+              onChangeText={(text) =>
+                setAddressDetails({ ...addressDetails, pincode: text })
+              }
               keyboardType="numeric"
             />
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={saveAddress}
-            >
+            <TouchableOpacity style={styles.saveButton} onPress={saveAddress}>
               <Text style={styles.saveButtonText}>Save Address</Text>
             </TouchableOpacity>
           </View>
@@ -330,8 +355,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   map: {
     width: SCREEN_WIDTH,
@@ -339,66 +364,66 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
   },
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
     paddingHorizontal: 10,
   },
   backButton: {
     padding: 10,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     marginRight: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   searchInput: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     elevation: 3,
     height: 45,
   },
   searchResults: {
-    position: 'absolute',
+    position: "absolute",
     top: 50,
     left: 0,
     right: 0,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     elevation: 4,
     maxHeight: 200,
   },
   resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   resultText: {
     marginLeft: 10,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   subText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   bottomSheet: {
-    position: 'absolute',
-    width: '100%',
+    position: "absolute",
+    width: "100%",
     top: -100,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -407,40 +432,40 @@ const styles = StyleSheet.create({
   addressText: {
     fontSize: 16,
     marginBottom: 15,
-    color: '#333',
+    color: "#333",
   },
   confirmButton: {
-    backgroundColor: '#F8931F',
+    backgroundColor: "#F8931F",
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   formContainer: {
     gap: 10,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   saveButton: {
-    backgroundColor: '#F8931F',
+    backgroundColor: "#F8931F",
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
   saveButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

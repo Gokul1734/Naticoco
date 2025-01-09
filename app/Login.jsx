@@ -85,7 +85,7 @@ export default function LoginScreen() {
     }
     try {
       const response = await axios.post(
-        "http://192.168.29.165:3500/auth/login",
+        "https://nati-coco-server.onrender.com/auth/login",
         {
           mobileno: phoneNumber,
           password: password,
@@ -225,7 +225,7 @@ export default function LoginScreen() {
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text style={styles.loginButtonText}>CUSTOMER LOGIN</Text>
+                  <Text style={styles.loginButtonText}>LOGIN</Text>
                 )}
               </TouchableOpacity>
 
