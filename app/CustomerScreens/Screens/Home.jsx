@@ -20,6 +20,7 @@ import ProductCard from './Home/components/ProductCard';
 // Import constants and styles
 import { categories, productImages } from './Home/constants';
 import styles from './Home/styles'
+import FloatingCartHandler from '../Components/CartHandler';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -49,14 +50,16 @@ export default function HomeScreen() {
       const parsedLoginData = loginData ? JSON.parse(loginData) : null;
       const authToken = parsedLoginData?.token?.token || token;
   
-      const response = await axios.get("https://nati-coco-server.onrender.com/api/user/nearest", {
+      const response = await axios.get("http://192.168.29.165:3500/api/user/nearest", {
         params: { latitude, longitude },
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         }
       });
-  
+
+      setNearestStoreId(response.data.storeId);
+      
       // console.log('Store API Response:', response.data); // Add this for debugging
   
       if (response.data && response.data.menu) {
@@ -68,6 +71,7 @@ export default function HomeScreen() {
         // Cache the store data
         await AsyncStorage.setItem('storeMenu', JSON.stringify(response.data.menu));
         // setMenuItems(JSON.stringify(response.data.menu));
+        // console.log(response.data.menu);
       }
     } catch (error) {
       console.error('Error fetching store data:', error.response?.data || error.message);
@@ -144,12 +148,13 @@ export default function HomeScreen() {
 
   const renderProductCard = ({ item }) => {
     const cardWidth = layout.width > 600 ? layout.width * 0.4 : layout.width * 0.55;
-    const cartItem = cartItems.find(i => i._id === item._id || i.id === item.id);
-    
+    const cartItem = cartItems.find(i => i._id === item._id || i.id === item._id || item.id);
+    // console.log(item);
+    // console.log(nearestStoreId);
     return (
       <ProductCard
         item={item}
-        onPress={() => navigation.navigate('ItemDisplay',item)}
+        onPress={() => navigation.navigate('ItemDisplay',{item:item})}
         cartItem={cartItem}
         addToCart={addToCart}
         updateQuantity={updateQuantity}
@@ -182,7 +187,7 @@ export default function HomeScreen() {
             <FlatList
               data={categories}
               renderItem={renderCategoryButton}
-              keyExtractor={item => item.id}
+              keyExtractor={item => item._id || item.id}
               numColumns={getNumColumns()}
               scrollEnabled={false}
               contentContainerStyle={styles.categoryList}
@@ -211,13 +216,14 @@ export default function HomeScreen() {
                 showsHorizontalScrollIndicator={false}
                 data={newArrivals}
                 renderItem={renderProductCard}
-                keyExtractor={item => item._id || item.id}
+                keyExtractor={item => item._id || item._id || item.id}
                 contentContainerStyle={styles.horizontalList}
               />
             </View>
           )}
         </ScrollView>
       </SafeAreaView>
+      <FloatingCartHandler navigation={navigation} />
     </ScreenBackground>
   );
 }

@@ -85,9 +85,9 @@ export default function LoginScreen() {
     }
     try {
       const response = await axios.post(
-        "https://nati-coco-server.onrender.com/auth/login",
+        "http://192.168.29.165:3500/auth/login",
         {
-          mobileno: phoneNumber,
+          mobileno: `+91${phoneNumber}`,
           password: password,
         },
         {
@@ -187,8 +187,12 @@ export default function LoginScreen() {
 
             <View style={styles.inputContainer}>
               <Ionicons name="call-outline" size={20} color="#666" />
+              
+              {/* Country Code Prefix */}
+              <Text style={styles.countryCode}>+91</Text>
+
               <TextInput
-                style={styles.input}
+                style={[styles.input, { marginLeft: 5 }]}
                 placeholder="Phone Number"
                 placeholderTextColor="#666"
                 value={phoneNumber}
@@ -315,6 +319,11 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 30,
   },
+  countryCode: {
+   fontSize: 16,
+   color: "#666",
+   marginHorizontal: 10,
+ },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",

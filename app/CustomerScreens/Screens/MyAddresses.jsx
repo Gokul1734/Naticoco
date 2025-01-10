@@ -140,7 +140,7 @@ export default function MyAddresses() {
         <FlatList
           data={addresses}
           renderItem={({ item }) => <AddressCard address={item} />}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item._id || item.id}
           contentContainerStyle={styles.addressList}
           showsVerticalScrollIndicator={false}
         />

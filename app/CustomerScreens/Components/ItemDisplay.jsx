@@ -1,51 +1,57 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Platform } from 'react-native';
-import { useCart } from '../context/CartContext';
+import React from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLoadAssets } from '../../hooks/useLoadAssets';
-import LoadingScreen from './LoadingScreen';
 import { useNavigation } from '@react-navigation/native';
-import mockFoodItems from '../../../Backend/Products.json';
-import BackButton from '../../components/BackButton';
+import getImage from './GetImage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const productImages = {
-  'logoo.jpg': require('../../../assets/images/logoo.jpg'),
-  'ChickenKebab.jpg': require('../../../assets/images/ChickenKebab.jpg'),
-  'tandoori.jpg': require('../../../assets/images/tandoori.jpg'),
-  'wob.jpg': require('../../../assets/images/wob.jpeg'),
-  'thighs.jpg': require('../../../assets/images/thighs.jpeg'),
-  'ggp.jpg': require('../../../assets/images/ggp.jpg'),
-  'heat and eat.jpeg': require('../../../assets/images/heat and eat.jpeg'),
-  'classic chicken momos.jpg': require('../../../assets/images/classic chicken momos.jpg'),
-  'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
-};
-
-const getItemImage = (imageName) => {
-  return productImages[imageName] || productImages['logoo.jpg'];
-};
-
 export default function ItemDisplay({ route }) {
   const { item } = route.params;
-  const { addToCart, cartItems, updateQuantity } = useCart();
-  const cartItem = cartItems.find(i => i.id === item.id);
-  const isLoading = useLoadAssets(productImages);
+  console.log(item);
   const navigation = useNavigation();
+  const [cartItems, setCartItems] = React.useState([]);
+  // const item = {
+  //   id: 1,
+  //   name: "Chicken Liver",
+  //   price: 100,
+  //   image: require('../../../assets/images/ChickenLiver.jpg'),
+  //   quantity: 1,
+  //   description: "Chicken Liver is a popular dish in India. It is made with chicken, spices, and vegetables. It is a very tasty dish and is loved by many people.",
+  //   category: "Chicken",
+  //   chickenType: "Meat"
+  // }
+  const addToCart = (product) => {
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(i => i.id === product.id);
+      if (existingItem) {
+        return prevItems.map(i =>
+          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      }
+      return [...prevItems, { ...product, quantity: 1 }];
+    });
+  };
 
-  // Get related products from same category
-  const relatedProducts = mockFoodItems
-    .filter(product => 
-      product.category === item.category && 
-      product.id !== item.id
-    )
-    .slice(0, 4);
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
+  // Mock related products - replace with your data source
+  const relatedProducts = [
+    { id: 2, name: "Chicken Breast", price: 299, image: require('../../../assets/images/ChickenBreast.jpg') },
+    { id: 3, name: "Chicken Curry Cut", price: 399, image: require('../../../assets/images/ChickenCurryCut.png') },
+    { id: 4, name: "Chicken Wings", price: 499, image: require('../../../assets/images/ChickenWings.jpg') }
+  ];
 
   return (
     <View style={styles.mainContainer}>
+      {/* Back Button */}
       <View style={styles.backButtonContainer}>
         <TouchableOpacity 
           style={styles.backButtonCircle}
@@ -56,84 +62,87 @@ export default function ItemDisplay({ route }) {
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Product Image */}
         <View style={styles.imageContainer}>
           <Image 
-            source={getItemImage(item.image)} 
+            source={{ uri: getImage(item.image) }}
             style={styles.image}
             resizeMode="cover"
           />
-          {item.bestSeller && (
+          {item.BestSeller && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>Best Seller</Text>
             </View>
           )}
         </View>
 
+        {/* Product Details */}
         <View style={styles.contentContainer}>
           <View style={styles.header}>
-            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.name}>{item.itemName}</Text>
             <Text style={styles.price}>₹{item.price}</Text>
           </View>
 
+          {/* Product Info */}
           <View style={styles.detailsContainer}>
             <View style={styles.detailItem}>
               <Ionicons name="cube-outline" size={20} color="#666" />
-              <Text style={styles.detailText}>{item.quantity}</Text>
+              <Text style={styles.detailText}>20</Text>
             </View>
             <View style={styles.detailItem}>
               <Ionicons name="pricetag-outline" size={20} color="#666" />
-              <Text style={styles.detailText}>{item.category}</Text>
+              <Text style={styles.detailText}>{item.Category}</Text>
             </View>
             {item.chickenType && (
               <View style={styles.detailItem}>
                 <Ionicons name="information-circle-outline" size={20} color="#666" />
-                <Text style={styles.detailText}>{item.chickenType} Type</Text>
+                <Text style={styles.detailText}>{item.subCategory} Type</Text>
               </View>
             )}
           </View>
 
           <Text style={styles.description}>{item.description}</Text>
 
-          {relatedProducts.length > 0 ? (
-            <View style={styles.relatedContainer}>
-              <Text style={styles.relatedTitle}>You might also like</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.relatedScroll}
-              >
-                {relatedProducts.map((product) => (
-                  <TouchableOpacity 
-                    key={product.id}
-                    style={styles.relatedCard}
-                    onPress={() => navigation.push('ItemDisplay', { item: product })}
-                  >
-                    <Image 
-                      source={getItemImage(product.image)}
-                      style={styles.relatedImage}
-                      resizeMode="cover"
-                    />
-                    <Text style={styles.relatedName}>{product.name}</Text>
-                    <Text style={styles.relatedPrice}>₹{product.price}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          ) : (
-            <View style={{ height: 100 }} />
-          )}
+          {/* Related Products */}
+          <View style={styles.relatedContainer}>
+            <Text style={styles.relatedTitle}>You might also like</Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.relatedScroll}
+            >
+              {relatedProducts.map((product) => (
+                <TouchableOpacity 
+                  key={product.id}
+                  style={styles.relatedCard}
+                  onPress={() => navigation.push('ItemDisplay', { item: product })}
+                >
+                  <Image 
+                    source={product.image}
+                    style={styles.relatedImage}
+                    resizeMode="cover"
+                  />
+                  <Text style={styles.relatedName}>{product.name}</Text>
+                  <Text style={styles.relatedPrice}>₹{product.price}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
       </ScrollView>
 
+      {/* Add to Cart Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => addToCart(item)}
         >
           <Text style={styles.addButtonText}>
-            {cartItem?.quantity ? (
+            {cartItems.find(i => i.id === item._id || item.id)?.quantity ? (
               <View style={styles.quantityContainer}>
-                <Text style={styles.quantityText}>{cartItem.quantity} in cart</Text>
+                <Text style={styles.quantityText}>
+                  {cartItems.find(i => i.id === item._id || item.id).quantity} in cart
+                </Text>
                 <Ionicons name="add-circle" size={24} color="white" />
               </View>
             ) : 'Add to Cart'}
@@ -161,12 +170,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 1,
   },
   badge: {
     position: 'absolute',
@@ -257,8 +260,8 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   buttonContainer: {
-    position: 'fixed',
-    bottom: 70,
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 64 : 24,
     left: 0,
     right: 0,
     backgroundColor: 'white',
@@ -310,5 +313,3 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
-
-

@@ -59,7 +59,7 @@ export default function TrackScreen() {
 
   
   const deliveryInfo = {
-    driverName: "Partner Name",
+    driverName: "Gokul",
     phoneNumber: "+1234567890",
     estimatedTime: "25 mins",
     orderStatus: "On the way"
@@ -210,7 +210,7 @@ export default function TrackScreen() {
                     <FlatList 
                      style={{ flexWrap: 'wrap' }}
                      data={cartItems}
-                     keyExtractor={(item, index) => item.id || index.toString()}
+                     keyExtractor={(item, index) => item._id || item.id || index.toString()}
                      renderItem={({ item }) => (
                        <Text style={styles.detailValueItem}>
                          {item.name} x {item.quantity}

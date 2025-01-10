@@ -10,82 +10,86 @@ import {
 import { useCart } from "../context/CartContext";
 import { Ionicons } from "@expo/vector-icons";
 import { SCREEN_WIDTH } from "../Screens/Home/constants";
+import getImage from "./GetImage";
+import { AnimatePresence, MotiView } from "moti";
 // import {updateQuantity}  from '../context/CartContext';
 
 // Add image mapping
-const productImages = {
-  "logoo.jpg": require("../../../assets/images/logoo.jpg"),
-  "ChickenKebab.jpg": require("../../../assets/images/ChickenKebab.jpg"),
-  "tandoori.jpg": require("../../../assets/images/tandoori.jpg"),
-  "wob.jpg": require("../../../assets/images/wob.jpeg"),
-  "thighs.jpg": require("../../../assets/images/thighs.jpeg"),
-  "ggp.jpg": require("../../../assets/images/ggp.jpg"),
-  "heat and eat.jpeg": require("../../../assets/images/heat and eat.jpeg"),
-  "classic chicken momos.jpg": require("../../../assets/images/classic chicken momos.jpg"),
-  "natiChicken.jpg": require("../../../assets/images/natiChicken.jpg"),
-};
+// const productImages = {
+//   "logoo.jpg": require("../../../assets/images/logoo.jpg"),
+//   "ChickenKebab.jpg": require("../../../assets/images/ChickenKebab.jpg"),
+//   "tandoori.jpg": require("../../../assets/images/tandoori.jpg"),
+//   "wob.jpg": require("../../../assets/images/wob.jpeg"),
+//   "thighs.jpg": require("../../../assets/images/thighs.jpeg"),
+//   "ggp.jpg": require("../../../assets/images/ggp.jpg"),
+//   "heat and eat.jpeg": require("../../../assets/images/heat and eat.jpeg"),
+//   "classic chicken momos.jpg": require("../../../assets/images/classic chicken momos.jpg"),
+//   "natiChicken.jpg": require("../../../assets/images/natiChicken.jpg"),
+// };
 
-const getItemImage = (imageName) => {
-  return productImages[imageName] || productImages["logoo.jpg"];
-};
+// const getItemImage = (imageName) => {
+//   return productImages[imageName] || productImages["logoo.jpg"];
+// };
 
 export default function FoodItem({ item, onPress }) {
-  const { addToCart, cartItems, updateQuantity } = useCart();
-  const cartItem = cartItems.find((i) => i.id === item.id);
-
+  // console.log(item);
+  const { addToCart, cartItems, updateQuantity,handleQuantityChange } = useCart();
+  const cartItem = cartItems.find((i) => i.id === item._id || item.id);
+  // console.log(cartItem);
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image
-        source={getItemImage(item.image)}
+        source={{uri:getImage(item.image)}}
         style={styles.image}
         resizeMode="cover"
       />
       <View style={styles.info}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.itemName}</Text>
         <Text style={styles.quantity}>{item.quantity}</Text>
         <Text style={styles.description} numberOfLines={2}>
           {item.description}
         </Text>
         <View style={styles.priceContainer}>
           <Text style={styles.price}>Rs.{item.price}/-</Text>
-          <View style={styles.cartActions}>
-            <TouchableOpacity
-              style={
-                cartItem?.quantity
-                  ? {
-                      backgroundColor: "#89C73A",
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 15,
-                    }
-                  : styles.addButton
-              }
-              onPress={() => addToCart(item)}
-            >
-              <Text style={styles.addButtonText}>
+          <AnimatePresence>
                 {cartItem?.quantity ? (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 5,
-                    }}
+                  <MotiView
+                    from={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    style={styles.quantityContainer}
                   >
-                    <Text>{cartItem.quantity}</Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        updateQuantity(cartItem.id, cartItem.quantity + 1)
-                      }
+                    <TouchableOpacity 
+                      onPress={() => handleQuantityChange(cartItem.quantity - 1)}
+                      style={styles.quantityButton}
                     >
-                      <Ionicons name="add-circle" size={24} color="white" />
+                      <Ionicons name="remove" size={20} color="white" />
                     </TouchableOpacity>
-                  </View>
+
+                    <Text style={styles.quantityText}>{cartItem.quantity}</Text>
+
+                    <TouchableOpacity 
+                      onPress={() => handleQuantityChange(cartItem.quantity + 1)}
+                      style={styles.quantityButton}
+                    >
+                      <Ionicons name="add" size={20} color="white" />
+                    </TouchableOpacity>
+                  </MotiView>
                 ) : (
-                  "Add"
+                  <MotiView
+                    from={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                  >
+                    <TouchableOpacity 
+                      style={styles.addButton}
+                      onPress={() => addToCart(item)}
+                    >
+                      <Text style={styles.addButtonText}>ADD</Text>
+                    </TouchableOpacity>
+                  </MotiView>
                 )}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              </AnimatePresence>
         </View>
       </View>
     </TouchableOpacity>
@@ -157,13 +161,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
   },
-  cartActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  quantityText: {
-    fontSize: 14,
-    color: "#666",
+  quantityContainer: {
+   flexDirection: 'row',
+   alignItems: 'center',
+ },
+ quantityButton: {
+   backgroundColor: '#fff',
+   borderRadius: 8,
+   padding: 8,
+   borderWidth: 1,
+   borderColor: '#F8931F',
+ },
+ quantityText: {
+   fontSize: 16,
+   fontWeight: '500',
+   marginHorizontal: 16,
+ },
+ removeButton: {
+    padding: 8,
   },
 });

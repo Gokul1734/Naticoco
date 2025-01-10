@@ -20,6 +20,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLoadAssets } from "../../hooks/useLoadAssets";
 import LoadingScreen from "../Components/LoadingScreen";
 import ScreenBackground from "../Components/ScreenBackground";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import FloatingCartHandler from "../Components/CartHandler";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -58,15 +60,15 @@ const carouselData = [
   // Add more banner items as needed
 ];
 
-export default function SearchScreen({ navigation }) {
+export default  function  SearchScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState(mockFoodItems);
   const isLoadingAssets = useLoadAssets(productImages);
-
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+  const [storeMenu, setStoreMenu] = useState([]);
+  const [results, setResults] = useState(storeMenu);
 
   const [activeSlide, setActiveSlide] = useState(0);
   const flatListRef = useRef(null);
@@ -113,15 +115,24 @@ export default function SearchScreen({ navigation }) {
     ]).start();
   }, []);
 
+  useEffect(() => {
+    const fetchStoreMenu = async () => {
+      const menu = await AsyncStorage.getItem("storeMenu");
+      setStoreMenu(JSON.parse(menu));
+      setResults(JSON.parse(menu));
+    };
+    fetchStoreMenu();
+  }, []);
+
   const handleSearch = (query) => {
     setSearchQuery(query);
     setIsLoading(true);
 
     // Simulate API call
     setTimeout(() => {
-      const filtered = mockFoodItems.filter(
+      const filtered = storeMenu.filter(
         (item) =>
-          item.name.toLowerCase().includes(query.toLowerCase()) ||
+          item.itemName.toLowerCase().includes(query.toLowerCase()) ||
           item.category.toLowerCase().includes(query.toLowerCase())
       );
       setResults(filtered);
@@ -139,6 +150,15 @@ export default function SearchScreen({ navigation }) {
     </View>
   );
 
+  const renderCard = ({ item }) => {
+    return (
+      <FoodItem
+        item={item}
+        onPress={() => navigation.navigate("ItemDisplay", {item:item})}
+      />
+    );
+  };
+
   if (isLoadingAssets) {
     return <LoadingScreen />;
   }
@@ -150,6 +170,7 @@ export default function SearchScreen({ navigation }) {
         <FlatList
           ref={flatListRef}
           data={carouselData}
+          key={carouselData.id}
           renderItem={renderCarouselItem}
           horizontal
           pagingEnabled
@@ -161,7 +182,7 @@ export default function SearchScreen({ navigation }) {
             );
             setActiveSlide(slideIndex);
           }}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id || item.id}
         />
         {/* Pagination dots */}
         <View style={styles.paginationContainer}>
@@ -222,17 +243,13 @@ export default function SearchScreen({ navigation }) {
             flex: 1,
             opacity: fadeAnim,
             transform: [{ translateX: slideAnim }],
+            marginBottom: 150,
           }}
         >
           <FlatList
             data={results}
-            renderItem={({ item, index }) => (
-              <FoodItem
-                item={item}
-                onPress={() => navigation.navigate("ItemDisplay", { item })}
-              />
-            )}
-            keyExtractor={(item) => item.id}
+            renderItem={renderCard}
+            keyExtractor={(item) => item._id || item.id}
             contentContainerStyle={styles.listContainer}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
@@ -246,6 +263,7 @@ export default function SearchScreen({ navigation }) {
           />
         </Animated.View>
       )}
+      <FloatingCartHandler navigation={navigation} />
     </ScreenBackground>
   );
 }
@@ -253,7 +271,7 @@ export default function SearchScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom: 60,
+    marginBottom: 100,
     padding: 0,
     margin: 0,
   },
@@ -263,7 +281,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 10,
     backgroundColor: "white",
     margin: 16,
     borderRadius: 12,
@@ -287,7 +305,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "white",
     borderRadius: 8,
     paddingHorizontal: 12,
   },
@@ -302,6 +320,8 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: 16,
+    // marginBottom: 120,
+    paddingBottom: 80,
   },
   loader: {
     marginTop: 20,

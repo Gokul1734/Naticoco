@@ -31,8 +31,8 @@ const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
               size={20}
               onPress={() => {
                 if (isEditing) {
-                  onUpdateStock(item.id, parseInt(stockValue));
-                  onUpdatePrice(item.id, parseFloat(priceValue));
+                  onUpdateStock(item._id || item.id, parseInt(stockValue));
+                  onUpdatePrice(item._id || item.id, parseFloat(priceValue));
                 }
                 setIsEditing(!isEditing);
               }}
@@ -109,7 +109,7 @@ export default function StockManagement({ navigation }) {
   const handleUpdateStock = (itemId, newStock) => {
     setStockItems(items =>
       items.map(item =>
-        item.id === itemId ? { ...item, stock: newStock } : item
+        item._id || item.id === itemId ? { ...item, stock: newStock } : item
       )
     );
   };
@@ -117,7 +117,7 @@ export default function StockManagement({ navigation }) {
   const handleUpdatePrice = (itemId, newPrice) => {
     setStockItems(items =>
       items.map(item =>
-        item.id === itemId ? { ...item, price: newPrice } : item
+        item._id || item.id === itemId ? { ...item, price: newPrice } : item
       )
     );
   };
@@ -175,7 +175,7 @@ export default function StockManagement({ navigation }) {
         });
       }
 
-      const response = await axios.post('https://nati-coco-server.onrender.com/citystore/Addmenu', formData, {
+      const response = await axios.post('http://192.168.29.165:3500/citystore/Addmenu', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -231,7 +231,7 @@ export default function StockManagement({ navigation }) {
       <ScrollView style={styles.stockList}>
         {filteredItems.map((item) => (
           <StockItem
-            key={item.id}
+            key={item._id || item.id}
             item={item}
             onUpdateStock={handleUpdateStock}
             onUpdatePrice={handleUpdatePrice}

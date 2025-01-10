@@ -30,7 +30,7 @@ const OrderCard = ({ order }) => {
       <View style={styles.itemsList}>
         {order.items && order.items.map((item, index) => (
           <View key={index} style={styles.itemRow}>
-            <Text style={styles.itemName}>{typeof item === 'object' ? item.name : item}</Text>
+            <Text style={styles.itemName}>{typeof item === 'object' ? item.itemName : item}</Text>
             {typeof item === 'object' && (
               <Text style={styles.itemPrice}>₹{item.price}</Text>
             )}
@@ -44,6 +44,7 @@ const OrderCard = ({ order }) => {
       </View>
 
       <View style={styles.actionRow}>
+      {(order.status == 'Pending') && (
         <TouchableOpacity 
           style={styles.actionButton}
           onPress={() => navigation.navigate('Track', { orderId: order._id })}
@@ -51,11 +52,13 @@ const OrderCard = ({ order }) => {
           <Ionicons name="location-outline" size={20} color="#F8931F" />
           <Text style={styles.actionButtonText}>Track Order</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Ionicons name="repeat-outline" size={20} color="#F8931F" />
-          <Text style={styles.actionButtonText}>Reorder</Text>
-        </TouchableOpacity>
+      )}
+        {(order.status === 'Success') && (
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="repeat-outline" size={20} color="#F8931F" />
+            <Text style={styles.actionButtonText}>Reorder</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -71,9 +74,10 @@ export default function MyOrders() {
         const credentials = await AsyncStorage.getItem('logincre');
         const parsedCredentials = credentials ? JSON.parse(credentials) : null;
         const userId = parsedCredentials?.token?.userId;
-        console.log(userId);
-        const response = await axios.get(`https://nati-coco-server.onrender.com/api/orders/myorder/${userId}`);
+        // console.log(userId);
+        const response = await axios.get(`http://192.168.29.165:3500/api/orders/myorder/${userId}`);
         setOrders(response.data.orders);
+        // console.log(response.data.orders);
       } catch (error) {
         console.error('Error fetching orders:', error);
       }
@@ -81,7 +85,7 @@ export default function MyOrders() {
 
     fetchOrders();
   }, []);
- console.log(orders.items);
+  // console.log(orders);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -115,6 +119,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    marginTop: -30,
   },
   headerTitle: {
     fontSize: 18,

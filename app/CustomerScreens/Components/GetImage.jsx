@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { Buffer } from 'buffer';
 
-function getImage(item) {
- const imag = item.image
+function getImage(imag) {
  const img = String(imag).replace('/ImageStore/', '');
-  // console.log(image);
+  // console.log(imag);
   const [images, setImage] = useState(null);
   useEffect(() => {
-    axios.get(`https://nati-coco-server.onrender.com/images/${img}`, {
+    axios.get(`http://192.168.29.165:3500/images/${img}`, {
       responseType:'arraybuffer'
     })
       .then(response => {

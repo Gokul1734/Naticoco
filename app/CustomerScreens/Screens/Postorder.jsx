@@ -1,250 +1,325 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
-  FlatList,
   Image,
-  Alert,
-} from "react-native";
-import Modal from "react-native-modal";
-import { LinearGradient } from "expo-linear-gradient";
-import Animated, { SlideInRight, SlideOutLeft } from "react-native-reanimated";
+  StyleSheet,
+  ScrollView,
+  Platform,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const Postorder = () => {
-  const [selectedDate, setSelectedDate] = useState("29, Monday, Dec");
-  const [selectedTime, setSelectedTime] = useState("12:45 pm, afternoon");
-  const [quantity, setQuantity] = useState("More Than 2KG");
-  const [category, setCategory] = useState("Select Category");
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
+export default function PostOrderScreen({ navigation }) {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState('More Than 2KG');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
-  const items = [
-    {
-      id: 1,
-      name: "Chicken Malai Tikka (Marinated)",
-      price: 149,
-      weight: "500 grams",
-      image: "https://via.placeholder.com/150", // Replace with actual image URL
-      bestseller: false,
-    },
-    {
-      id: 2,
-      name: "Chicken Tandoori (Marinated)",
-      price: 199,
-      weight: "500 grams",
-      image: "https://via.placeholder.com/150", // Replace with actual image URL
-      bestseller: true,
-    },
-  ];
+  const formatDate = (date) => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const day = days[date.getDay()];
+    const dateNum = date.getDate();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    return `${dateNum}, ${day}, ${month}`;
+  };
 
-  const handleAddToCart = (item) => {
-    Alert.alert("Item Added", `${item.name} has been added to your cart.`);
+  const formatTime = (time) => {
+    let hours = time.getHours();
+    const minutes = time.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const timeString = `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    return `${timeString}, afternoon`;
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+    }
+  };
+
+  const onTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setSelectedTime(selectedTime);
+    }
   };
 
   return (
-    <LinearGradient colors={["#FFEEE0", "#FFFFFF"]} style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
-
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Text style={styles.backButton}>{"<"}</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#F8931F" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Post Order</Text>
       </View>
 
-      {/* Information */}
-      <Text style={styles.infoText}>
-        “Please order before 2 days for{" "}
-        <Text style={styles.bold}>Bulk Orders</Text>”
-      </Text>
+      <ScrollView style={styles.scrollView}>
+        {/* Bulk Order Notice */}
+        <View style={styles.noticeContainer}>
+          <Text style={styles.noticeText}>
+            "Please order before 2 days for <Text style={styles.orangeText}>Bulk Orders</Text>"
+          </Text>
+        </View>
 
-      {/* Selectors */}
-      <View style={styles.selectors}>
-        <TouchableOpacity style={styles.selector}>
-          <Text style={styles.selectorText}>{selectedDate}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.selector}>
-          <Text style={styles.selectorText}>{quantity}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.selectors}>
-        <TouchableOpacity style={styles.selector}>
-          <Text style={styles.selectorText}>{selectedTime}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selector}
-          onPress={() => setShowCategoryModal(true)}
-        >
-          <Text style={styles.selectorText}>{category}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Items List */}
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Animated.View
-            entering={SlideInRight.duration(500)}
-            exiting={SlideOutLeft.duration(500)}
-            style={styles.itemContainer}
-          >
-            <Image source={{ uri: item.image }} style={styles.itemImage} />
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemWeight}>{item.weight}</Text>
-              <Text style={styles.itemPrice}>Rs. {item.price}/-</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => handleAddToCart(item)}
-            >
-              <Text style={styles.addButtonText}>ADD</Text>
-            </TouchableOpacity>
-            {item.bestseller && (
-              <Text style={styles.bestsellerTag}>BESTSELLER</Text>
-            )}
-          </Animated.View>
-        )}
-      />
-
-      {/* Category Modal */}
-      <Modal
-        isVisible={showCategoryModal}
-        onBackdropPress={() => setShowCategoryModal(false)}
-      >
-        <View style={styles.modalContent}>
+        {/* Date & Quantity Selection */}
+        <View style={styles.selectionRow}>
           <TouchableOpacity
-            onPress={() => {
-              setCategory("Category 1");
-              setShowCategoryModal(false);
-            }}
+            style={styles.dateButton}
+            onPress={() => setShowDatePicker(true)}
           >
-            <Text style={styles.modalItem}>Category 1</Text>
+            <Text style={styles.buttonText}>{formatDate(selectedDate)}</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            onPress={() => {
-              setCategory("Category 2");
-              setShowCategoryModal(false);
-            }}
+            style={[styles.dateButton, { flex: 0.8 }]}
+            onPress={() => setSelectedQuantity(selectedQuantity === 'More Than 2KG' ? 'Less Than 2KG' : 'More Than 2KG')}
           >
-            <Text style={styles.modalItem}>Category 2</Text>
+            <Text style={styles.buttonText}>{selectedQuantity}</Text>
           </TouchableOpacity>
         </View>
-      </Modal>
-    </LinearGradient>
+
+        {/* Time Selection */}
+        <TouchableOpacity
+          style={[styles.timeButton]}
+          onPress={() => setShowTimePicker(true)}
+        >
+          <Text style={styles.buttonText}>{formatTime(selectedTime)}</Text>
+        </TouchableOpacity>
+
+        {/* Category Selection */}
+        <TouchableOpacity style={styles.categoryButton}>
+          <Text style={[styles.buttonText, { color: '#666' }]}>Select Category</Text>
+        </TouchableOpacity>
+
+        {/* Product Cards */}
+        <View style={styles.productContainer}>
+          {/* Chicken Malai Tikka Card */}
+          <View style={styles.productCard}>
+            <Image
+              source={require('../../../assets/images/Chicken65.jpg')} // Make sure to add your image
+              style={styles.productImage}
+            />
+            <View style={styles.productInfo}>
+              <Text style={styles.productName}>Chicken Malai Tikka{'\n'}(Marinated)</Text>
+              <View style={styles.productDetails}>
+                <View>
+                  <Text style={styles.price}>Rs. 149/-</Text>
+                  <Text style={styles.quantity}>2-3 pieces</Text>
+                </View>
+                <TouchableOpacity style={styles.addButton}>
+                  <LinearGradient
+                    colors={['#F8931F', '#f4a543']}
+                    style={styles.addButtonGradient}
+                  >
+                    <Text style={styles.addButtonText}>ADD</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.weightBadge}>
+                <Text style={styles.weightText}>500 grams</Text>
+              </View>
+              <View style={styles.bestsellerBadge}>
+                <Text style={styles.bestsellerText}>BESTSELLER</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+          minimumDate={new Date()}
+        />
+      )}
+
+      {showTimePicker && (
+        <DateTimePicker
+          value={selectedTime}
+          mode="time"
+          display="default"
+          onChange={onTimeChange}
+        />
+      )}
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#fff',
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   backButton: {
-    fontSize: 18,
-    color: "#FF8C00",
+    padding: 8,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginLeft: 10,
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 16,
   },
-  infoText: {
-    fontSize: 16,
-    color: "#666",
-    marginVertical: 10,
-  },
-  bold: {
-    fontWeight: "bold",
-    color: "#FF8C00",
-  },
-  selectors: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 10,
-  },
-  selector: {
-    backgroundColor: "#FF8C00",
-    padding: 10,
-    borderRadius: 8,
+  scrollView: {
     flex: 1,
-    marginHorizontal: 5,
   },
-  selectorText: {
-    color: "#fff",
-    textAlign: "center",
+  noticeContainer: {
+    padding: 16,
   },
-  itemContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9F9F9",
-    padding: 10,
-    borderRadius: 8,
-    marginVertical: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+  noticeText: {
+    fontSize: 14,
+    color: '#333',
   },
-  itemImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
+  orangeText: {
+    color: '#F8931F',
   },
-  itemDetails: {
+  selectionRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  dateButton: {
     flex: 1,
-    marginHorizontal: 10,
+    backgroundColor: '#F8931F',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  itemName: {
+  timeButton: {
+    backgroundColor: '#F8931F',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  categoryButton: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  productContainer: {
+    padding: 16,
+  },
+  productCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  productImage: {
+    width: '100%',
+    height: 200,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  productInfo: {
+    padding: 16,
+  },
+  productName: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: '600',
+    marginBottom: 8,
   },
-  itemWeight: {
-    fontSize: 14,
-    color: "#888",
+  productDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  itemPrice: {
-    fontSize: 14,
-    color: "#FF8C00",
+  price: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#F8931F',
+  },
+  quantity: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
   },
   addButton: {
-    backgroundColor: "#FF8C00",
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 8,
+    overflow: 'hidden',
+    borderRadius: 6,
+  },
+  addButtonGradient: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
   },
   addButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
-  bestsellerTag: {
-    position: "absolute",
-    top: -5,
-    right: -5,
-    backgroundColor: "#FF8C00",
-    color: "#fff",
-    padding: 5,
-    borderRadius: 5,
-    fontSize: 10,
+  weightBadge: {
+    position: 'absolute',
+    top: -25,
+    right: 16,
+    backgroundColor: '#fff',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
+  weightText: {
+    fontSize: 12,
+    color: '#666',
   },
-  modalItem: {
-    fontSize: 16,
-    marginVertical: 10,
-    color: "#FF8C00",
-    textAlign: "center",
+  bestsellerBadge: {
+    position: 'absolute',
+    top: -180,
+    left: 0,
+    backgroundColor: '#F8931F',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderTopLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  bestsellerText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
-
-export default Postorder;

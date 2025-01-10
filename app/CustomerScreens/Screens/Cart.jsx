@@ -20,6 +20,10 @@ import * as Haptics from 'expo-haptics';
 import LoadingScreen from '../Components/LoadingScreen';
 import ScreenBackground from '../Components/ScreenBackground';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import getImage from '../Components/GetImage';
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -41,9 +45,11 @@ const productImages = {
   'natiChicken.jpg': require('../../../assets/images/natiChicken.jpg'),
 };
 
-const getItemImage = (imageName) => {
-  return productImages[imageName] || productImages['logoo.jpg'];
-};
+// const getItemImage = (imageName) => {
+//   return productImages[imageName] || productImages['logoo.jpg'];
+// };
+
+
 
 function CartScreen({ navigation }) {
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -53,7 +59,10 @@ function CartScreen({ navigation }) {
   const [paymentData, setPaymentData] = useState(null);
   const slideAnim = useRef(cartItems.map(() => new Animated.Value(0))).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [userId, setUserId] = useState(null);
+  const [orderId, setOrderId] = useState(null);
 
+  
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -69,6 +78,12 @@ function CartScreen({ navigation }) {
         setIsLoading(false);
       }
     };
+
+    const user = async () => {
+     const user = await AsyncStorage.getItem('logincre');
+     setUserId(user);
+    }
+    user();
 
     loadCartData();
   }, []);
@@ -88,7 +103,7 @@ function CartScreen({ navigation }) {
   const handleOnlinePayment = async () => {
     try {
       // Create order on your backend
-      const orderResponse = await axios.post('https://nati-coco-server.onrender.com/payment/orders', {
+      const orderResponse = await axios.post('http://192.168.29.165:3500/payment/orders', {
         amount: totalAmount * 100,
       });
 
@@ -133,7 +148,7 @@ function CartScreen({ navigation }) {
       }
 
       // Verify payment on your backend
-      await axios.post('https://nati-coco-server.onrender.com/payment/verify', {
+      await axios.post('http://192.168.29.165:3500/payment/verify', {
         razorpay_order_id: response.razorpay_order_id,
         razorpay_payment_id: response.razorpay_payment_id,
         razorpay_signature: response.razorpay_signature
@@ -141,8 +156,8 @@ function CartScreen({ navigation }) {
 
       // Handle success
       Alert.alert('Success', 'Payment successful!');
-      clearCart();
-      navigation.navigate('SuccessSplash', {
+      // clearCart();
+      navigation.navigate('Success', {
         paymentMethod: 'online',
         orderId: response.razorpay_order_id
       });
@@ -168,7 +183,7 @@ function CartScreen({ navigation }) {
           text: 'Confirm',
           onPress: () => {
             clearCart();
-            navigation.navigate('OrderConfirmation', {
+            navigation.navigate('Success', {
               paymentMethod: 'cod',
               orderId: `COD${Date.now()}`
             });
@@ -178,63 +193,72 @@ function CartScreen({ navigation }) {
     );
   };
 
-  const renderItem = ({ item, index }) => {
-    const translateX = slideAnim[index].interpolate({
-      inputRange: [0, 1],
-      outputRange: [-SCREEN_WIDTH, 0],
+  const placeOrder = async () => {
+    await axios.post('http://192.168.29.165:3500/payment/placeorder', {
+      userId: userId,
+      orderId: orderId,
+      totalAmount: totalAmount,
+      paymentMethod: paymentMethod,
     });
-
-    return (
-      <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]}>
-        <Image 
-          source={getItemImage(item.image)} 
-          style={styles.itemImage} 
-          resizeMode="cover"
-        />
-        <View style={styles.itemDetails}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
-          
-          <View style={styles.quantityContainer}>
-            <TouchableOpacity 
-              style={styles.quantityButton}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                if (item.quantity > 1) {
-                  updateQuantity(item.id, item.quantity - 1);
-                }
-              }}
-            >
-              <Ionicons name="remove" size={20} color="#F8931F" />
-            </TouchableOpacity>
-            
-            <Text style={styles.quantityText}>{item.quantity}</Text>
-            
-            <TouchableOpacity 
-              style={styles.quantityButton}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                updateQuantity(item.id, item.quantity + 1);
-              }}
-            >
-              <Ionicons name="add" size={20} color="#F8931F" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <TouchableOpacity 
-          style={styles.removeButton}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            removeFromCart(item.id);
-          }}
-        >
-          <Ionicons name="trash-outline" size={24} color="#FF4444" />
-        </TouchableOpacity>
-      </Animated.View>
-    );
   };
 
+  const renderItem = ({ item, index }) => {
+   const translateX = slideAnim[index].interpolate({
+     inputRange: [0, 1],
+     outputRange: [-SCREEN_WIDTH, 0],
+   });
+   console.log(item.image);
+   return (
+     <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]}>
+       <Image 
+         source={require('../../../assets/images/Chicken65.jpg')} 
+         style={styles.itemImage} 
+         resizeMode="cover"
+       />
+       <View style={styles.itemDetails}>
+         <Text style={styles.itemName}>{item.itemName}</Text>
+         <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
+         
+         <View style={styles.quantityContainer}>
+           <TouchableOpacity 
+             style={styles.quantityButton}
+             onPress={() => {
+               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+               if (item.quantity > 1) {
+                 updateQuantity(item._id || item.id, item.quantity - 1);
+               }
+             }}
+           >
+             <Ionicons name="remove" size={20} color="#F8931F" />
+           </TouchableOpacity>
+           
+           <Text style={styles.quantityText}>{item.quantity}</Text>
+           
+           <TouchableOpacity 
+             style={styles.quantityButton}
+             onPress={() => {
+               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+               updateQuantity(item._id || item.id, item.quantity + 1);
+             }}
+           >
+             <Ionicons name="add" size={20} color="#F8931F" />
+           </TouchableOpacity>
+         </View>
+       </View>
+  
+       <TouchableOpacity 
+         style={styles.removeButton}
+         onPress={() => {
+           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+           removeFromCart(item._id || item.id);
+         }}
+       >
+         <Ionicons name="trash-outline" size={24} color="#FF4444" />
+       </TouchableOpacity>
+     </Animated.View>
+   );
+  };
+  
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -258,7 +282,8 @@ function CartScreen({ navigation }) {
 
   return (
     <ScreenBackground style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header,{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}]}>
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -266,12 +291,16 @@ function CartScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Cart</Text>
+        </View>
+         <TouchableOpacity onPress={() => clearCart()}>
+          <Text style={{color: 'white', fontSize: 16, fontWeight: '600',backgroundColor: 'red', padding: 10, borderRadius: 10}}>Clear Cart</Text>
+         </TouchableOpacity>
       </View>
 
       <FlatList
         data={cartItems}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id || item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
@@ -352,7 +381,7 @@ function CartScreen({ navigation }) {
               <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
-                  body { margin: 0; padding: 16px; font-family: Arial, sans-serif; }
+                  body { margin: 10; padding: 20px; font-family: Arial, sans-serif; }
                   .loading { text-align: center; margin-top: 20px; }
                 </style>
               </head>
@@ -738,7 +767,7 @@ const styles = StyleSheet.create({
 //   //   try {
 //   //     // Create order on your backend
 //   //     const orderResponse = await axios.post(
-//   //       "https://nati-coco-server.onrender.com/payment/orders",
+//   //       "http://192.168.29.165:3500/payment/orders",
 //   //       {
 //   //         amount: totalAmount * 100,
 //   //       }
@@ -788,7 +817,7 @@ const styles = StyleSheet.create({
 //   //     }
 
 //   //     // Verify payment on your backend
-//   //     await axios.post("https://nati-coco-server.onrender.com/payment/verify", {
+//   //     await axios.post("http://192.168.29.165:3500/payment/verify", {
 //   //       razorpay_order_id: response.razorpay_order_id,
 //   //       razorpay_payment_id: response.razorpay_payment_id,
 //   //       razorpay_signature: response.razorpay_signature,
@@ -885,7 +914,7 @@ const styles = StyleSheet.create({
 //               onPress={() => {
 //                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 //                 if (item.quantity > 1) {
-//                   updateQuantity(item.id, item.quantity - 1);
+//                   updateQuantity(item._id || item.id, item.quantity - 1);
 //                 }
 //               }}
 //             >
@@ -898,7 +927,7 @@ const styles = StyleSheet.create({
 //               style={styles.quantityButton}
 //               onPress={() => {
 //                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-//                 updateQuantity(item.id, item.quantity + 1);
+//                 updateQuantity(item._id || item.id, item.quantity + 1);
 //               }}
 //             >
 //               <Ionicons name="add" size={20} color="#F8931F" />
@@ -910,7 +939,7 @@ const styles = StyleSheet.create({
 //           style={styles.removeButton}
 //           onPress={() => {
 //             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-//             removeFromCart(item.id);
+//             removeFromCart(item._id || item.id);
 //           }}
 //         >
 //           <Ionicons name="trash-outline" size={24} color="#FF4444" />
@@ -955,7 +984,7 @@ const styles = StyleSheet.create({
 //       <FlatList
 //         data={cartItems}
 //         renderItem={renderItem}
-//         keyExtractor={(item) => item.id}
+//         keyExtractor={(item) => item._id || item.id}
 //         contentContainerStyle={styles.listContainer}
 //         showsVerticalScrollIndicator={false}
 //       />

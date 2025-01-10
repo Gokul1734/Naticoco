@@ -13,10 +13,11 @@ const styles = StyleSheet.create({
  container: {
    flex: 0,
    backgroundColor: 'transparent',
-   marginBottom: 60
+   marginBottom: 150,
+   // bottom : 100
  },
  scrollView : {
-   marginBottom : 100
+   marginBottom : 150
  },
  flexcont: {
   justifyContent : "space-between",
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
  },
  sectionContainer: {
    padding: normalize(16),
-   paddingBottom: Platform.OS === 'ios' ? normalize(16) : normalize(8),
+   paddingBottom: Platform.OS === 'ios' ? normalize(20) : normalize(8),
    backgroundColor:'transparent'
  },
  sectionTitle: {
@@ -153,15 +154,41 @@ const styles = StyleSheet.create({
    fontSize: normalize(14),
    fontWeight: '600',
    padding: normalize(8),
+   // marginBottom: normalize(10),
+ },
+ productDescription: {
+   fontSize: normalize(12),
+   fontWeight: '400',
+   padding: normalize(8),
    marginBottom: normalize(10),
+   color: '#666'
  },
  productPrice: {
    fontSize: normalize(14),
    fontWeight: '700',
-   color: '#89C73A',
-   paddingHorizontal: normalize(8),
+   color: 'black',
+   paddingHorizontal: normalize(2),
    paddingBottom: normalize(8),
  },
+ quantityContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+quantityButton: {
+  backgroundColor: '#fff',
+  borderRadius: 8,
+  padding: 8,
+  borderWidth: 1,
+  borderColor: '#F8931F',
+},
+quantityText: {
+  fontSize: 16,
+  fontWeight: '500',
+  marginHorizontal: 16,
+},
+removeButton: {
+  padding: 8,
+},
  cartActions: {
    flexDirection: 'row',
    alignItems: 'center',
@@ -189,6 +216,7 @@ const styles = StyleSheet.create({
    color: 'white',
    fontSize: 14,
    fontWeight: '600',
+   padding : 2
  },
  cartButton: {
    position: 'relative',

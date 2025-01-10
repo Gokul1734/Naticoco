@@ -32,9 +32,9 @@ const FilteredItems = ({ route }) => {
   const { category } = route.params;
   const navigation = useNavigation();
   const { addToCart, cartItems, updateQuantity } = useCart();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState([]);
   const [selectedType, setSelectedType] = useState(null);
-
   // Combined type filters
   const categoryFilters = {
     Chicken: [
@@ -45,12 +45,12 @@ const FilteredItems = ({ route }) => {
       },
       {
         id: "Broiler",
-        label: "Broiler Chicken",
+        label: "Farm Chicken",
         icon: require("../../../assets/images/FarmChik.png"),
       },
       {
         id: "Country",
-        label: "Country Chicken",
+        label: "Teetar",
         icon: require("../../../assets/images/TeetarChik.png"),
       },
     ],
@@ -80,23 +80,16 @@ const FilteredItems = ({ route }) => {
 
   // Add asset loading
   useEffect(() => {
-    const loadAssets = async () => {
-      try {
-        await Asset.loadAsync(Object.values(productImages));
-        await new Promise((resolve) => setTimeout(resolve, 800));
-      } catch (error) {
-        console.error("Error loading assets:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAssets();
-  }, []);
-
+   const fetchStoreMenu = async () => {
+     const menu = await AsyncStorage.getItem("storeMenu");
+     setProducts(JSON.parse(menu));
+   };
+   fetchStoreMenu();
+ }, []);
+ console.log(products);
   const getFilteredProducts = () => {
-    let filtered = mockFoodItems.filter((item) => item.category === category);
-
+    let filtered = products.filter((item) => item.category === category);
+    // console.log(filtered);
     // Apply filter based on category
     if (selectedType) {
       if (category === "Chicken") {
@@ -116,7 +109,7 @@ const FilteredItems = ({ route }) => {
   };
 
   const renderItem = ({ item }) => {
-    const cartItem = cartItems.find((i) => i.id === item.id);
+    const cartItem = cartItems.find((i) => i.id === item._id || item.id);
 
     return (
       <TouchableOpacity
@@ -129,7 +122,7 @@ const FilteredItems = ({ route }) => {
           resizeMode="cover"
         />
         <View style={styles.productDetails}>
-          <Text style={styles.productName}>{item.name}</Text>
+          <Text style={styles.productName}>{item.itemName}</Text>
           <Text style={styles.productDescription}>{item.description}</Text>
           <View style={styles.priceAndCart}>
             <Text style={styles.productPrice}>Rs.{item.price}/-</Text>
@@ -142,7 +135,7 @@ const FilteredItems = ({ route }) => {
                   <Text style={styles.quantityText}>{cartItem.quantity}</Text>
                   <TouchableOpacity
                     onPress={() =>
-                      updateQuantity(item.id, cartItem.quantity + 1)
+                      updateQuantity(item._id || item.id, cartItem.quantity + 1)
                     }
                     style={styles.addButton}
                   >
@@ -212,7 +205,7 @@ const FilteredItems = ({ route }) => {
         <FlatList
           data={getFilteredProducts()}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id || item.id}
           contentContainerStyle={styles.listContainer}
         />
       ) : (

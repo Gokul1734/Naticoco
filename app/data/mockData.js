@@ -183,7 +183,7 @@ export const allStores = [...mockStores, ...generateMockStores()];
 
 export const storeItems = allStores.reduce((acc, store) => {
   store.items.forEach(item => {
-    acc[item.id] = {
+    acc[item._id || item.id] = {
       ...item,
       storeId: store.id,
       storeName: store.name

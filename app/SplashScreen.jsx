@@ -29,6 +29,8 @@ export default function CustomSplashScreen({ onFinish }) {
           style={styles.image}
           resizeMode="cover"
         />
+        <Text style={styles.quote}>“High-Quality <Text style={styles.text2}>Poultry</Text>, Low-Quality <Text style={styles.text2}>Worries</Text>”</Text>
+        <Text style={styles.mark}>R</Text>
         <View style={styles.textContainer}>
          <Text style={styles.text}>A Unit of MaktSon Group</Text>
          <Image source={require('../assets/images/prod.png')} style={styles.logo} />
@@ -47,6 +49,51 @@ const styles = StyleSheet.create({
   image: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT, 
+  },
+  text2: {
+    fontSize: 16,
+    fontWeight: '300',
+    fontFamily: 'golos',
+    margin: 0,
+    bottom: 180,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: '#fd7e14',
+    position: 'absolute',
+  },
+  quote: {
+    fontSize: 16,
+    fontWeight: '300',
+    fontFamily: 'golos',
+    margin: 0,
+    bottom: 180,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: 'black',
+    position: 'absolute',
+  },
+  mark: {
+    position: 'absolute',
+    fontSize: 14,
+    fontWeight: 'bold',
+    margin: 0,
+    bottom: 466,
+    left: 345,
+    right: 0,
+    textAlign: 'center',
+    color: 'black',
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 100,
+    padding: 3,
+    width: 25,
+    height: 25,
+    textAlign: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
   },
   text: {
     fontSize: 16,
@@ -67,7 +114,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   textContainer: {
-    bottom: 80,
+    bottom: 50,
     left: 0,
     right: 0,
     textAlign: 'center',

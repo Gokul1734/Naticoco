@@ -82,7 +82,7 @@ const ProductCard = ({ item, onPress, isInCart, quantity, onAddToCart }) => {
       <TouchableOpacity onPress={onPress}>
         <Card style={styles.card}>
           <Image 
-            source={getItemImage(item.id)}
+            source={getItemImage(item._id || item.id)}
             style={styles.productImage}
             resizeMode="cover"
           />
@@ -195,12 +195,12 @@ export default function CrispyHome() {
         contentContainerStyle={styles.productsContainer}
       >
         {filteredItems.map((item) => {
-          const isInCart = cartItems.find(cartItem => cartItem.id === item.id);
+          const isInCart = cartItems.find(cartItem => cartitem._id || item.id === item._id || item.id);
           const quantity = isInCart ? isInCart.quantity : 0;
           
           return (
             <ProductCard
-              key={item.id}
+              key={item._id || item.id}
               item={item}
               isInCart={!!isInCart}
               quantity={quantity}
