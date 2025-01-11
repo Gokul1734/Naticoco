@@ -23,6 +23,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getImage from '../Components/GetImage';
+import ToBuy from '../Components/ToBuy';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -143,16 +144,16 @@ function CartScreen({ navigation }) {
 
   const handlePaymentResponse = async (response) => {
     try {
-      if (response.error) {
-        throw new Error(response.error.description);
-      }
+      // if (response.error) {
+      //   throw new Error(response.error.description);
+      // }
 
       // Verify payment on your backend
-      await axios.post('http://192.168.29.165:3500/payment/verify', {
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature
-      });
+      // await axios.post('http://192.168.29.165:3500/payment/verify', {
+      //   razorpay_order_id: response.razorpay_order_id,
+      //   razorpay_payment_id: response.razorpay_payment_id,
+      //   razorpay_signature: response.razorpay_signature
+      // });
 
       // Handle success
       Alert.alert('Success', 'Payment successful!');
@@ -182,7 +183,6 @@ function CartScreen({ navigation }) {
         {
           text: 'Confirm',
           onPress: () => {
-            clearCart();
             navigation.navigate('Success', {
               paymentMethod: 'cod',
               orderId: `COD${Date.now()}`
@@ -193,70 +193,17 @@ function CartScreen({ navigation }) {
     );
   };
 
-  const placeOrder = async () => {
-    await axios.post('http://192.168.29.165:3500/payment/placeorder', {
-      userId: userId,
-      orderId: orderId,
-      totalAmount: totalAmount,
-      paymentMethod: paymentMethod,
-    });
-  };
+  // const placeOrder = async () => {
+  //   await axios.post('http://192.168.29.165:3500/payment/placeorder', {
+  //     userId: userId,
+  //     orderId: orderId,
+  //     totalAmount: totalAmount,
+  //     paymentMethod: paymentMethod,
+  //   });
+  // };
 
   const renderItem = ({ item, index }) => {
-   const translateX = slideAnim[index].interpolate({
-     inputRange: [0, 1],
-     outputRange: [-SCREEN_WIDTH, 0],
-   });
-   console.log(item.image);
-   return (
-     <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]}>
-       <Image 
-         source={require('../../../assets/images/Chicken65.jpg')} 
-         style={styles.itemImage} 
-         resizeMode="cover"
-       />
-       <View style={styles.itemDetails}>
-         <Text style={styles.itemName}>{item.itemName}</Text>
-         <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
-         
-         <View style={styles.quantityContainer}>
-           <TouchableOpacity 
-             style={styles.quantityButton}
-             onPress={() => {
-               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-               if (item.quantity > 1) {
-                 updateQuantity(item._id || item.id, item.quantity - 1);
-               }
-             }}
-           >
-             <Ionicons name="remove" size={20} color="#F8931F" />
-           </TouchableOpacity>
-           
-           <Text style={styles.quantityText}>{item.quantity}</Text>
-           
-           <TouchableOpacity 
-             style={styles.quantityButton}
-             onPress={() => {
-               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-               updateQuantity(item._id || item.id, item.quantity + 1);
-             }}
-           >
-             <Ionicons name="add" size={20} color="#F8931F" />
-           </TouchableOpacity>
-         </View>
-       </View>
-  
-       <TouchableOpacity 
-         style={styles.removeButton}
-         onPress={() => {
-           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-           removeFromCart(item._id || item.id);
-         }}
-       >
-         <Ionicons name="trash-outline" size={24} color="#FF4444" />
-       </TouchableOpacity>
-     </Animated.View>
-   );
+    return <ToBuy item={item} index={index} slideAnim={slideAnim} SCREEN_WIDTH={SCREEN_WIDTH} updateQuantity={updateQuantity} removeFromCart={removeFromCart} />;
   };
   
   if (isLoading) {

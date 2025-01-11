@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SCREEN_WIDTH } from "../Screens/Home/constants";
 import getImage from "./GetImage";
 import { AnimatePresence, MotiView } from "moti";
+import * as Haptics from 'expo-haptics';
 // import {updateQuantity}  from '../context/CartContext';
 
 // Add image mapping
@@ -33,9 +34,22 @@ import { AnimatePresence, MotiView } from "moti";
 
 export default function FoodItem({ item, onPress }) {
   // console.log(item);
-  const { addToCart, cartItems, updateQuantity,handleQuantityChange } = useCart();
-  const cartItem = cartItems.find((i) => i.id === item._id || item.id);
+  const { addToCart, cartItems, cartCount, updateQuantity } = useCart();
+  const cartItem = cartItems.find(i => i._id === item._id || i.id === item._id || item.id);
   // console.log(cartItem);
+  const handleAddToCart = () => {
+   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+   addToCart(item);
+ };
+
+ const handleQuantityChange = (newQuantity) => {
+   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+   if (newQuantity === 0) {
+     updateQuantity(item._id, 0);
+   } else {
+     updateQuantity(item._id, newQuantity);
+   }
+ };
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image
@@ -83,8 +97,9 @@ export default function FoodItem({ item, onPress }) {
                   >
                     <TouchableOpacity 
                       style={styles.addButton}
-                      onPress={() => addToCart(item)}
+                      onPress={handleAddToCart}
                     >
+                      <Ionicons name="add" size={24} color="white" />
                       <Text style={styles.addButtonText}>ADD</Text>
                     </TouchableOpacity>
                   </MotiView>
@@ -147,37 +162,38 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#2e2e2e",
   },
-  addButton: {
-    backgroundColor: "#F8931F",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    width: Platform.OS == "ios" ? SCREEN_WIDTH / 3.7 : SCREEN_WIDTH / 5,
-  },
-  addButtonText: {
-    color: "white",
-    fontSize: 13,
-    fontWeight: "600",
-  },
   quantityContainer: {
    flexDirection: 'row',
    alignItems: 'center',
+   backgroundColor: '#F8931F',
+   borderRadius: 8,
+   padding: 4,
  },
  quantityButton: {
-   backgroundColor: '#fff',
-   borderRadius: 8,
-   padding: 8,
-   borderWidth: 1,
-   borderColor: '#F8931F',
+   width: 32,
+   height: 32,
+   justifyContent: 'center',
+   alignItems: 'center',
+   borderRadius: 16,
  },
  quantityText: {
+   color: 'white',
    fontSize: 16,
-   fontWeight: '500',
-   marginHorizontal: 16,
+   fontWeight: '600',
+   marginHorizontal: 12,
  },
- removeButton: {
-    padding: 8,
-  },
+ addButton: {
+   flexDirection: 'row',
+   alignItems: 'center',
+   backgroundColor: '#F8931F',
+   paddingHorizontal: 16,
+   paddingVertical: 8,
+   borderRadius: 8,
+   gap: 4,
+ },
+ addButtonText: {
+   color: 'white',
+   fontSize: 14,
+   fontWeight: '600',
+ },
 });

@@ -59,17 +59,17 @@ export default function HomeScreen() {
       });
 
       setNearestStoreId(response.data.storeId);
-      
+      // await AsyncStorage.setItem('storeId', response.data.storeId);
       // console.log('Store API Response:', response.data); // Add this for debugging
   
       if (response.data && response.data.menu) {
-        const menu = response.data.menu;
+        const menu = response.data.menu.filter(item => item.category != "Fried");
         setMenuItems(menu);
         setBestSellers(menu.filter(item => item.BestSeller === true));
         setNewArrivals(menu.filter(item => item.newArrival === true));
         setIsDataLoading(false);
         // Cache the store data
-        await AsyncStorage.setItem('storeMenu', JSON.stringify(response.data.menu));
+        await AsyncStorage.setItem('storeMenu', JSON.stringify(menu));
         // setMenuItems(JSON.stringify(response.data.menu));
         // console.log(response.data.menu);
       }
@@ -143,6 +143,7 @@ export default function HomeScreen() {
       name={item.name}
       image={item.image}
       navigation={navigation}
+      items={menuItems.filter(i => i.category == item.name)}
     />
   );
 

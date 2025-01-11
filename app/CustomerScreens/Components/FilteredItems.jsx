@@ -15,6 +15,10 @@ import mockFoodItems from "../../../Backend/Products.json";
 import { Asset } from "expo-asset";
 import LoadingScreen from "./LoadingScreen";
 import ScreenBackground from "./ScreenBackground";
+import axios from 'axios';
+import { Buffer } from 'buffer';
+import getImage from "./GetImage";
+import FoodItem from "./FoodItem";
 
 // Add productImages mapping
 const productImages = {
@@ -29,13 +33,23 @@ const productImages = {
 };
 
 const FilteredItems = ({ route }) => {
-  const { category } = route.params;
+  const { category,items } = route.params;
   const navigation = useNavigation();
   const { addToCart, cartItems, updateQuantity } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [selectedType, setSelectedType] = useState(null);
-  // Combined type filters
+  // console.log(getImage(items[0].image));
+  const renderItem = ({ item }) => {
+   // console.log(item);
+   // console.log(getImage(item.image));/
+   const cartItem = cartItems.find((i) => i.id === item._id || item.id);
+
+   return (
+     <FoodItem item={item} onPress={() => navigation.navigate("ItemDisplay", { item })} />
+   );
+ };
+  
   const categoryFilters = {
     Chicken: [
       {
@@ -44,12 +58,12 @@ const FilteredItems = ({ route }) => {
         icon: require("../../../assets/images/NatiChik.png"),
       },
       {
-        id: "Broiler",
+        id: "Farm",
         label: "Farm Chicken",
         icon: require("../../../assets/images/FarmChik.png"),
       },
       {
-        id: "Country",
+        id: "Teetar",
         label: "Teetar",
         icon: require("../../../assets/images/TeetarChik.png"),
       },
@@ -78,78 +92,21 @@ const FilteredItems = ({ route }) => {
     ],
   };
 
-  // Add asset loading
-  useEffect(() => {
-   const fetchStoreMenu = async () => {
-     const menu = await AsyncStorage.getItem("storeMenu");
-     setProducts(JSON.parse(menu));
-   };
-   fetchStoreMenu();
- }, []);
- console.log(products);
+  
   const getFilteredProducts = () => {
-    let filtered = products.filter((item) => item.category === category);
-    // console.log(filtered);
-    // Apply filter based on category
+    let filtered = items.filter((item) => item.category === category);
+
     if (selectedType) {
       if (category === "Chicken") {
         filtered = filtered.filter(
-          (item) => item.chickenType === selectedType.id
+          (item) => item.subCategory === selectedType.id
         );
       } else if (category === "Eggs") {
-        filtered = filtered.filter((item) => item.eggType === selectedType.id);
+        filtered = filtered.filter((item) => item.subCategory === selectedType.id);
       }
     }
 
     return filtered;
-  };
-
-  const getItemImage = (imageName) => {
-    return productImages[imageName] || productImages["logoo.jpg"];
-  };
-
-  const renderItem = ({ item }) => {
-    const cartItem = cartItems.find((i) => i.id === item._id || item.id);
-
-    return (
-      <TouchableOpacity
-        style={styles.productCard}
-        onPress={() => navigation.navigate("ItemDisplay", { item })}
-      >
-        <Image
-          source={getItemImage(item.image)}
-          style={styles.productImage}
-          resizeMode="cover"
-        />
-        <View style={styles.productDetails}>
-          <Text style={styles.productName}>{item.itemName}</Text>
-          <Text style={styles.productDescription}>{item.description}</Text>
-          <View style={styles.priceAndCart}>
-            <Text style={styles.productPrice}>Rs.{item.price}/-</Text>
-            <TouchableOpacity
-              style={styles.cartButton}
-              onPress={() => addToCart(item)}
-            >
-              {cartItem?.quantity ? (
-                <View style={styles.quantityContainer}>
-                  <Text style={styles.quantityText}>{cartItem.quantity}</Text>
-                  <TouchableOpacity
-                    onPress={() =>
-                      updateQuantity(item._id || item.id, cartItem.quantity + 1)
-                    }
-                    style={styles.addButton}
-                  >
-                    <Ionicons name="add-circle" size={24} color="white" />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <Text style={styles.cartButtonText}>Add</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
   };
 
   const renderFilters = () => {

@@ -12,7 +12,7 @@ export const categories = [
   },
   { 
     id: '2', 
-    name: 'marinated', 
+    name: 'Marinated', 
     image: require('../../../../assets/images/HomeCategories/Marinate.png')
   },
   { 

@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     color: '#F8931F',
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: SCREEN_WIDTH * 0.05,
     fontWeight: 'bold',
     marginVertical: 10,
     marginLeft: 10,

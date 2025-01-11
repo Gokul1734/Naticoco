@@ -1,30 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { TouchableOpacity, Image, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import styles from "../styles";
 
-const CategoryButton = ({ name, image, isSelected, onSelect, navigation }) => {
+const CategoryButton = ({ name, image, isSelected, onSelect, navigation,items }) => {
+  // const [items, setItems] = useState([]);
   if (name == "heatandeat") {
     name = "Heat & Eat";
   } else if (name == "marinated") {
     name = "Marinated";
   }
 
-  useEffect(() => {
-   const fetchStoreMenu = async () => {
-     const menu = await AsyncStorage.getItem("storeMenu");
-     console.log(JSON.parse(menu));
-
-   };
-   fetchStoreMenu();
- }, []);
+ console.log(items);
   return (
     <TouchableOpacity
       onPress={() => {
         if (name == "Post Order") {
           navigation.navigate("postOrder");
         } else {
-          navigation.navigate("FilteredItems", { category: name });
+          navigation.navigate("FilteredItems", { category: name,items: items });
         }
       }}
     >

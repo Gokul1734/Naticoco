@@ -16,6 +16,8 @@ import { useCart } from '../context/CartContext';
 import { useNavigation } from 'expo-router';
 import BackButton from '../../components/BackButton';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GOOGLE_MAPS_KEY = 'AIzaSyD9YLhonLv3JjCCVjBv06W1el67IXr19bY'; 
@@ -36,6 +38,9 @@ export default function TrackScreen() {
     longitudeDelta: 0.0421,  
   });
 
+  // console.log(cartItems);
+  // console.log(userLocation);
+  // console.log(cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0));
   const handleCancel = () => {
    Alert.alert(
      'Cancel Order',
@@ -105,6 +110,22 @@ export default function TrackScreen() {
       });
     })();
   }, []);
+
+  // useEffect( async() => {
+  //  try {
+  //   await axios.post('http://192.168.29.165:3500/api/orders/placeorder',{
+  //    userId: await AsyncStorage.getItem('Logincre'),
+  //    storeId: 'delivered',
+  //    items: cartItems,
+  //    amount: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+  //    paymentStatus: 'Paid',
+  //    deliveryPersonId: 'D001',
+  //    location: userLocation,
+  //   })
+  //  } catch (error) {
+  //   console.log(error);
+  //  }
+  // })
 
   const handleCall = () => {
     Linking.openURL(`tel:${deliveryInfo.phoneNumber}`);
@@ -213,7 +234,7 @@ export default function TrackScreen() {
                      keyExtractor={(item, index) => item._id || item.id || index.toString()}
                      renderItem={({ item }) => (
                        <Text style={styles.detailValueItem}>
-                         {item.name} x {item.quantity}
+                         {item.itemName} x {item.quantity}
                        </Text>
                      )}
                    />
