@@ -104,7 +104,7 @@ function CartScreen({ navigation }) {
   const handleOnlinePayment = async () => {
     try {
       // Create order on your backend
-      const orderResponse = await axios.post('http://192.168.29.165:3500/payment/orders', {
+      const orderResponse = await axios.post('http://192.168.43.165:3500/payment/orders', {
         amount: totalAmount * 100,
       });
 
@@ -149,7 +149,7 @@ function CartScreen({ navigation }) {
       // }
 
       // Verify payment on your backend
-      // await axios.post('http://192.168.29.165:3500/payment/verify', {
+      // await axios.post('http://192.168.43.165:3500/payment/verify', {
       //   razorpay_order_id: response.razorpay_order_id,
       //   razorpay_payment_id: response.razorpay_payment_id,
       //   razorpay_signature: response.razorpay_signature
@@ -194,7 +194,7 @@ function CartScreen({ navigation }) {
   };
 
   // const placeOrder = async () => {
-  //   await axios.post('http://192.168.29.165:3500/payment/placeorder', {
+  //   await axios.post('http://192.168.43.165:3500/payment/placeorder', {
   //     userId: userId,
   //     orderId: orderId,
   //     totalAmount: totalAmount,
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
-    marginBottom: 60,
+    marginBottom: Platform.OS === 'ios' ? 80 : 30,
   },
   totalContainer: {
     flexDirection: 'row',
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
 //   //   try {
 //   //     // Create order on your backend
 //   //     const orderResponse = await axios.post(
-//   //       "http://192.168.29.165:3500/payment/orders",
+//   //       "http://192.168.43.165:3500/payment/orders",
 //   //       {
 //   //         amount: totalAmount * 100,
 //   //       }
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
 //   //     }
 
 //   //     // Verify payment on your backend
-//   //     await axios.post("http://192.168.29.165:3500/payment/verify", {
+//   //     await axios.post("http://192.168.43.165:3500/payment/verify", {
 //   //       razorpay_order_id: response.razorpay_order_id,
 //   //       razorpay_payment_id: response.razorpay_payment_id,
 //   //       razorpay_signature: response.razorpay_signature,

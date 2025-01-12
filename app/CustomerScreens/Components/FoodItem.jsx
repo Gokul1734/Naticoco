@@ -77,7 +77,7 @@ export default function FoodItem({ item, onPress }) {
                       onPress={() => handleQuantityChange(cartItem.quantity - 1)}
                       style={styles.quantityButton}
                     >
-                      <Ionicons name="remove" size={20} color="white" />
+                      <Ionicons name="remove" size={16} color="white" />
                     </TouchableOpacity>
 
                     <Text style={styles.quantityText}>{cartItem.quantity}</Text>
@@ -86,7 +86,7 @@ export default function FoodItem({ item, onPress }) {
                       onPress={() => handleQuantityChange(cartItem.quantity + 1)}
                       style={styles.quantityButton}
                     >
-                      <Ionicons name="add" size={20} color="white" />
+                      <Ionicons name="add" size={16} color="white" />
                     </TouchableOpacity>
                   </MotiView>
                 ) : (
@@ -167,18 +167,19 @@ const styles = StyleSheet.create({
    alignItems: 'center',
    backgroundColor: '#F8931F',
    borderRadius: 8,
-   padding: 4,
+   padding: 6,
+   
  },
  quantityButton: {
-   width: 32,
-   height: 32,
+   width: 12,
+   height: 12,
    justifyContent: 'center',
    alignItems: 'center',
    borderRadius: 16,
  },
  quantityText: {
    color: 'white',
-   fontSize: 16,
+   fontSize: 12,
    fontWeight: '600',
    marginHorizontal: 12,
  },
@@ -186,14 +187,15 @@ const styles = StyleSheet.create({
    flexDirection: 'row',
    alignItems: 'center',
    backgroundColor: '#F8931F',
-   paddingHorizontal: 16,
-   paddingVertical: 8,
+   paddingHorizontal: 5,
+   paddingVertical: 3,
    borderRadius: 8,
    gap: 4,
+   width: 60,
  },
  addButtonText: {
    color: 'white',
-   fontSize: 14,
+   fontSize: 10,
    fontWeight: '600',
  },
 });

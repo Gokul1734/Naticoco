@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import getImage from './GetImage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -20,6 +21,7 @@ export default function ItemDisplay({ route }) {
   console.log(item);
   const navigation = useNavigation();
   const [cartItems, setCartItems] = React.useState([]);
+  const [menuItems,setMenuItems] = useState([]);
   // const item = {
   //   id: 1,
   //   name: "Chicken Liver",
@@ -49,6 +51,17 @@ export default function ItemDisplay({ route }) {
     { id: 4, name: "Chicken Wings", price: 499, image: require('../../../assets/images/ChickenWings.jpg') }
   ];
 
+  useEffect(() => {
+   const relatedProduct = async () => {
+    const items = await AsyncStorage.getItem('storeMenu');
+    setMenuItems(items);
+   }
+   relatedProduct();
+  })
+
+  // console.log(menuItems);
+  const relpro = menuItems.filter(item => item.category == "Chicken");
+  console.log(relpro);
   return (
     <View style={styles.mainContainer}>
       {/* Back Button */}

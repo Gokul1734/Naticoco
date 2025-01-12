@@ -272,14 +272,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === "android" ? 20 : 20,
+    paddingTop: Platform.OS === "android" ? 10 : 20,
     paddingBottom: Platform.OS === "android" ? 40 : 40,
     position: "relative",
   },
   contentContainer: {
     width: "100%",
     zIndex: 2,
-    marginTop: Platform.OS === "android" ? 20 : 80,
+    marginTop: Platform.OS === "android" ? 40 : 80,
   },
   imageContainer: {
     marginBottom: 20,
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   profilebackdrop: {
     position: "absolute",
-    top: Platform.OS === "android" ? 180 : 220,
+    top: Platform.OS === "android" ? 220 : 220,
     left: -200,
     right: -200,
     bottom: -100,

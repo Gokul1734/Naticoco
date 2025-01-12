@@ -51,7 +51,7 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
 
           <View style={styles.contentContainer}>
             <View style={styles.textContainer}>
-              <Text style={styles.productName}>{item.itemName}</Text>
+              <Text style={styles.productName}>{(item.itemName).length > 16 ? (item.itemName).substring(0, 16) + '...' : item.itemName}</Text>
               <Text style={styles.productDescription} numberOfLines={2}>
               {(item.description).length > 20 ? (item.description).substring(0, 20) + '...' : item.description}
               </Text>
@@ -141,7 +141,7 @@ const styles = {
     marginBottom: 8,
   },
   productName: {
-    fontSize: 16,
+    fontSize: SCREEN_WIDTH * 0.04,
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,

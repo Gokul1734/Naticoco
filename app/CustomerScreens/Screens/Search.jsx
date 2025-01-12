@@ -243,7 +243,7 @@ export default  function  SearchScreen({ navigation }) {
             flex: 1,
             opacity: fadeAnim,
             transform: [{ translateX: slideAnim }],
-            marginBottom: 150,
+            marginBottom: 100,
           }}
         >
           <FlatList

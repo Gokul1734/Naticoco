@@ -6,6 +6,7 @@ import SplashScreen from "react-native-splash-screen";
 import LottieView from "lottie-react-native";
 
 const SplashScreenComponent = ({ navigation }) => {
+  
   useEffect(() => {
     // Hide the splash screen after 2 seconds
     setTimeout(() => {

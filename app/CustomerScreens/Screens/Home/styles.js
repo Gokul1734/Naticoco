@@ -13,11 +13,11 @@ const styles = StyleSheet.create({
  container: {
    flex: 0,
    backgroundColor: 'transparent',
-   marginBottom: 150,
+   marginBottom: Platform.OS === 'ios' ? 150 : 0,
    // bottom : 100
  },
  scrollView : {
-   marginBottom : 150
+   marginBottom : Platform.OS === 'ios' ? 150 : 200,
  },
  flexcont: {
   justifyContent : "space-between",

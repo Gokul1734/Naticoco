@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -75,7 +75,7 @@ export default function MyOrders() {
         const parsedCredentials = credentials ? JSON.parse(credentials) : null;
         const userId = parsedCredentials?.token?.userId;
         // console.log(userId);
-        const response = await axios.get(`http://192.168.29.165:3500/api/orders/myorder/${userId}`);
+        const response = await axios.get(`http://192.168.43.165:3500/api/orders/myorder/${userId}`);
         setOrders(response.data.orders);
         // console.log(response.data.orders);
       } catch (error) {
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    marginTop: -30,
+    marginTop: Platform.OS === 'ios' ? -40 : 0,
   },
   headerTitle: {
     fontSize: 18,

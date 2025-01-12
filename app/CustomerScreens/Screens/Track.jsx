@@ -113,7 +113,7 @@ export default function TrackScreen() {
 
   // useEffect( async() => {
   //  try {
-  //   await axios.post('http://192.168.29.165:3500/api/orders/placeorder',{
+  //   await axios.post('http://192.168.43.165:3500/api/orders/placeorder',{
   //    userId: await AsyncStorage.getItem('Logincre'),
   //    storeId: 'delivered',
   //    items: cartItems,
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDD',
     borderRadius: scale(2),
     alignSelf: 'center',
-    marginBottom: verticalScale(15),
+    marginBottom: verticalScale(20),
   },
   expandedContent: {
     marginTop: verticalScale(20),

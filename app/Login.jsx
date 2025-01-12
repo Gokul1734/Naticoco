@@ -16,7 +16,7 @@ import { TextInput } from "react-native";
 import { ActivityIndicator } from "react-native";
 import { useState, useEffect } from "react";
 import { TouchableWithoutFeedback } from "react-native";
-import axios from "axios";
+import axios, { all } from "axios";
 import { useAuth } from "./context/AuthContext";
 import { Animated } from "react-native";
 import { Dimensions } from "react-native";
@@ -24,8 +24,21 @@ import golos from "../assets/fonts/gt.ttf";
 import { useLoadAssets } from "./hooks/useLoadAssets";
 import LoadingScreen from "./CustomerScreens/Components/LoadingScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { PixelRatio } from 'react-native';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Scale factors based on design width (assuming design was for 375px width)
+const scale = SCREEN_WIDTH / 375;
+
+// Normalize font size for different screen densities
+const normalize = (size) => {
+  const newSize = size * scale;
+  if (Platform.OS === 'ios') {
+    return Math.round(PixelRatio.roundToNearestPixel(newSize));
+  }
+  return Math.round(PixelRatio.roundToNearestPixel(newSize)) - 2;
+};
 
 // Add image mapping
 const loginImages = {
@@ -85,7 +98,7 @@ export default function LoginScreen() {
     }
     try {
       const response = await axios.post(
-        "http://192.168.29.165:3500/auth/login",
+        "http://192.168.43.165:3500/auth/login",
         {
           mobileno: `+91${phoneNumber}`,
           password: password,
@@ -266,226 +279,232 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    padding: 0,
-  },
-  innerContainer: {
-    flex: 1,
-    position: "relative",
-  },
-  formContainer: {
-    flex: 1,
-    // padding: 20,
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  circleContainer: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    zIndex: 2,
-  },
-  circle: {
-    borderWidth: 20,
-    borderRadius: 800,
-    borderColor: "#F8931F",
-    position: "absolute",
-    left: -200,
-    bottom: -300, // Adjusted position
-    width: "197%",
-    height: 800,
-    backgroundColor: "#E6E6E6",
-    zIndex: 1,
-  },
-  formContent: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: "600",
-    marginBottom: 20,
-    color: "black",
-    fontFamily: "golos",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
-  },
-  countryCode: {
-   fontSize: 16,
+ container: {
+   flex: 1,
+   width: SCREEN_WIDTH,
+   height: SCREEN_HEIGHT,
+   padding: 0,
+ },
+ innerContainer: {
+   flex: 1,
+   position: "relative",
+ },
+ formContainer: {
+   flex: 1,
+   justifyContent: "center",
+   zIndex: 2,
+ },
+ circleContainer: {
+   position: "absolute",
+   width: "100%",
+   height: "100%",
+   overflow: "hidden",
+   zIndex: 2,
+ },
+ circle: {
+   borderWidth: Platform.OS === 'ios' ? 20 : 15,
+   borderRadius: 800,
+   borderColor: "#F8931F",
+   position: "absolute",
+   left: -200,
+   bottom: Platform.OS === 'ios' ? -300 : -380,
+   width: "197%",
+   height: 800,
+   backgroundColor: "#E6E6E6",
+   zIndex: 1,
+ },
+ formContent: {
+   flex: 1,
+   padding: SCREEN_WIDTH * 0.05, // 5% of screen width
+   justifyContent: "center",
+   zIndex: 2,
+ },
+ title: {
+   fontSize: normalize(25),
+   fontWeight: Platform.OS === 'ios' ? "600" : "700",
+   marginBottom: SCREEN_HEIGHT * 0.02,
+   color: "black",
+   fontFamily: "golos",
+   includeFontPadding: false, // Android specific
+   textAlignVertical: 'center', // Android specific
+ },
+ subtitle: {
+   fontSize: normalize(16),
+   color: "#666",
+   marginBottom: SCREEN_HEIGHT * 0.03,
+   includeFontPadding: false,
+ },
+ countryCode: {
+   fontSize: normalize(16),
    color: "#666",
    marginHorizontal: 10,
+   includeFontPadding: false,
  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    height: 50,
-    backgroundColor: "white",
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  input: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  forgotPassword: {
-    alignSelf: "flex-end",
-    marginBottom: 20,
-  },
-  forgotPasswordText: {
-    color: "#F8931F",
-    fontSize: 14,
-  },
-  loginButton: {
-    backgroundColor: "#F8931F",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    // marginTop: 20,
-  },
-  loginButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  signupButton: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  signupButtonText: {
-    color: "#F8931F",
-    fontSize: 16,
-  },
-  testButton: {
-    backgroundColor: "#F8931F",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  testButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  egg: {
-    width: 120,
-    height: 120,
-    position: "absolute",
-    top: 0,
-    left: 0,
-  },
-  breast: {
-    width: 120,
-    height: 150,
-    position: "absolute",
-    top: -10,
-    right: 0,
-  },
-  logo: {
-    width: 400,
-    height: 150,
-    position: "absolute",
-    top: 130,
-    right: 20,
-  },
-  boneless: {
-    width: 100,
-    height: 300,
-    position: "absolute",
-    top: 180,
-    left: 0,
-  },
-  leg: {
-    width: 140,
-    height: 300,
-    position: "absolute",
-    top: 180,
-    right: 0,
-  },
-  buttonsContainer: {
-    gap: 15,
-    marginTop: 20,
-  },
-  loginButton: {
-    backgroundColor: "#F8931F",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    elevation: 3,
-    shadowColor: "#F8931F",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  loginButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  altLoginContainer: {
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-  },
-  vendorButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#4CAF50",
-    padding: 12,
-    borderRadius: 8,
-    gap: 8,
-    elevation: 3,
-    shadowColor: "#4CAF50",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  deliveryButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#2196F3",
-    padding: 12,
-    borderRadius: 8,
-    gap: 8,
-    elevation: 3,
-    shadowColor: "#2196F3",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  altButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  signupButton: {
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  signupButtonText: {
-    color: "#F8931F",
-    fontSize: 16,
-  },
+ inputContainer: {
+   flexDirection: "row",
+   alignItems: "center",
+   borderWidth: 1,
+   borderColor: "#ddd",
+   borderRadius: 8,
+   paddingHorizontal: 15,
+   marginBottom: SCREEN_HEIGHT * 0.015,
+   height: Platform.OS === 'ios' ? 50 : 55,
+   backgroundColor: "white",
+   ...Platform.select({
+     ios: {
+       shadowColor: "black",
+       shadowOffset: { width: 0, height: 2 },
+       shadowOpacity: 0.25,
+       shadowRadius: 3.84,
+     },
+     android: {
+       elevation: 5,
+     },
+   }),
+ },
+ input: {
+   flex: 1,
+   marginLeft: 10,
+   fontSize: normalize(16),
+   includeFontPadding: false,
+   textAlignVertical: 'center',
+   paddingVertical: Platform.OS === 'android' ? 0 : 5,
+ },
+ forgotPassword: {
+   alignSelf: "flex-end",
+   marginBottom: SCREEN_HEIGHT * 0.02,
+   padding: 5, // Better touch target
+ },
+ forgotPasswordText: {
+   color: "#F8931F",
+   fontSize: normalize(14),
+   includeFontPadding: false,
+ },
+ buttonsContainer: {
+   gap: 15,
+   marginTop: SCREEN_HEIGHT * 0.02,
+ },
+ loginButton: {
+   backgroundColor: "#F8931F",
+   padding: Platform.OS === 'ios' ? 15 : 12,
+   borderRadius: 8,
+   alignItems: "center",
+   ...Platform.select({
+     ios: {
+       shadowColor: "#F8931F",
+       shadowOffset: { width: 0, height: 2 },
+       shadowOpacity: 0.25,
+       shadowRadius: 3.84,
+     },
+     android: {
+       elevation: 3,
+     },
+   }),
+ },
+ loginButtonText: {
+   color: "white",
+   fontSize: normalize(16),
+   fontWeight: "600",
+   includeFontPadding: false,
+ },
+ altLoginContainer: {
+   flexDirection: "row",
+   gap: SCREEN_WIDTH * 0.025,
+   justifyContent: "space-between",
+ },
+ vendorButton: {
+   flex: 1,
+   flexDirection: "row",
+   alignItems: "center",
+   justifyContent: "center",
+   backgroundColor: "#4CAF50",
+   padding: Platform.OS === 'ios' ? 12 : 10,
+   borderRadius: 8,
+   gap: 8,
+   ...Platform.select({
+     ios: {
+       shadowColor: "#4CAF50",
+       shadowOffset: { width: 0, height: 2 },
+       shadowOpacity: 0.25,
+       shadowRadius: 3.84,
+     },
+     android: {
+       elevation: 3,
+     },
+   }),
+ },
+ deliveryButton: {
+   flex: 1,
+   flexDirection: "row",
+   alignItems: "center",
+   justifyContent: "center",
+   backgroundColor: "#2196F3",
+   padding: Platform.OS === 'ios' ? 12 : 10,
+   borderRadius: 8,
+   gap: 8,
+   ...Platform.select({
+     ios: {
+       shadowColor: "#2196F3",
+       shadowOffset: { width: 0, height: 2 },
+       shadowOpacity: 0.25,
+       shadowRadius: 3.84,
+     },
+     android: {
+       elevation: 3,
+     },
+   }),
+ },
+ altButtonText: {
+   color: "white",
+   fontSize: normalize(14),
+   fontWeight: "600",
+   includeFontPadding: false,
+ },
+ signupButton: {
+   alignItems: "center",
+   paddingVertical: 10,
+   minHeight: 44, // Minimum touch target size
+ },
+ signupButtonText: {
+   color: "#F8931F",
+   fontSize: normalize(16),
+   includeFontPadding: false,
+ },
+ // Image styles with responsive dimensions
+ egg: {
+   width: SCREEN_WIDTH * 0.3,
+   height: SCREEN_WIDTH * 0.3,
+   position: "absolute",
+   top: 0,
+   left: 0,
+ },
+ breast: {
+   width: SCREEN_WIDTH * 0.3,
+   height: SCREEN_WIDTH * 0.375,
+   position: "absolute",
+   top: -10,
+   right: 0,
+ },
+ logo: {
+   width: SCREEN_WIDTH * 0.9,
+   height: SCREEN_HEIGHT * 0.3,
+   position: "absolute",
+   top: SCREEN_HEIGHT * 0.08,
+   right: 20,
+   resizeMode: 'contain',
+ },
+ boneless: {
+   width: SCREEN_WIDTH * 0.25,
+   height: SCREEN_HEIGHT * 0.3,
+   position: "absolute",
+   top: SCREEN_HEIGHT * 0.2,
+   left: 0,
+ },
+ leg: {
+   width: SCREEN_WIDTH * 0.35,
+   height: SCREEN_HEIGHT * 0.3,
+   position: "absolute",
+   top: SCREEN_HEIGHT * 0.22,
+   right: 0,
+ },
 });

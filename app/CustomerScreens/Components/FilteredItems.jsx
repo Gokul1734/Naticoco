@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ import axios from 'axios';
 import { Buffer } from 'buffer';
 import getImage from "./GetImage";
 import FoodItem from "./FoodItem";
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../Screens/Home/constants";
 
 // Add productImages mapping
 const productImages = {
@@ -290,20 +292,21 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     paddingVertical: 10,
+    width: SCREEN_WIDTH*1.07,
   },
   filterScroll: {
     paddingHorizontal: 10,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-evenly",
-    marginVertical: 30,
+    marginVertical: Platform.OS === 'ios' ? 30 : 10,
     gap: 10,
     alignItems: "start",
     justifyContent: "start",
   },
   filterIcon: {
-    width: 50,
-    height: 50,
+    width: Platform.OS === 'ios' ? 50 : 40,
+    height: Platform.OS === 'ios' ? 50 : 40,
   },
   filterButton: {
     alignItems: "center",
@@ -312,7 +315,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#F8931F",
     height: 100,
-    width: "31.5%",
+    width: SCREEN_WIDTH / 3.4,
     marginBottom: 10,
     gap: 10,
   },
@@ -320,7 +323,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff5500",
   },
   filterText: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'ios' ? 12 : 10,
     color: "#ffffff",
     fontWeight: "600",
     alignSelf: "center",

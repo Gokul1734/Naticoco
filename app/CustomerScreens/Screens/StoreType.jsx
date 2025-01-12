@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Image, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Dimensions, Text, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { MotiView } from 'moti';
 import { useNavigation } from '@react-navigation/native';
@@ -84,12 +84,12 @@ export default function StoreType() {
             <Text style={[{color: '#F8931F'}, styles.subtitle]}>Happy Living."</Text>
           </View>
         </View>
-        <Image source={breast} style={{width:100,height:100,alignSelf:'start'}} />
+        <Image source={breast} style={{width:100,height:100,alignSelf:'start',left:Platform.OS == 'ios' ? SCREEN_WIDTH-450 : SCREEN_WIDTH-390}} />
         <Image source={lemon1} style={{position:'absolute',width:40,height:40,alignSelf:'center',marginTop:650,left:130}} />
         <Image source={lemon1} style={{position:'absolute',width:40,height:40,alignSelf:'center',top:750,left:320}} />
         <Image source={lemon3} style={{position:'absolute',width:40,height:40,alignSelf:'center',top:650,left:250}} />
-        <Image source={leg} style={{position:'absolute',width:100,height:100,alignSelf:'center',top:620,left:300}} />
-        <Image source={egg} style={{width:140,height:120,alignSelf:'center',marginTop:-20}} />
+        <Image source={leg} style={{position:'absolute',width:100,height:100,alignSelf:'center',top:620,left:SCREEN_WIDTH - 100}} />
+        <Image source={egg} style={{width:140,height:120,alignSelf:'center',marginTop:Platform.OS == 'android' ? -100 : -10}} />
       </View>
     </ScreenBackground>
   );
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 40,
+    fontSize: SCREEN_WIDTH * 0.08,
     fontWeight: 'bold',
     marginTop: 30,
     marginBottom: 10,

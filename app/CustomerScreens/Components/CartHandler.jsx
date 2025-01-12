@@ -87,7 +87,7 @@ const FloatingCartHandler = ({ navigation }) => {
 const styles = StyleSheet.create({
   floatingCart: {
     position: 'absolute',
-    bottom: SCREEN_HEIGHT/6,
+    bottom: Platform.OS === 'ios' ? SCREEN_HEIGHT/6 : SCREEN_HEIGHT/10,
     left: 20,
     right: 20,
     backgroundColor: '#F8931F',
