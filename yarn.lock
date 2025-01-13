@@ -8587,7 +8587,7 @@ nanomatch@^1.2.9:
     "@mapbox/polyline" "^1.2.1"
     "@react-native-async-storage/async-storage" "^1.24.0"
     "@react-native-community/cli" latest
-    "@react-native-community/datetimepicker" "8.2.0"
+    "@react-native-community/datetimepicker" "^8.2.0"
     "@react-navigation/bottom-tabs" "^7.0.0"
     "@react-navigation/native" "^7.0.14"
     axios "^1.7.9"

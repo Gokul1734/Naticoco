@@ -127,7 +127,7 @@ const ManageStore = () => {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get('http://192.168.43.165:3500/Admin/cityowners');
+      const response = await axios.get('http://192.168.83.227:3500/Admin/cityowners');
       console.log('API Response:', response.data);
 
       if (response.data.cityOwners && Array.isArray(response.data.cityOwners)) {
