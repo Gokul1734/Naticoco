@@ -143,26 +143,26 @@ function CartScreen({ navigation }) {
   };
 
   const handlePaymentResponse = async (response) => {
+  
     try {
-      // if (response.error) {
-      //   throw new Error(response.error.description);
-      // }
-
-      // Verify payment on your backend
-      // await axios.post('http://192.168.83.227:3500/payment/verify', {
-      //   razorpay_order_id: response.razorpay_order_id,
-      //   razorpay_payment_id: response.razorpay_payment_id,
-      //   razorpay_signature: response.razorpay_signature
-      // });
-
-      // Handle success
-      Alert.alert('Success', 'Payment successful!');
-      // clearCart();
-      navigation.navigate('Success', {
-        paymentMethod: 'online',
-        orderId: response.razorpay_order_id
+      if (response.error) {
+        throw new Error(response.error.description);
+      }
+  
+      setIsLoading(true);
+  
+      // Verify payment on backend
+      const verificationResponse = await axios.post('http://192.168.83.227:3500/payment/verify', {
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature
       });
-
+  
+      if (verificationResponse.data.message === "Payment verified successfully") {
+        // Create order after successful payment verification
+        console.log('Payment verified successfully');
+         placeOrder();
+      }
     } catch (error) {
       Alert.alert('Error', error?.message || 'Payment verification failed');
     } finally {
@@ -193,14 +193,58 @@ function CartScreen({ navigation }) {
     );
   };
 
-  // const placeOrder = async () => {
-  //   await axios.post('http://192.168.83.227:3500/payment/placeorder', {
-  //     userId: userId,
-  //     orderId: orderId,
-  //     totalAmount: totalAmount,
-  //     paymentMethod: paymentMethod,
-  //   });
-  // };
+  const placeOrder = async () => {
+    try {
+      console.log("Place Order API is called here to backend:");
+  
+      // Get userId from AsyncStorage
+      const data = await AsyncStorage.getItem("logincre");
+      if (!data) throw new Error("User not logged in");
+  
+      const parsedData = JSON.parse(data);
+      console.log("Token Data:", parsedData.token);
+      console.log("UserId:", parsedData.token?.userId);
+  
+      const userId = parsedData.token?.userId; // Ensure userId is in camelCase
+      if (!userId) throw new Error("Invalid UserId");
+  
+      const orderData = {
+        userId, // Corrected to camelCase
+        storeId: "676a9c0eb01d91572de6062d",
+        items: cartItems.map(item => ({
+          itemId: item._id,
+          itemName: item.itemName,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        amount: totalAmount,
+        paymentStatus: "Completed",
+        location: { latitude: null, longitude: null },
+      };
+  
+      console.log("Calling this API with data:", orderData);
+  
+      const orderResponse = await axios.post(
+        "http://192.168.83.227:3500/user/placeorder",
+        orderData
+      );
+  
+      if (orderResponse.data.message === "Order created successfully") {
+        Alert.alert("Success", "Payment successful and order placed!");
+        clearCart();
+        navigation.navigate("Success", {
+          paymentMethod: "online",
+          orderId: orderResponse.data.order.orderId,
+        });
+      } else {
+        throw new Error("Failed to create order");
+      }
+    } catch (error) {
+      console.error("Error found:", error.message || error);
+    }
+  };
+  
+  
 
   const renderItem = ({ item, index }) => {
     return <ToBuy item={item} index={index} slideAnim={slideAnim} SCREEN_WIDTH={SCREEN_WIDTH} updateQuantity={updateQuantity} removeFromCart={removeFromCart} />;
