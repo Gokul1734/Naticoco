@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Card, Badge, Button } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
-import StoreBackground from '../../CustomerScreens/Components/ScreenBackground';
+import axios from 'axios';
+
+// Helper function to get status color
+const getStatusColor = (status) => {
+  const normalizedStatus = status.toUpperCase();
+  switch (normalizedStatus) {
+    case 'PENDING': return '#F8931F';
+    case 'PREPARING': return '#2196F3';
+    case 'COMPLETED': return '#4CAF50';
+    case 'REJECTED': return '#F44336';
+    default: return '#666';
+  }
+};
 
 const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
   <MotiView
@@ -16,8 +29,10 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
       <Card.Content>
         <View style={styles.orderHeader}>
           <View>
-            <Text style={styles.orderId}>Order #{order.id}</Text>
-            <Text style={styles.orderTime}>{order.time}</Text>
+            <Text style={styles.orderId}>Order #{order.orderId}</Text>
+            <Text style={styles.orderTime}>
+              {new Date(order.createdAt).toLocaleTimeString()}
+            </Text>
           </View>
           <Badge style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
             {order.status}
@@ -27,7 +42,7 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
         <View style={styles.itemsList}>
           {order.items.map((item, index) => (
             <View key={index} style={styles.itemRow}>
-              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemName}>{item.itemName}</Text>
               <Text style={styles.itemQuantity}>x{item.quantity}</Text>
               <Text style={styles.itemPrice}>₹{item.price}</Text>
             </View>
@@ -35,30 +50,30 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
         </View>
 
         <View style={styles.orderFooter}>
-          <Text style={styles.totalAmount}>Total: ₹{order.total}</Text>
+          <Text style={styles.totalAmount}>Total: ₹{order.amount}</Text>
           <View style={styles.actionButtons}>
-            {order.status === 'PENDING' && (
+            {order.status.toUpperCase() === 'PENDING' && (
               <>
                 <Button 
                   mode="contained" 
-                  onPress={() => onAccept(order.id)}
+                  onPress={() => onAccept(order._id)}
                   style={[styles.actionButton, styles.acceptButton]}
                 >
                   Accept & Prepare
                 </Button>
                 <Button 
                   mode="outlined" 
-                  onPress={() => onReject(order.id)}
+                  onPress={() => onReject(order._id)}
                   style={[styles.actionButton, styles.rejectButton]}
                 >
                   Reject
                 </Button>
               </>
             )}
-            {order.status === 'PREPARING' && (
+            {order.status.toUpperCase() === 'PREPARING' && (
               <Button 
                 mode="contained" 
-                onPress={() => onPreparationComplete(order.id)}
+                onPress={() => onPreparationComplete(order._id)}
                 style={[styles.actionButton, styles.completeButton]}
               >
                 Mark as Ready
@@ -71,123 +86,170 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
   </MotiView>
 );
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'PENDING': return '#F8931F';
-    case 'PREPARING': return '#2196F3';
-    case 'ACCEPTED': return '#4CAF50';
-    case 'REJECTED': return '#F44336';
-    default: return '#666';
-  }
-};
-
 export default function OrderManagement({ navigation }) {
-  const [orders, setOrders] = useState([
-    {
-      id: '001',
-      time: '10:30 AM',
-      status: 'PENDING',
-      items: [
-        { name: 'Crispy Chicken', quantity: 2, price: 299 },
-        { name: 'French Fries', quantity: 1, price: 99 }
-      ],
-      total: 697
-    },
-    {
-     id: '002',
-     time: '10:30 AM',
-     status: 'PENDING',
-     items: [
-       { name: 'Crispy Chicken', quantity: 2, price: 299 },
-       { name: 'French Fries', quantity: 1, price: 99 }
-     ],
-     total: 697
-   },
-   {
-    id: '003',
-    time: '10:30 AM',
-    status: 'PENDING',
-    items: [
-      { name: 'Crispy Chicken', quantity: 2, price: 299 },
-      { name: 'French Fries', quantity: 1, price: 99 }
-    ],
-    total: 697
-  },
-    // Add more sample orders
-  ]);
-
+  const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('PENDING');
+  const [loading, setLoading] = useState(true);
 
-  const handleAcceptOrder = (orderId) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: 'PREPARING' } : order
-    ));
+  const fetchOrders = async () => {
+    try {
+      const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+      if (!vendorCredentialsString) {
+        console.error('No vendor credentials found');
+        return;
+      }
+  
+      const vendorCredentials = JSON.parse(vendorCredentialsString);
+      const storeId = vendorCredentials?.vendorData?.storeId;
+  
+      if (!storeId) {
+        console.error('No storeId found in vendor credentials');
+        return;
+      }
+  
+      const response = await axios.get(`http://192.168.0.104:3500/citystore/orders/${storeId}`);
+      
+      console.log('Fetched orders:', response.data);
+      setOrders(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      setLoading(false);
+    }
   };
 
-  const handleRejectOrder = (orderId) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: 'REJECTED' } : order
-    ));
-  };
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const handlePreparationComplete = (orderId) => {
-    const updatedOrder = orders.find(order => order.id === orderId);
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: 'ACCEPTED' } : order
-    ));
-    navigation.navigate('PickupManagement', { order: updatedOrder });
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
+        orderId,    // Pass orderId in the body
+        status: 'PREPARING'  // Pass the new status in the body
+      });
+  
+      setOrders(orders.map(order =>
+        order._id === orderId ? { ...order, status: 'PREPARING' } : order
+      ));
+    } catch (error) {
+      console.error('Error accepting order:', error);
+    }
   };
+  
+  const handleRejectOrder = async (orderId) => {
+    try {
+      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
+        orderId,    // Pass orderId in the body
+        status: 'REJECTED'  // Pass the new status in the body
+      });
+  
+      setOrders(orders.map(order =>
+        order._id === orderId ? { ...order, status: 'REJECTED' } : order
+      ));
+    } catch (error) {
+      console.error('Error rejecting order:', error);
+    }
+  };
+  
+  const handlePreparationComplete = async (orderId) => {
+    try {
+      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
+        orderId,    // Pass orderId in the body
+        status: 'COMPLETED'  // Pass the new status in the body
+      });
+  
+      const updatedOrder = orders.find(order => order._id === orderId);
+      setOrders(orders.map(order => 
+        order._id === orderId ? { ...order, status: 'COMPLETED' } : order
+      ));
+  
+      navigation.navigate('PickupManagement', { order: updatedOrder });
+    } catch (error) {
+      console.error('Error completing order:', error);
+    }
+  };
+  
+
+  // Normalize status for comparison
+  const normalizeStatus = (status) => status.toUpperCase();
 
   const filteredOrders = orders.filter(order => 
-    activeTab === 'ALL' || order.status === activeTab
+    activeTab === 'ALL' || normalizeStatus(order.status) === activeTab
   );
 
+  // Status tabs with consistent casing
+  const statusTabs = ['PENDING', 'PREPARING', 'COMPLETED', 'REJECTED', 'ALL'];
+
+  // Helper function to display status in proper case
+  const displayStatus = (status) => {
+    return status === 'ALL' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase();
+  };
+
+  console.log('Current filtered orders:', filteredOrders);
+  console.log('Active tab:', activeTab);
+
   return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Order Management</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabsContainer}
+      >
+        {statusTabs.map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+              {displayStatus(tab)}
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Order Management</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        ))}
+      </ScrollView>
 
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabsContainer}
-        >
-          {['PENDING', 'PREPARING', 'ACCEPTED', 'REJECTED', 'ALL'].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.tab, activeTab === tab && styles.activeTab]}
-              onPress={() => setActiveTab(tab)}
-            >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <ScrollView style={styles.ordersList}>
-          {filteredOrders.map((order) => (
+      <ScrollView style={styles.ordersList}>
+        {loading ? (
+          <Text>Loading orders...</Text>
+        ) : filteredOrders.length === 0 ? (
+          <Text>No orders found</Text>
+        ) : (
+          filteredOrders.map((order) => (
             <OrderCard
-              key={order.id}
-              order={order}
+              key={order._id}
+              order={{
+                ...order,
+                status: displayStatus(order.status)
+              }}
               onAccept={handleAcceptOrder}
               onReject={handleRejectOrder}
               onPreparationComplete={handlePreparationComplete}
             />
-          ))}
-        </ScrollView>
-      </View>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -202,13 +264,10 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     paddingHorizontal: scale(20),
-    // marginBottom: verticalScale(15),
     marginTop: verticalScale(10),
-    // height: verticalScale(80),
   },
   tab: {
     paddingHorizontal: scale(20),
-    // paddingVertical: verticalScale(8),
     marginRight: scale(10),
     borderRadius: scale(20),
     height: verticalScale(80),
@@ -226,7 +285,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   ordersList: {
-    // flex: 1,
+    flex: 1,
     padding: scale(20),
   },
   orderCard: {
@@ -299,4 +358,4 @@ const styles = StyleSheet.create({
   completeButton: {
     backgroundColor: '#2196F3',
   },
-}); 
+});
