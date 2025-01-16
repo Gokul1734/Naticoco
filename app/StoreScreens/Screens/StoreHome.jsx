@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, Switch, Card } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
-// import StoreBackground from '../../CustomerScreens/Components/ScreenBackground';
 
 const StatCard = ({ title, value, icon, color }) => (
   <MotiView
@@ -14,8 +19,15 @@ const StatCard = ({ title, value, icon, color }) => (
   >
     <Card style={styles.statCard}>
       <View style={styles.statContent}>
-      <Text style={styles.statTitle}>{title}</Text>
-        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',gap: scale(10)}}>
+        <Text style={styles.statTitle}>{title}</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: scale(10),
+          }}
+        >
           <Text style={[styles.statValue, { color }]}>{value}</Text>
           <Ionicons name={icon} size={30} color={color} />
         </View>
@@ -30,81 +42,106 @@ export default function StoreHome({ navigation }) {
     pendingOrders: 5,
     todayOrders: 25,
     revenue: '₹12,500',
-    stockAlerts: 3
+    stockAlerts: 3,
   });
+  const [vendorDetails, setVendorDetails] = useState(null);
+
+  // Fetch vendor details from AsyncStorage
+  useEffect(() => {
+    const fetchVendorDetails = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem('vendorCredentials');
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setVendorDetails(parsedData.vendorData);
+        }
+      } catch (error) {
+        console.error('Error fetching vendor details:', error);
+      }
+    };
+
+    fetchVendorDetails();
+  }, []);
 
   return (
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.storeName}>Crispy Chicken Store</Text>
-            <Text style={styles.location}>Hyderabad</Text>
-          </View>
-          <View style={styles.storeStatus}>
-            <Text style={styles.statusText}>
-              {isStoreOpen ? 'Store Open' : 'Store Closed'}
-            </Text>
-            <Switch
-              value={isStoreOpen}
-              onValueChange={setIsStoreOpen}
-              color="#0f1c57"
-            />
-          </View>
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.storeName}>
+            {vendorDetails?.name || 'Crispy Chicken Store'}
+          </Text>
+          <Text style={styles.location}>
+            {vendorDetails?.email || 'Hyderabad'}
+          </Text>
         </View>
-
-        <View style={styles.statsGrid}>
-          <StatCard
-            title="Pending Orders"
-            value={stats.pendingOrders}
-            icon="time-outline"
-            color="#F8931F"
-          />
-          <StatCard
-            title="Today's Orders"
-            value={stats.todayOrders}
-            icon="cart-outline"
-            color="#4CAF50"
-          />
-          <StatCard
-            title="Today's Revenue"
-            value={stats.revenue}
-            icon="cash-outline"
-            color="#2196F3"
-          />
-          <StatCard
-            title="Stock Alerts"
-            value={stats.stockAlerts}
-            icon="alert-circle-outline"
-            color="#F44336"
+        <View style={styles.storeStatus}>
+          <Text style={styles.statusText}>
+            {isStoreOpen ? 'Store Open' : 'Store Closed'}
+          </Text>
+          <Switch
+            value={isStoreOpen}
+            onValueChange={setIsStoreOpen}
+            color="#0f1c57"
           />
         </View>
+      </View>
 
-        <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('OrderManagement')}
-          >
-            <Ionicons name="list" size={24} color="#FFF" />
-            <Text style={styles.actionButtonText}>Manage Orders</Text>
-          </TouchableOpacity>
+      {/* Stats Grid */}
+      <View style={styles.statsGrid}>
+        <StatCard
+          title="Pending Orders"
+          value={stats.pendingOrders}
+          icon="time-outline"
+          color="#F8931F"
+        />
+        <StatCard
+          title="Today's Orders"
+          value={stats.todayOrders}
+          icon="cart-outline"
+          color="#4CAF50"
+        />
+        <StatCard
+          title="Today's Revenue"
+          value={stats.revenue}
+          icon="cash-outline"
+          color="#2196F3"
+        />
+        <StatCard
+          title="Stock Alerts"
+          value={stats.stockAlerts}
+          icon="alert-circle-outline"
+          color="#F44336"
+        />
+      </View>
 
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('StockManagement')}
-          >
-            <Ionicons name="cube" size={24} color="#FFF" />
-            <Text style={styles.actionButtonText}>Manage Stock</Text>
-          </TouchableOpacity>
+      {/* Action Buttons */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('OrderManagement')}
+        >
+          <Ionicons name="list" size={24} color="#FFF" />
+          <Text style={styles.actionButtonText}>Manage Orders</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('StoreSettings')}
-          >
-            <Ionicons name="settings" size={24} color="#FFF" />
-            <Text style={styles.actionButtonText}>Settings</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('StockManagement')}
+        >
+          <Ionicons name="cube" size={24} color="#FFF" />
+          <Text style={styles.actionButtonText}>Manage Stock</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('StoreSettings')}
+        >
+          <Ionicons name="settings" size={24} color="#FFF" />
+          <Text style={styles.actionButtonText}>Settings</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -183,4 +220,4 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(5),
     textAlign: 'center',
   },
-}); 
+});
