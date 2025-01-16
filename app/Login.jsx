@@ -148,6 +148,71 @@ export default function LoginScreen() {
     }
   };
 
+  const handleVendorLogin = async () => {
+    if (!phoneNumber || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+  
+    setLoading(true);
+    try {
+      const vendorResponse = await axios.post(
+        "http://192.168.0.104:3500/citystore/Login",
+        {
+          mobileno: phoneNumber,
+          password: password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (vendorResponse.status === 200) {
+        // Store vendor credentials
+        await AsyncStorage.setItem(
+          "vendorCredentials",
+          JSON.stringify({
+            phoneNumber,
+            token: vendorResponse.data?.accessToken,
+            type: "vendor",
+            vendorData: {
+              storeId: vendorResponse.data?.user?.userId,
+              name: vendorResponse.data?.user?.name,
+              phone: vendorResponse.data?.user?.mobileno,
+              email: vendorResponse.data?.user?.email,
+            },
+          })
+        );
+        console.log("Stored vendor credentials:", await AsyncStorage.getItem("vendorCredentials"));
+  
+        // Navigate to vendor dashboard
+        navigation.navigate("StoreStack");
+      }
+    } catch (error) {
+      console.error("Vendor login error:", error);
+      
+      let errorMessage = "Vendor login failed.";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (!error.response) {
+        errorMessage = "Network error. Please check your connection.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Invalid vendor credentials";
+      } else if (error.response?.status === 404) {
+        errorMessage = "Vendor account not found";
+      }
+  
+      Alert.alert("Login Failed", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -249,7 +314,7 @@ export default function LoginScreen() {
               <View style={styles.altLoginContainer}>
                 <TouchableOpacity
                   style={styles.vendorButton}
-                  onPress={() => navigation.navigate("StoreStack")}
+                  onPress={handleVendorLogin}
                 >
                   <Ionicons name="restaurant-outline" size={24} color="white" />
                   <Text style={styles.altButtonText}>Vendor Login</Text>
