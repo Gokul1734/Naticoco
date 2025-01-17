@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { Text, Switch, Card } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,6 +64,40 @@ export default function StoreHome({ navigation }) {
     fetchVendorDetails();
   }, []);
 
+  const toggleStoreStatus = async () => {
+    const newStatus = !isStoreOpen;
+  
+    try {
+      const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+      if (!vendorCredentialsString) {
+        console.error('No vendor credentials found');
+        return;
+      }
+      const vendorCredentials = JSON.parse(vendorCredentialsString);
+      const storeId = vendorCredentials?.vendorData?.storeId;
+      console.log('Store ID:', storeId);
+      if (!storeId) {
+        console.error('Error: Vendor ID not found');
+        return;
+      }
+  
+      const response = await axios.put('http://192.168.0.104:3500/citystore/availability', {
+        storeId,
+        isOpen: newStatus,
+      });
+  
+      if (response.status === 200 && response.data.success) {
+        setIsStoreOpen(newStatus);
+        console.log(response.data.message); // Display success message
+      } else {
+        console.error('Failed to update store status:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating store status:', error.message);
+    }
+  };
+  
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -81,7 +116,7 @@ export default function StoreHome({ navigation }) {
           </Text>
           <Switch
             value={isStoreOpen}
-            onValueChange={setIsStoreOpen}
+            onValueChange={toggleStoreStatus}
             color="#0f1c57"
           />
         </View>
@@ -144,6 +179,7 @@ export default function StoreHome({ navigation }) {
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
