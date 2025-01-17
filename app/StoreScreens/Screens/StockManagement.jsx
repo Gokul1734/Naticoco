@@ -209,7 +209,7 @@ export default function StockManagement({ navigation }) {
         });
       }
 
-      const response = await axios.post('http://192.168.0.104:3500/citystore/Addmenu', formData, {
+      const response = await axios.post('http://192.168.83.227:3500/citystore/Addmenu', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -230,7 +230,7 @@ export default function StockManagement({ navigation }) {
           bestSeller: false,
           newArrival: false
         });
-        const menuResponse = await axios.get(`http://192.168.0.105:3500/citystore/getallmenu?storeId=${storeId}`);
+        const menuResponse = await axios.get(`http://192.168.83.227:3500/citystore/getallmenu?storeId=${storeId}`);
         setStockItems(menuResponse.data);
       }
     } catch (error) {
