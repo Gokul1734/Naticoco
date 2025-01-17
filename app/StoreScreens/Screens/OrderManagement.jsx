@@ -107,7 +107,7 @@ export default function OrderManagement({ navigation }) {
         return;
       }
   
-      const response = await axios.get(`http://192.168.0.104:3500/citystore/orders/${storeId}`);
+      const response = await axios.get(`http://192.168.83.227:3500/citystore/orders/${storeId}`);
       
       console.log('Fetched orders:', response.data);
       setOrders(response.data);
@@ -130,7 +130,7 @@ export default function OrderManagement({ navigation }) {
 
   const handleAcceptOrder = async (orderId) => {
     try {
-      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
+      await axios.post(`http://192.168.83.227:3500/citystore/updateorder`, {
         orderId,    // Pass orderId in the body
         status: 'PREPARING'  // Pass the new status in the body
       });
@@ -145,7 +145,7 @@ export default function OrderManagement({ navigation }) {
   
   const handleRejectOrder = async (orderId) => {
     try {
-      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
+      await axios.post(`http://192.168.83.227:3500/citystore/updateorder`, {
         orderId,    // Pass orderId in the body
         status: 'REJECTED'  // Pass the new status in the body
       });
@@ -160,7 +160,7 @@ export default function OrderManagement({ navigation }) {
   
   const handlePreparationComplete = async (orderId) => {
     try {
-      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
+      await axios.post(`http://192.168.83.227:3500/citystore/updateorder`, {
         orderId,    // Pass orderId in the body
         status: 'COMPLETED'  // Pass the new status in the body
       });
