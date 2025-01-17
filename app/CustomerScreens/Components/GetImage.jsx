@@ -7,7 +7,7 @@ function getImage(imag) {
   // console.log(imag);
   const [images, setImage] = useState(null);
   useEffect(() => {
-    axios.get(`http://192.168.0.105:3500/images/${img}`, {
+    axios.get(`http://192.168.83.227:3500/images/${img}`, {
       responseType:'arraybuffer'
     })
       .then(response => {

@@ -200,7 +200,7 @@ export default function StockManagement({ navigation }) {
         });
       }
 
-      const response = await axios.post('http://192.168.0.105:3500/citystore/Addmenu', formData, {
+      const response = await axios.post('http://192.168.83.227:3500/citystore/Addmenu', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
