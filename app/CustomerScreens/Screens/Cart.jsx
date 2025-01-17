@@ -104,7 +104,7 @@ function CartScreen({ navigation }) {
   const handleOnlinePayment = async () => {
     try {
       // Create order on your backend
-      const orderResponse = await axios.post('http://192.168.0.104:3500/payment/orders', {
+      const orderResponse = await axios.post('http://192.168.0.105:3500/payment/orders', {
         amount: totalAmount * 100,
       });
 
@@ -152,7 +152,7 @@ function CartScreen({ navigation }) {
       setIsLoading(true);
   
       // Verify payment on backend
-      const verificationResponse = await axios.post('http://192.168.0.104:3500/payment/verify', {
+      const verificationResponse = await axios.post('http://192.168.0.105:3500/payment/verify', {
         razorpay_order_id: response.razorpay_order_id,
         razorpay_payment_id: response.razorpay_payment_id,
         razorpay_signature: response.razorpay_signature
@@ -225,7 +225,7 @@ function CartScreen({ navigation }) {
       console.log("Calling this API with data:", orderData);
   
       const orderResponse = await axios.post(
-        "http://192.168.0.104:3500/user/placeorder",
+        "http://192.168.0.105:3500/user/placeorder",
         orderData
       );
   
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
 //   //   try {
 //   //     // Create order on your backend
 //   //     const orderResponse = await axios.post(
-//   //       "http://192.168.0.104:3500/payment/orders",
+//   //       "http://192.168.0.105:3500/payment/orders",
 //   //       {
 //   //         amount: totalAmount * 100,
 //   //       }
@@ -808,7 +808,7 @@ const styles = StyleSheet.create({
 //   //     }
 
 //   //     // Verify payment on your backend
-//   //     await axios.post("http://192.168.0.104:3500/payment/verify", {
+//   //     await axios.post("http://192.168.0.105:3500/payment/verify", {
 //   //       razorpay_order_id: response.razorpay_order_id,
 //   //       razorpay_payment_id: response.razorpay_payment_id,
 //   //       razorpay_signature: response.razorpay_signature,
