@@ -81,7 +81,7 @@ export default function StoreHome({ navigation }) {
         return;
       }
   
-      const response = await axios.put('http://192.168.0.105:3500/citystore/availability', {
+      const response = await axios.put('http://192.168.0.104:3500/citystore/availability', {
         storeId,
         isOpen: newStatus,
       });

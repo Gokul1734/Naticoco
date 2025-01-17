@@ -107,7 +107,7 @@ export default function StockManagement({ navigation }) {
           return;
         }
 
-        const response = await axios.get(`http://192.168.0.105:3500/citystore/getallmenu?storeId=${storeId}`);
+        const response = await axios.get(`http://192.168.0.104:3500/citystore/getallmenu?storeId=${storeId}`);
         setStockItems(response.data);
       } catch (error) {
         console.error('Error fetching menu items:', error);
