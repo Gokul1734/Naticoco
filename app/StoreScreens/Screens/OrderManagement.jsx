@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Text, Card, Badge, Button } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { Text, Card, Badge, Button, Dialog, Portal } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,78 +13,119 @@ const getStatusColor = (status) => {
   switch (normalizedStatus) {
     case 'PENDING': return '#F8931F';
     case 'PREPARING': return '#2196F3';
+    case 'READY': return '#FF9800';
     case 'COMPLETED': return '#4CAF50';
     case 'REJECTED': return '#F44336';
     default: return '#666';
   }
 };
 
-const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
-  <MotiView
-    from={{ opacity: 0, translateX: -50 }}
-    animate={{ opacity: 1, translateX: 0 }}
-    transition={{ type: 'spring', duration: 1000 }}
-  >
-    <Card style={styles.orderCard}>
-      <Card.Content>
-        <View style={styles.orderHeader}>
-          <View>
-            <Text style={styles.orderId}>{order.orderId}</Text>
-            <Text style={styles.orderTime}>
-              {new Date(order.createdAt).toLocaleTimeString()}
-            </Text>
-          </View>
-          <Badge style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
-            {order.status}
-          </Badge>
-        </View>
+const OrderCard = ({ order, onAccept, onReject, onPreparationComplete, onVerifyAndComplete }) => {
+  const [otpDialogVisible, setOtpDialogVisible] = useState(false);
+  const [otp, setOtp] = useState('');
 
-        <View style={styles.itemsList}>
-          {order.items.map((item, index) => (
-            <View key={index} style={styles.itemRow}>
-              <Text style={styles.itemName}>{item.itemName}</Text>
-              <Text style={styles.itemQuantity}>x{item.quantity}</Text>
-              <Text style={styles.itemPrice}>₹{item.price}</Text>
+  const handleVerification = () => {
+    onVerifyAndComplete(order._id, otp);
+    setOtpDialogVisible(false);
+    setOtp('');
+  };
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateX: -50 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: 'spring', duration: 1000 }}
+    >
+      <Card style={styles.orderCard}>
+        <Card.Content>
+          <View style={styles.orderHeader}>
+            <View>
+              <Text style={styles.orderId}>{order.orderId}</Text>
+              <Text style={styles.orderTime}>
+                {new Date(order.createdAt).toLocaleTimeString()}
+              </Text>
             </View>
-          ))}
-        </View>
+            <Badge style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
+              {order.status}
+            </Badge>
+          </View>
 
-        <View style={styles.orderFooter}>
-          <Text style={styles.totalAmount}>Total: ₹{order.amount}</Text>
-          <View style={styles.actionButtons}>
-            {order.status.toUpperCase() === 'PENDING' && (
-              <>
+          <View style={styles.itemsList}>
+            {order.items.map((item, index) => (
+              <View key={index} style={styles.itemRow}>
+                <Text style={styles.itemName}>{item.itemName}</Text>
+                <Text style={styles.itemQuantity}>x{item.quantity}</Text>
+                <Text style={styles.itemPrice}>₹{item.price}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.orderFooter}>
+            <Text style={styles.totalAmount}>Total: ₹{order.amount}</Text>
+            <View style={styles.actionButtons}>
+              {order.status.toUpperCase() === 'PENDING' && (
+                <>
+                  <Button 
+                    mode="contained" 
+                    onPress={() => onAccept(order._id)}
+                    style={[styles.actionButton, styles.acceptButton]}
+                  >
+                    Accept & Prepare
+                  </Button>
+                  <Button 
+                    mode="outlined" 
+                    onPress={() => onReject(order._id)}
+                    style={[styles.actionButton, styles.rejectButton]}
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
+              {order.status.toUpperCase() === 'PREPARING' && (
                 <Button 
                   mode="contained" 
-                  onPress={() => onAccept(order._id)}
-                  style={[styles.actionButton, styles.acceptButton]}
+                  onPress={() => onPreparationComplete(order._id)}
+                  style={[styles.actionButton, styles.completeButton]}
                 >
-                  Accept & Prepare
+                  Mark as Ready
                 </Button>
+              )}
+              {order.status.toUpperCase() === 'READY' && (
                 <Button 
-                  mode="outlined" 
-                  onPress={() => onReject(order._id)}
-                  style={[styles.actionButton, styles.rejectButton]}
+                  mode="contained" 
+                  onPress={() => setOtpDialogVisible(true)}
+                  style={[styles.actionButton, styles.verifyButton]}
                 >
-                  Reject
+                  Verify & Complete
                 </Button>
-              </>
-            )}
-            {order.status.toUpperCase() === 'PREPARING' && (
-              <Button 
-                mode="contained" 
-                onPress={() => onPreparationComplete(order._id)}
-                style={[styles.actionButton, styles.completeButton]}
-              >
-                Mark as Ready
-              </Button>
-            )}
+              )}
+            </View>
           </View>
-        </View>
-      </Card.Content>
-    </Card>
-  </MotiView>
-);
+        </Card.Content>
+      </Card>
+
+      <Portal>
+        <Dialog visible={otpDialogVisible} onDismiss={() => setOtpDialogVisible(false)}>
+          <Dialog.Title>Enter Delivery OTP</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              style={styles.otpInput}
+              value={otp}
+              onChangeText={setOtp}
+              placeholder="Enter OTP"
+              keyboardType="numeric"
+              maxLength={6}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setOtpDialogVisible(false)}>Cancel</Button>
+            <Button onPress={handleVerification}>Verify</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </MotiView>
+  );
+};
 
 export default function OrderManagement({ navigation }) {
   const [orders, setOrders] = useState([]);
@@ -108,8 +149,6 @@ export default function OrderManagement({ navigation }) {
       }
   
       const response = await axios.get(`http://192.168.83.227:3500/citystore/orders/${storeId}`);
-      
-      console.log('Fetched orders:', response.data);
       setOrders(response.data);
       setLoading(false);
     } catch (error) {
@@ -129,11 +168,10 @@ export default function OrderManagement({ navigation }) {
   }, []);
   
   const handleAcceptOrder = async (orderId) => {
-    console.log(orderId);
     try {
-      await axios.post(`http://192.168.83.227:3500/citystore/updateorder`, {
-        orderId,    // Pass orderId in the body
-        status: 'PREPARING'  // Pass the new status in the body
+      await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
+        orderId: orderId,  // Pass orderId in the body
+        status: 'PREPARING' // Pass the new status in the body
       });
       
       setOrders(orders.map(order =>
@@ -141,14 +179,15 @@ export default function OrderManagement({ navigation }) {
       ));
     } catch (error) {
       console.error('Error accepting order:', error);
+      Alert.alert('Error', 'Failed to accept order');
     }
   };
   
   const handleRejectOrder = async (orderId) => {
     try {
-      await axios.post(`http://192.168.83.227:3500/citystore/updateorder`, {
-        orderId,    // Pass orderId in the body
-        status: 'REJECTED'  // Pass the new status in the body
+      await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
+        orderId: orderId, // Pass orderId in the body
+        status: 'REJECTED' // Pass the new status in the body
       });
   
       setOrders(orders.map(order =>
@@ -156,14 +195,15 @@ export default function OrderManagement({ navigation }) {
       ));
     } catch (error) {
       console.error('Error rejecting order:', error);
+      Alert.alert('Error', 'Failed to reject order');
     }
   };
   
   const handlePreparationComplete = async (orderId) => {
     try {
-      await axios.post(`http://192.168.83.227:3500/citystore/updateorder`, {
-        orderId,    // Pass orderId in the body
-        status: 'COMPLETED'  // Pass the new status in the body
+      await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
+        orderId: orderId, // Pass orderId in the body
+        status: 'COMPLETED' // Pass the new status in the body
       });
   
       const updatedOrder = orders.find(order => order._id === orderId);
@@ -173,11 +213,10 @@ export default function OrderManagement({ navigation }) {
   
       navigation.navigate('PickupManagement', { order: updatedOrder });
     } catch (error) {
-      console.error('Error completing order:', error);
+      console.error('Error verifying and completing order:', error);
+      Alert.alert('Error', 'Failed to verify and complete order');
     }
   };
-  
-  
 
   // Normalize status for comparison
   const normalizeStatus = (status) => status.toUpperCase();
@@ -187,15 +226,12 @@ export default function OrderManagement({ navigation }) {
   );
 
   // Status tabs with consistent casing
-  const statusTabs = ['PENDING', 'PREPARING', 'COMPLETED', 'REJECTED', 'ALL'];
+  const statusTabs = ['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'REJECTED', 'ALL'];
 
   // Helper function to display status in proper case
   const displayStatus = (status) => {
     return status === 'ALL' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase();
   };
-
-  console.log('Current filtered orders:', filteredOrders);
-  console.log('Active tab:', activeTab);
 
   return (
     <View style={styles.container}>
@@ -227,9 +263,9 @@ export default function OrderManagement({ navigation }) {
 
       <ScrollView style={styles.ordersList}>
         {loading ? (
-          <Text>Loading orders...</Text>
+          <Text style={styles.messageText}>Loading orders...</Text>
         ) : filteredOrders.length === 0 ? (
-          <Text>No orders found</Text>
+          <Text style={styles.messageText}>No orders found</Text>
         ) : (
           filteredOrders.map((order) => (
             <OrderCard
@@ -241,6 +277,7 @@ export default function OrderManagement({ navigation }) {
               onAccept={() => handleAcceptOrder(order.orderId)}
               onReject={() => handleRejectOrder(order.orderId)}
               onPreparationComplete={() => handlePreparationComplete(order.orderId)}
+              onVerifyAndComplete={(orderId, otp) => handleVerifyAndComplete(orderId, otp)}
             />
           ))
         )}
@@ -248,7 +285,6 @@ export default function OrderManagement({ navigation }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -267,6 +303,17 @@ const styles = StyleSheet.create({
   tabsContainer: {
     paddingHorizontal: scale(20),
     marginTop: verticalScale(10),
+  },
+  otpInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
+  verifyButton: {
+    backgroundColor: '#FF9800',
   },
   tab: {
     paddingHorizontal: scale(20),
