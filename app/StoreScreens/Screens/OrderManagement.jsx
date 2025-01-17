@@ -98,7 +98,7 @@ export default function OrderManagement({ navigation }) {
         console.error('No vendor credentials found');
         return;
       }
-  
+   
       const vendorCredentials = JSON.parse(vendorCredentialsString);
       const storeId = vendorCredentials?.vendorData?.storeId;
   
