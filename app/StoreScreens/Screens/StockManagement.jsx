@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image, Switch } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image, Switch, Alert } from 'react-native';
 import { Text, Card, TextInput, Button, IconButton } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-// import StoreBackground from '../../CustomerScreens/Components/ScreenBackground';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -128,13 +128,15 @@ export default function StockManagement({ navigation }) {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [newItem, setNewItem] = useState({
-    storeId: '123',
+    storeId: '',
     itemName: '',
     description: '',
     price: '',
+    category: '',
+    subCategory: '',
     image: null,
     availability: true,
-    BestSeller: false,
+    bestSeller: false,
     newArrival: false
   });
 
@@ -153,15 +155,38 @@ export default function StockManagement({ navigation }) {
 
   const handleAddItem = async () => {
     try {
+      const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+      if (!vendorCredentialsString) {
+        Alert.alert('Error', 'No vendor credentials found');
+        return;
+      }
+  
+      const vendorCredentials = JSON.parse(vendorCredentialsString);
+      const storeId = vendorCredentials?.vendorData?.storeId;
+  
+      if (!storeId) {
+        Alert.alert('Error', 'No store ID found');
+        return;
+      }
+
+      // Validate required fields
+      if (!newItem.itemName || !newItem.price || !newItem.category || !newItem.image) {
+        Alert.alert('Error', 'Please fill all required fields and add an image');
+        return;
+      }
+
       const formData = new FormData();
-      formData.append('storeId', newItem.storeId);
+      formData.append('storeId', storeId);
       formData.append('itemName', newItem.itemName);
       formData.append('description', newItem.description);
       formData.append('price', newItem.price);
+      formData.append('category', newItem.category);
+      formData.append('subCategory', newItem.subCategory);
       formData.append('availability', newItem.availability);
-      formData.append('BestSeller', newItem.BestSeller);
+      formData.append('bestSeller', newItem.bestSeller);
       formData.append('newArrival', newItem.newArrival);
       
+      // Handle image upload
       if (newItem.image) {
         const imageUri = newItem.image;
         const filename = imageUri.split('/').pop();
@@ -175,20 +200,33 @@ export default function StockManagement({ navigation }) {
         });
       }
 
-      const response = await axios.post('http://192.168.0.104:3500/citystore/Addmenu', formData, {
+      const response = await axios.post('http://192.168.0.105:3500/citystore/Addmenu', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         setModalVisible(false);
         Alert.alert('Success', 'Item added successfully');
-        // Refresh your items list here
+        // Reset form
+        setNewItem({
+          storeId: '',
+          itemName: '',
+          description: '',
+          price: '',
+          category: '',
+          subCategory: '',
+          image: null,
+          availability: true,
+          bestSeller: false,
+          newArrival: false
+        });
+        // TODO: Refresh items list
       }
     } catch (error) {
       console.error('Error adding item:', error);
-      Alert.alert('Error', 'Failed to add item');
+      Alert.alert('Error', error.response?.data?.message || 'Failed to add item');
     }
   };
 
@@ -258,9 +296,25 @@ export default function StockManagement({ navigation }) {
             </TouchableOpacity>
 
             <TextInput
-              label="Item Name"
+              label="Item Name *"
               value={newItem.itemName}
               onChangeText={(text) => setNewItem(prev => ({ ...prev, itemName: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+            />
+
+            <TextInput
+              label="Category *"
+              value={newItem.category}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, category: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+            />
+
+            <TextInput
+              label="Sub Category"
+              value={newItem.subCategory}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, subCategory: text }))}
               style={styles.modalInput}
               mode="outlined"
             />
@@ -275,7 +329,7 @@ export default function StockManagement({ navigation }) {
             />
 
             <TextInput
-              label="Price"
+              label="Price *"
               value={newItem.price}
               onChangeText={(text) => setNewItem(prev => ({ ...prev, price: text }))}
               style={styles.modalInput}
@@ -286,16 +340,25 @@ export default function StockManagement({ navigation }) {
 
             <View style={styles.togglesContainer}>
               <View style={styles.toggleRow}>
-                <Text style={styles.toggleLabel}>Best Seller</Text>
+                <Text style={styles.toggleLabel}>Available</Text>
                 <Switch
-                  value={newItem.BestSeller}
+                  value={newItem.availability}
                   onValueChange={(value) => 
-                    setNewItem(prev => ({ ...prev, BestSeller: value }))
+                    setNewItem(prev => ({ ...prev, availability: value }))
                   }
                   color="#F8931F"
                 />
               </View>
-
+              <View style={styles.toggleRow}>
+                <Text style={styles.toggleLabel}>Best Seller</Text>
+                <Switch
+                  value={newItem.bestSeller}
+                  onValueChange={(value) => 
+                    setNewItem(prev => ({ ...prev, bestSeller: value }))
+                  }
+                  color="#F8931F"
+                />
+              </View>
               <View style={styles.toggleRow}>
                 <Text style={styles.toggleLabel}>New Arrival</Text>
                 <Switch

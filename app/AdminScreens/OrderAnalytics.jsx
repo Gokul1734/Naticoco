@@ -135,7 +135,7 @@ export default function OrderAnalytics() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://192.168.0.104:3500/api/orders/analytics?timeFilter=${timeFilter}`);
+      const response = await axios.get(`http://192.168.0.105:3500/api/orders/analytics?timeFilter=${timeFilter}`);
       if (response.data) {
         setAnalytics({
           totalStats: response.data.totalStats || {
