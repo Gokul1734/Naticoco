@@ -29,7 +29,7 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete }) => (
       <Card.Content>
         <View style={styles.orderHeader}>
           <View>
-            <Text style={styles.orderId}>Order #{order.orderId}</Text>
+            <Text style={styles.orderId}>{order.orderId}</Text>
             <Text style={styles.orderTime}>
               {new Date(order.createdAt).toLocaleTimeString()}
             </Text>
@@ -124,17 +124,18 @@ export default function OrderManagement({ navigation }) {
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 30000);
+    const interval = setInterval(fetchOrders, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleAcceptOrder = async (orderId) => {
-    try {
-      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
-        orderId,    // Pass orderId in the body
-        status: 'PREPARING'  // Pass the new status in the body
-      });
   
+  const handleAcceptOrder = async (orderId) => {
+    console.log(orderId);
+    try {
+      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+        orderId: orderId,  // Pass orderId in the body
+        status: 'PREPARING' // Pass the new status in the body
+      });
+      
       setOrders(orders.map(order =>
         order._id === orderId ? { ...order, status: 'PREPARING' } : order
       ));
@@ -145,9 +146,9 @@ export default function OrderManagement({ navigation }) {
   
   const handleRejectOrder = async (orderId) => {
     try {
-      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
-        orderId,    // Pass orderId in the body
-        status: 'REJECTED'  // Pass the new status in the body
+      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+        orderId: orderId, // Pass orderId in the body
+        status: 'REJECTED' // Pass the new status in the body
       });
   
       setOrders(orders.map(order =>
@@ -160,9 +161,9 @@ export default function OrderManagement({ navigation }) {
   
   const handlePreparationComplete = async (orderId) => {
     try {
-      await axios.post(`http://192.168.0.104:3500/citystore/updateorder`, {
-        orderId,    // Pass orderId in the body
-        status: 'COMPLETED'  // Pass the new status in the body
+      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+        orderId: orderId, // Pass orderId in the body
+        status: 'COMPLETED' // Pass the new status in the body
       });
   
       const updatedOrder = orders.find(order => order._id === orderId);
@@ -175,6 +176,7 @@ export default function OrderManagement({ navigation }) {
       console.error('Error completing order:', error);
     }
   };
+  
   
 
   // Normalize status for comparison
@@ -236,9 +238,9 @@ export default function OrderManagement({ navigation }) {
                 ...order,
                 status: displayStatus(order.status)
               }}
-              onAccept={handleAcceptOrder}
-              onReject={handleRejectOrder}
-              onPreparationComplete={handlePreparationComplete}
+              onAccept={() => handleAcceptOrder(order.orderId)}
+              onReject={() => handleRejectOrder(order.orderId)}
+              onPreparationComplete={() => handlePreparationComplete(order.orderId)}
             />
           ))
         )}
