@@ -98,7 +98,7 @@ export default function LoginScreen() {
     }
     try {
       const response = await axios.post(
-        "http://192.168.0.105:3500/auth/login",
+        "http://192.168.0.104:3500/auth/login",
         {
           mobileno: `+91${phoneNumber}`,
           password: password,
@@ -157,7 +157,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const vendorResponse = await axios.post(
-        "http://192.168.0.105:3500/citystore/Login",
+        "http://192.168.0.104:3500/citystore/Login",
         {
           mobileno: phoneNumber,
           password: password,
