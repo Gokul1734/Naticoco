@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Image, Switch, Alert } from 'react-native';
 import { Text, Card, TextInput, Button, IconButton } from 'react-native-paper';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-// import StoreBackground from '../../CustomerScreens/Components/ScreenBackground';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [stockValue, setStockValue] = useState(item.stock.toString());
-  const [priceValue, setPriceValue] = useState(item.price.toString());
+  const [stockValue, setStockValue] = useState(item.stock?.toString() || "0");
+  const [priceValue, setPriceValue] = useState(item.price?.toString() || "0");
 
   return (
     <MotiView
@@ -23,7 +23,7 @@ const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
         <Card.Content>
           <View style={styles.stockHeader}>
             <View>
-              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemName}>{item.itemName}</Text>
               <Text style={styles.category}>{item.category}</Text>
             </View>
             <IconButton
@@ -54,9 +54,9 @@ const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
               ) : (
                 <Text style={[
                   styles.value,
-                  item.stock < 10 && styles.lowStock
+                  parseInt(stockValue) < 10 && styles.lowStock
                 ]}>
-                  {item.stock} pcs
+                  {stockValue} pcs
                 </Text>
               )}
             </View>
@@ -74,7 +74,7 @@ const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
                   left={<TextInput.Affix text="₹" />}
                 />
               ) : (
-                <Text style={styles.value}>₹{item.price}</Text>
+                <Text style={styles.value}>₹{priceValue}</Text>
               )}
             </View>
           </View>
@@ -85,26 +85,38 @@ const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
 };
 
 export default function StockManagement({ navigation }) {
-  const [stockItems, setStockItems] = useState([
-    {
-      id: '1',
-      name: 'Crispy Chicken',
-      category: 'Main Course',
-      stock: 50,
-      price: 299,
-    },
-    {
-      id: '2',
-      name: 'French Fries',
-      category: 'Sides',
-      stock: 8,
-      price: 99,
-    },
-    // Add more items
-  ]);
-
+  const [stockItems, setStockItems] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState('ALL');
-  const categories = ['ALL', 'Main Course', 'Sides', 'Beverages'];
+  const categories = ['ALL', ...new Set(stockItems.map(item => item.category))];
+
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+        if (!vendorCredentialsString) {
+          Alert.alert('Error', 'No vendor credentials found');
+          return;
+        }
+    
+        const vendorCredentials = JSON.parse(vendorCredentialsString);
+        const storeId = vendorCredentials?.vendorData?.storeId;
+    
+        if (!storeId) {
+          Alert.alert('Error', 'No store ID found');
+          return;
+        }
+
+        const response = await axios.get(`http://192.168.83.227:3500/citystore/getallmenu?storeId=${storeId}`);
+        setStockItems(response.data);
+      } catch (error) {
+        console.error('Error fetching menu items:', error);
+        Alert.alert('Error', 'Failed to fetch menu items');
+      }
+    };
+
+    fetchMenuItems();
+  }, []);
 
   const handleUpdateStock = (itemId, newStock) => {
     setStockItems(items =>
@@ -126,15 +138,16 @@ export default function StockManagement({ navigation }) {
     activeCategory === 'ALL' || item.category === activeCategory
   );
 
-  const [modalVisible, setModalVisible] = useState(false);
   const [newItem, setNewItem] = useState({
-    storeId: '123',
+    storeId: '',
     itemName: '',
     description: '',
     price: '',
+    category: '',
+    subCategory: '',
     image: null,
     availability: true,
-    BestSeller: false,
+    bestSeller: false,
     newArrival: false
   });
 
@@ -153,13 +166,34 @@ export default function StockManagement({ navigation }) {
 
   const handleAddItem = async () => {
     try {
+      const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+      if (!vendorCredentialsString) {
+        Alert.alert('Error', 'No vendor credentials found');
+        return;
+      }
+  
+      const vendorCredentials = JSON.parse(vendorCredentialsString);
+      const storeId = vendorCredentials?.vendorData?.storeId;
+  
+      if (!storeId) {
+        Alert.alert('Error', 'No store ID found');
+        return;
+      }
+
+      if (!newItem.itemName || !newItem.price || !newItem.category || !newItem.image) {
+        Alert.alert('Error', 'Please fill all required fields and add an image');
+        return;
+      }
+
       const formData = new FormData();
-      formData.append('storeId', newItem.storeId);
+      formData.append('storeId', storeId);
       formData.append('itemName', newItem.itemName);
       formData.append('description', newItem.description);
       formData.append('price', newItem.price);
+      formData.append('category', newItem.category);
+      formData.append('subCategory', newItem.subCategory);
       formData.append('availability', newItem.availability);
-      formData.append('BestSeller', newItem.BestSeller);
+      formData.append('bestSeller', newItem.bestSeller);
       formData.append('newArrival', newItem.newArrival);
       
       if (newItem.image) {
@@ -181,14 +215,27 @@ export default function StockManagement({ navigation }) {
         },
       });
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         setModalVisible(false);
         Alert.alert('Success', 'Item added successfully');
-        // Refresh your items list here
+        setNewItem({
+          storeId: '',
+          itemName: '',
+          description: '',
+          price: '',
+          category: '',
+          subCategory: '',
+          image: null,
+          availability: true,
+          bestSeller: false,
+          newArrival: false
+        });
+        const menuResponse = await axios.get(`http://192.168.83.227:3500/citystore/getallmenu?storeId=${storeId}`);
+        setStockItems(menuResponse.data);
       }
     } catch (error) {
       console.error('Error adding item:', error);
-      Alert.alert('Error', 'Failed to add item');
+      Alert.alert('Error', error.response?.data?.message || 'Failed to add item');
     }
   };
 
@@ -258,9 +305,25 @@ export default function StockManagement({ navigation }) {
             </TouchableOpacity>
 
             <TextInput
-              label="Item Name"
+              label="Item Name *"
               value={newItem.itemName}
               onChangeText={(text) => setNewItem(prev => ({ ...prev, itemName: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+            />
+
+            <TextInput
+              label="Category *"
+              value={newItem.category}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, category: text }))}
+              style={styles.modalInput}
+              mode="outlined"
+            />
+
+            <TextInput
+              label="Sub Category"
+              value={newItem.subCategory}
+              onChangeText={(text) => setNewItem(prev => ({ ...prev, subCategory: text }))}
               style={styles.modalInput}
               mode="outlined"
             />
@@ -275,7 +338,7 @@ export default function StockManagement({ navigation }) {
             />
 
             <TextInput
-              label="Price"
+              label="Price *"
               value={newItem.price}
               onChangeText={(text) => setNewItem(prev => ({ ...prev, price: text }))}
               style={styles.modalInput}
@@ -286,16 +349,25 @@ export default function StockManagement({ navigation }) {
 
             <View style={styles.togglesContainer}>
               <View style={styles.toggleRow}>
-                <Text style={styles.toggleLabel}>Best Seller</Text>
+                <Text style={styles.toggleLabel}>Available</Text>
                 <Switch
-                  value={newItem.BestSeller}
+                  value={newItem.availability}
                   onValueChange={(value) => 
-                    setNewItem(prev => ({ ...prev, BestSeller: value }))
+                    setNewItem(prev => ({ ...prev, availability: value }))
                   }
                   color="#F8931F"
                 />
               </View>
-
+              <View style={styles.toggleRow}>
+                <Text style={styles.toggleLabel}>Best Seller</Text>
+                <Switch
+                  value={newItem.bestSeller}
+                  onValueChange={(value) => 
+                    setNewItem(prev => ({ ...prev, bestSeller: value }))
+                  }
+                  color="#F8931F"
+                />
+              </View>
               <View style={styles.toggleRow}>
                 <Text style={styles.toggleLabel}>New Arrival</Text>
                 <Switch
@@ -333,7 +405,7 @@ export default function StockManagement({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 0,
   },
   header: {
     flexDirection: 'row',
@@ -372,7 +444,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   stockList: {
-    // flex: 1,
+    flex: 0,
     padding: scale(20),
   },
   stockCard: {
@@ -480,4 +552,4 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
-}); 
+});
