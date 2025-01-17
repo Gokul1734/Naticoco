@@ -203,7 +203,7 @@ export default function DeliveryPartner() {
   useEffect(() => {
     const fetchDeliveryPartners = async () => {
       try {
-        const response = await axios.get('http://192.168.83.227:3500/Adminstore/delivery/getDeliveryPerson');
+        const response = await axios.get('http://192.168.0.104:3500/Adminstore/delivery/getDeliveryPerson');
         if (response.data.deliveryPersons) {
           // Transform the data to match our component's structure
           const formattedPartners = response.data.deliveryPersons.map(partner => ({
@@ -235,7 +235,7 @@ export default function DeliveryPartner() {
 
   const handleApprove = async (id) => {
     try {
-      await axios.post(`http://192.168.83.227:3500/Adminstore/delivery/updateStatus/${id}`, {
+      await axios.post(`http://192.168.0.104:3500/Adminstore/delivery/updateStatus/${id}`, {
         status: 'ACTIVE'
       });
       
@@ -252,7 +252,7 @@ export default function DeliveryPartner() {
 
   const handleReject = async (id) => {
     try {
-      await axios.post(`http://192.168.83.227:3500/Adminstore/delivery/updateStatus/${id}`, {
+      await axios.post(`http://192.168.0.104:3500/Adminstore/delivery/updateStatus/${id}`, {
         status: 'REJECTED'
       });
       
@@ -269,7 +269,7 @@ export default function DeliveryPartner() {
 
   const handleSuspend = async (id) => {
     try {
-      await axios.post(`http://192.168.83.227:3500/Adminstore/delivery/updateStatus/${id}`, {
+      await axios.post(`http://192.168.0.104:3500/Adminstore/delivery/updateStatus/${id}`, {
         status: 'SUSPENDED'
       });
       

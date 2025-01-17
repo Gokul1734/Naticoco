@@ -25,7 +25,7 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete, onVerifyA
   const [otp, setOtp] = useState('');
 
   const handleVerification = () => {
-    onVerifyAndComplete(order._id, otp);
+    onVerifyAndComplete(order.orderId, otp);
     setOtpDialogVisible(false);
     setOtp('');
   };
@@ -168,8 +168,9 @@ export default function OrderManagement({ navigation }) {
   }, []);
   
   const handleAcceptOrder = async (orderId) => {
+    console.log('Accepting order:', orderId);
     try {
-      await axios.put('http://192.168.0.104:3500/citystore/updateorder', {
+      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
         orderId: orderId,
         status: 'PREPARING'
       });
@@ -185,7 +186,7 @@ export default function OrderManagement({ navigation }) {
   
   const handleRejectOrder = async (orderId) => {
     try {
-      await axios.put('http://192.168.0.104:3500/citystore/updateorder', {
+      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
         orderId: orderId,
         status: 'REJECTED'
       });
@@ -201,7 +202,7 @@ export default function OrderManagement({ navigation }) {
   
   const handlePreparationComplete = async (orderId) => {
     try {
-      const response = await axios.post('http://192.168.0.104:3500/citystore/markready', {
+      const response = await axios.post('http://192.168.0.104:3500/api/orders/markready', {
         orderId: orderId
       });
 
@@ -219,7 +220,7 @@ export default function OrderManagement({ navigation }) {
 
   const handleVerifyAndComplete = async (orderId, otp) => {
     try {
-      const response = await axios.post('http://192.168.0.104:3500/citystore/verifyandcomplete', {
+      const response = await axios.post('http://192.168.0.104:3500/api/orders/verifyandcomplete', {
         orderId: orderId,
         otp: otp
       });
@@ -280,7 +281,7 @@ export default function OrderManagement({ navigation }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
+        
       <ScrollView style={styles.ordersList}>
         {loading ? (
           <Text style={styles.messageText}>Loading orders...</Text>
@@ -288,6 +289,7 @@ export default function OrderManagement({ navigation }) {
           <Text style={styles.messageText}>No orders found</Text>
         ) : (
           filteredOrders.map((order) => (
+           
             <OrderCard
               key={order._id}
               order={{
