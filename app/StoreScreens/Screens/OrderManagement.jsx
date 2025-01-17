@@ -25,7 +25,7 @@ const OrderCard = ({ order, onAccept, onReject, onPreparationComplete, onVerifyA
   const [otp, setOtp] = useState('');
 
   const handleVerification = () => {
-    onVerifyAndComplete(order._id, otp);
+    onVerifyAndComplete(order.orderId, otp);
     setOtpDialogVisible(false);
     setOtp('');
   };
@@ -168,10 +168,11 @@ export default function OrderManagement({ navigation }) {
   }, []);
   
   const handleAcceptOrder = async (orderId) => {
+    console.log('Accepting order:', orderId);
     try {
       await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
-        orderId: orderId,  // Pass orderId in the body
-        status: 'PREPARING' // Pass the new status in the body
+        orderId: orderId,
+        status: 'PREPARING'
       });
       
       setOrders(orders.map(order =>
@@ -186,8 +187,8 @@ export default function OrderManagement({ navigation }) {
   const handleRejectOrder = async (orderId) => {
     try {
       await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
-        orderId: orderId, // Pass orderId in the body
-        status: 'REJECTED' // Pass the new status in the body
+        orderId: orderId,
+        status: 'REJECTED'
       });
   
       setOrders(orders.map(order =>
@@ -201,17 +202,37 @@ export default function OrderManagement({ navigation }) {
   
   const handlePreparationComplete = async (orderId) => {
     try {
-      await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
-        orderId: orderId, // Pass orderId in the body
-        status: 'COMPLETED' // Pass the new status in the body
+      const response = await axios.post('http://192.168.83.227:3500/citystore/markready', {
+        orderId: orderId
       });
-  
-      const updatedOrder = orders.find(order => order._id === orderId);
-      setOrders(orders.map(order => 
-        order._id === orderId ? { ...order, status: 'COMPLETED' } : order
-      ));
-  
-      navigation.navigate('PickupManagement', { order: updatedOrder });
+
+      if (response.data.success) {
+        setOrders(orders.map(order => 
+          order._id === orderId ? { ...order, status: 'READY' } : order
+        ));
+        Alert.alert('Success', `Order marked as ready. OTP: ${response.data.otp}`);
+      }
+    } catch (error) {
+      console.error('Error marking order as ready:', error);
+      Alert.alert('Error', 'Failed to mark order as ready');
+    }
+  };
+
+  const handleVerifyAndComplete = async (orderId, otp) => {
+    try {
+      const response = await axios.post('http://192.168.83.227:3500/citystore/verifyandcomplete', {
+        orderId: orderId,
+        otp: otp
+      });
+
+      if (response.data.success) {
+        setOrders(orders.map(order => 
+          order._id === orderId ? { ...order, status: 'COMPLETED' } : order
+        ));
+        Alert.alert('Success', 'Order completed successfully');
+      } else {
+        Alert.alert('Error', 'Invalid OTP');
+      }
     } catch (error) {
       console.error('Error verifying and completing order:', error);
       Alert.alert('Error', 'Failed to verify and complete order');
@@ -260,7 +281,7 @@ export default function OrderManagement({ navigation }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
+        
       <ScrollView style={styles.ordersList}>
         {loading ? (
           <Text style={styles.messageText}>Loading orders...</Text>
@@ -268,6 +289,7 @@ export default function OrderManagement({ navigation }) {
           <Text style={styles.messageText}>No orders found</Text>
         ) : (
           filteredOrders.map((order) => (
+           
             <OrderCard
               key={order._id}
               order={{
