@@ -113,7 +113,7 @@ export default function TrackScreen() {
 
   // useEffect( async() => {
   //  try {
-  //   await axios.post('http://192.168.0.104:3500/api/orders/placeorder',{
+  //   await axios.post('http://192.168.83.227:3500/api/orders/placeorder',{
   //    userId: await AsyncStorage.getItem('Logincre'),
   //    storeId: 'delivered',
   //    items: cartItems,

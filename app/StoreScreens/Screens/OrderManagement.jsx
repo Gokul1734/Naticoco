@@ -148,7 +148,7 @@ export default function OrderManagement({ navigation }) {
         return;
       }
   
-      const response = await axios.get(`http://192.168.0.104:3500/citystore/orders/${storeId}`);
+      const response = await axios.get(`http://192.168.83.227:3500/citystore/orders/${storeId}`);
       setOrders(response.data);
       setLoading(false);
     } catch (error) {
@@ -170,7 +170,7 @@ export default function OrderManagement({ navigation }) {
   const handleAcceptOrder = async (orderId) => {
     console.log('Accepting order:', orderId);
     try {
-      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+      await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
         orderId: orderId,
         status: 'PREPARING'
       });
@@ -186,7 +186,7 @@ export default function OrderManagement({ navigation }) {
   
   const handleRejectOrder = async (orderId) => {
     try {
-      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+      await axios.post('http://192.168.83.227:3500/citystore/updateorder', {
         orderId: orderId,
         status: 'REJECTED'
       });
@@ -201,36 +201,73 @@ export default function OrderManagement({ navigation }) {
   };
   
   const handlePreparationComplete = async (orderId) => {
-    const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
-    if (!vendorCredentialsString) {
-      console.error('No vendor credentials found');
-      return;
-    }
- 
-    const vendorCredentials = JSON.parse(vendorCredentialsString);
-    console.log('Vendor credentials:', vendorCredentials);
-    const storeId = vendorCredentials?.vendorData?.storeId;
     try {
-      const response = await axios.post('http://192.168.0.104:3500/api/orders/markreadyAndAssign', {
-        orderId: orderId,
-        storeId: storeId
+      // Retrieve vendor credentials from AsyncStorage
+      const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+  
+      // Check if vendor credentials exist
+      if (!vendorCredentialsString) {
+        console.error('No vendor credentials found');
+        Alert.alert('Error', 'Vendor credentials are missing');
+        return;
+      }
+  
+      const vendorCredentials = JSON.parse(vendorCredentialsString);
+      console.log('Vendor credentials:', vendorCredentials);
+  
+      // Extract store ID
+      const storeId = vendorCredentials?.vendorData?.storeId;
+      if (!storeId) {
+        console.error('Store ID is missing');
+        Alert.alert('Error', 'Store ID not found');
+        return;
+      }
+  
+      // Make API call to mark the order as ready and assign a delivery person
+      const response = await axios.post('http://192.168.83.227:3500/api/orders/markreadyAndAssign', {
+        orderId,
+        storeId,
       });
-
-      if (response.data.success) {
-        setOrders(orders.map(order => 
-          order._id === orderId ? { ...order, status: 'READY' } : order
-        ));
-        Alert.alert('Success', `Order marked as ready. OTP: ${response.data.otp}`);
+  
+      if (response.data.message === 'Order marked as ready and delivery person assigned') {
+        // Update the order's status in local state
+        setOrders((orders) =>
+          orders.map((order) =>
+            order._id === orderId ? { ...order, status: 'READY' } : order
+          )
+        );
+  
+        Alert.alert('Success', `Order marked as ready. OTP: ${response.data.OTP}`);
+      } else {
+        console.error('API returned an error:', response.data.message);
+        Alert.alert('Error', response.data.message || 'An unexpected error occurred');
       }
     } catch (error) {
       console.error('Error marking order as ready:', error);
-      Alert.alert('Error', 'Failed to mark order as ready');
+  
+      // Handle different types of errors
+      if (error.response) {
+        const { status, data } = error.response;
+        Alert.alert(
+          'Error',
+          `Failed to mark order as ready. Status: ${status}, Message: ${data.message || 'Unknown error'}`
+        );
+      } else if (error.request) {
+        // Handle no response from the server
+        console.error('No response received:', error.request);
+        Alert.alert('Error', 'Failed to connect to the server. Please check your network connection.');
+      } else {
+        // Handle unexpected errors
+        Alert.alert('Error', error.message || 'An unexpected error occurred');
+      }
     }
   };
+  
+  
 
   const handleVerifyAndComplete = async (orderId, otp) => {
     try {
-      const response = await axios.post('http://192.168.0.104:3500/api/orders/verifyandcomplete', {
+      const response = await axios.post('http://192.168.83.227:3500/api/orders/verifyandcomplete', {
         orderId: orderId,
         otp: otp
       });
