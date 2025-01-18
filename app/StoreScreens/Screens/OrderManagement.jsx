@@ -201,9 +201,19 @@ export default function OrderManagement({ navigation }) {
   };
   
   const handlePreparationComplete = async (orderId) => {
+    const vendorCredentialsString = await AsyncStorage.getItem('vendorCredentials');
+    if (!vendorCredentialsString) {
+      console.error('No vendor credentials found');
+      return;
+    }
+ 
+    const vendorCredentials = JSON.parse(vendorCredentialsString);
+    console.log('Vendor credentials:', vendorCredentials);
+    const storeId = vendorCredentials?.vendorData?.storeId;
     try {
-      const response = await axios.post('http://192.168.0.104:3500/api/orders/markready', {
-        orderId: orderId
+      const response = await axios.post('http://192.168.0.104:3500/api/orders/markreadyAndAssign', {
+        orderId: orderId,
+        storeId: storeId
       });
 
       if (response.data.success) {
