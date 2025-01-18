@@ -2,7 +2,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Plat
 import { useState, useEffect } from 'react';
 import { Text, Searchbar, Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MotiView } from 'moti';
+import { AnimatePresence, MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Asset } from 'expo-asset';
@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import getImage from '../Components/GetImage';
+import FloatingCartHandler from '../Components/CartHandler';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -61,7 +62,8 @@ const CategoryButton = ({ name, icon, isSelected, onSelect }) => (
 );
 
 const ProductCard = ({ item, onPress, isInCart, quantity, onAddToCart }) => {
-
+  const {cartItems, addToCart , increaseQuantity , decreaseQuantity} = useCart();
+  const cartItem = cartItems.find(i => i._id === item._id || i.id === item._id || item.id);
   return (
     <MotiView
       from={{ opacity: 0, translateY: 50 }}
@@ -80,21 +82,46 @@ const ProductCard = ({ item, onPress, isInCart, quantity, onAddToCart }) => {
             <Text style={styles.productDescription}>{item.description}</Text>
             <View style={styles.priceContainer}>
               <Text style={styles.price}>₹{item.price}</Text>
-              <View style={styles.quantityContainer}>
-                {quantity > 0 && (
-                  <Text style={styles.quantityText}>×{quantity}</Text>
+              <AnimatePresence>
+                {cartItem?.quantity ? (
+                  <MotiView
+                    from={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    style={styles.quantityContainer}
+                  >
+                    <TouchableOpacity 
+                      onPress={() => decreaseQuantity(item._id)}
+                      style={styles.quantityButton}
+                    >
+                      <Ionicons name="remove" size={20} color="white" />
+                    </TouchableOpacity>
+
+                    <Text style={styles.quantityText}>{cartItem.quantity}</Text>
+
+                    <TouchableOpacity 
+                      onPress={() => increaseQuantity(item._id)}
+                      style={styles.quantityButton}
+                    >
+                      <Ionicons name="add" size={20} color="white" />
+                    </TouchableOpacity>
+                  </MotiView>
+                ) : (
+                  <MotiView
+                    from={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                  >
+                    <TouchableOpacity 
+                      style={styles.addButton}
+                      onPress={() => addToCart(item)}
+                    >
+                      <Ionicons name="add" size={24} color="white" />
+                      <Text style={styles.addButtonText}>ADD</Text>
+                    </TouchableOpacity>
+                  </MotiView>
                 )}
-                <TouchableOpacity 
-                  style={[styles.addButton, isInCart && styles.addedButton]}
-                  onPress={onAddToCart}
-                >
-                  <Ionicons 
-                    name={isInCart ? "add" : "add"} 
-                    size={24} 
-                    color="white" 
-                  />
-                </TouchableOpacity>
-              </View>
+              </AnimatePresence>
             </View>
           </View>
         </Card>
@@ -268,7 +295,7 @@ export default function CrispyHome() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.productsContainer}
       >
-        {menuItems ? menuItems.map((item) => {
+        {menuItems ? menuItems.filter(i => i.subCategory == selectedCategory).map((item) => {
           const isInCart = cartItems.find(cartItem => cartItem._id || item.id === item._id || item.id);
           const quantity = isInCart ? isInCart.quantity : 0;
           
@@ -285,6 +312,7 @@ export default function CrispyHome() {
         }) : <Text>No Products Found</Text>}
       </ScrollView>
       </ScreenBackground>
+      <FloatingCartHandler navigation={navigation} bottom={false} />
     </View>
   );
 }
@@ -350,7 +378,7 @@ const styles = StyleSheet.create({
   },
   productsContainer: {
     padding: 20,
-    paddingBottom: 300,
+    paddingBottom: 350,
   },
   card: {
     borderRadius: 12,
@@ -440,4 +468,38 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff5e6',
     borderRadius: 20,
   },
+  quantityContainer: {
+   flexDirection: 'row',
+   alignItems: 'center',
+   backgroundColor: '#F8931F',
+   borderRadius: 8,
+   padding: 4,
+ },
+ quantityButton: {
+   width: 32,
+   height: 32,
+   justifyContent: 'center',
+   alignItems: 'center',
+   borderRadius: 16,
+ },
+ quantityText: {
+   color: 'white',
+   fontSize: 16,
+   fontWeight: '600',
+   marginHorizontal: 12,
+ },
+ addButton: {
+   flexDirection: 'row',
+   alignItems: 'center',
+   backgroundColor: '#F8931F',
+   paddingHorizontal: 16,
+   paddingVertical: 8,
+   borderRadius: 8,
+   gap: 4,
+ },
+ addButtonText: {
+   color: 'white',
+   fontSize: 14,
+   fontWeight: '600',
+ },
 });

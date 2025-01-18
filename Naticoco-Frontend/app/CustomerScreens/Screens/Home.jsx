@@ -29,7 +29,7 @@ export default function HomeScreen() {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('Loading...');
   const [errorMsg, setErrorMsg] = useState(null);
-  const { addToCart, cartItems, cartCount, updateQuantity } = useCart();
+  const { addToCart, cartItems, cartCount, increaseQuantity , decreaseQuantity } = useCart();
   const [layout, setLayout] = useState({
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
@@ -158,7 +158,8 @@ export default function HomeScreen() {
         onPress={() => navigation.navigate('ItemDisplay',{item:item})}
         cartItem={cartItem}
         addToCart={addToCart}
-        updateQuantity={updateQuantity}
+        inc = {increaseQuantity}
+        dec = {decreaseQuantity}
         getItemImage={(item) => ({ uri: item.image })}
         cardWidth={cardWidth}
       />

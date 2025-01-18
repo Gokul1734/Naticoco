@@ -7,7 +7,7 @@ import getImage from '../../../Components/GetImage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getItemImage, cardWidth }) => {
+const ProductCard = ({ item, onPress, cartItem, addToCart, inc, dec , getItemImage, cardWidth }) => {
   const [loading, setLoading] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
@@ -16,14 +16,6 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
     addToCart(item);
   };
 
-  const handleQuantityChange = (newQuantity) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (newQuantity === 0) {
-      updateQuantity(item._id, 0);
-    } else {
-      updateQuantity(item._id, newQuantity);
-    }
-  };
 
   return (
     <MotiView
@@ -69,7 +61,7 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
                     style={styles.quantityContainer}
                   >
                     <TouchableOpacity 
-                      onPress={() => handleQuantityChange(cartItem.quantity - 1)}
+                      onPress={() => dec(item._id)}
                       style={styles.quantityButton}
                     >
                       <Ionicons name="remove" size={20} color="white" />
@@ -78,7 +70,7 @@ const ProductCard = ({ item, onPress, cartItem, addToCart, updateQuantity, getIt
                     <Text style={styles.quantityText}>{cartItem.quantity}</Text>
 
                     <TouchableOpacity 
-                      onPress={() => handleQuantityChange(cartItem.quantity + 1)}
+                      onPress={() => inc(item._id)}
                       style={styles.quantityButton}
                     >
                       <Ionicons name="add" size={20} color="white" />
