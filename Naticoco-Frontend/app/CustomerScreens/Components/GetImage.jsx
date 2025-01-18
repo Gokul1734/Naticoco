@@ -15,6 +15,7 @@ function getImage(imag) {
        setImage(base64Image);
       })
       .catch(error => console.error(error));
+
   }, []);
 
   return images;

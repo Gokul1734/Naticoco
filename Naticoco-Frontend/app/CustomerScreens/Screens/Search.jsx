@@ -263,7 +263,7 @@ export default  function  SearchScreen({ navigation }) {
           />
         </Animated.View>
       )}
-      <FloatingCartHandler navigation={navigation} />
+      <FloatingCartHandler navigation={navigation} bottom={true} />
     </ScreenBackground>
   );
 }

@@ -225,7 +225,7 @@ export default function HomeScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-      <FloatingCartHandler navigation={navigation} />
+      <FloatingCartHandler navigation={navigation} bottom={true} />
     </ScreenBackground>
   );
 }

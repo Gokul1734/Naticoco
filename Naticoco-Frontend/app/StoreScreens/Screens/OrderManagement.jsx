@@ -314,7 +314,7 @@ export default function OrderManagement({ navigation }) {
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
-        style={styles.tabsContainer}
+        style={[styles.tabsContainer, { maxHeight: 80 }]}
       >
         {statusTabs.map((tab) => (
           <TouchableOpacity
@@ -372,6 +372,8 @@ const styles = StyleSheet.create({
   tabsContainer: {
     paddingHorizontal: scale(20),
     marginTop: verticalScale(10),
+    // backgroundColor : 'black',
+    height : 0
   },
   otpInput: {
     height: 40,
