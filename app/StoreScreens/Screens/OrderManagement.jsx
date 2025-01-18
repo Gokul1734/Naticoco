@@ -202,7 +202,7 @@ export default function OrderManagement({ navigation }) {
   
   const handlePreparationComplete = async (orderId) => {
     try {
-      const response = await axios.post('http://192.168.83.227:3500/citystore/markready', {
+      const response = await axios.post('http://192.168.83.227:3500/api/orders/markready', {
         orderId: orderId
       });
 
@@ -220,7 +220,7 @@ export default function OrderManagement({ navigation }) {
 
   const handleVerifyAndComplete = async (orderId, otp) => {
     try {
-      const response = await axios.post('http://192.168.83.227:3500/citystore/verifyandcomplete', {
+      const response = await axios.post('http://192.168.83.227:3500/api/orders/verifyandcomplete', {
         orderId: orderId,
         otp: otp
       });
