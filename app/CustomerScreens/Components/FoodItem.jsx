@@ -50,8 +50,10 @@ export default function FoodItem({ item, onPress }) {
      updateQuantity(item._id, newQuantity);
    }
  };
+ 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
+      
       <Image
         source={{uri:getImage(item.image)}}
         style={styles.image}

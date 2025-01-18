@@ -75,7 +75,8 @@ export default function MyOrders() {
         const parsedCredentials = credentials ? JSON.parse(credentials) : null;
         const userId = parsedCredentials?.token?.userId;
         // console.log(userId);
-        const response = await axios.get(`http://192.168.83.227:3500/api/orders/myorder/${userId}`);
+        const response = await axios.get(`http://192.168.0.104:3500/api/orders/myorders/${userId}`);
+        
         setOrders(response.data.orders);
         // console.log(response.data.orders);
       } catch (error) {
@@ -98,8 +99,51 @@ export default function MyOrders() {
 
       <FlatList
         data={orders}
-        renderItem={({ item }) => <OrderCard order={item} />}
-        keyExtractor={item => item._id}
+        renderItem={({ item }) => (
+          <View style={styles.orderCard}>
+            <View style={styles.orderHeader}>
+              <Text style={styles.orderNumber}>{item.orderId}</Text>
+              <Text style={[
+                styles.statusBadge,
+                {color: item.status === 'COMPLETED' ? '#4CAF50' : '#F8931F'}
+              ]}>
+                {item.status}
+              </Text>
+            </View>
+            
+            <View style={styles.storeInfo}>
+              <Text style={styles.storeName}>{item.store.name}</Text>
+              <Text style={styles.orderDate}>{item.orderDate}</Text>
+            </View>
+
+            <View style={styles.itemsList}>
+              {item.items.map((orderItem, index) => (
+                <View key={index} style={styles.itemRow}>
+                  <Text style={styles.itemName}>{orderItem.name}</Text>
+                  <View style={styles.quantityPrice}>
+                    <Text style={styles.quantity}>x{orderItem.quantity}</Text>
+                    <Text style={styles.price}>₹{orderItem.price}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.totalSection}>
+              <Text style={styles.totalLabel}>Total Amount:</Text>
+              <Text style={styles.totalAmount}>₹{item.totalAmount}</Text>
+            </View>
+
+            <View style={styles.paymentStatus}>
+              <Text style={[
+                styles.paymentBadge,
+                {color: item.paymentStatus === 'Completed' ? '#4CAF50' : '#F8931F'}
+              ]}>
+                {item.paymentStatus}
+              </Text>
+            </View>
+          </View>
+        )}
+        keyExtractor={item => item.orderId}
         contentContainerStyle={styles.ordersList}
         showsVerticalScrollIndicator={false}
       />
@@ -220,6 +264,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: '#F8931F',
     fontSize: 14,
-    fontWeight: '600',
-  },
+    fontWeight: '600',
+  },
 });

@@ -11,6 +11,8 @@ import { useCart } from '../context/CartContext';
 import LoadingScreen from '../Components/LoadingScreen';
 import { useLoadAssets } from '../../hooks/useLoadAssets';
 import ScreenBackground from '../Components/ScreenBackground';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -120,21 +122,71 @@ export default function CrispyHome() {
   const [searchQuery, setSearchQuery] = useState('');
   const { addToCart, cartItems } = useCart();
   const isLoading = useLoadAssets(productImages);
+  const [nearestStoreId,setNearestStoreId] = useState(null);
+  const [loc,setLoc] = useState([]);
+  const [menuItems,setMenuItems] = useState([]);
+
+  useEffect(() => {
+   const fetchLoc = async () => {
+    setLoc(JSON.parse(await AsyncStorage.getItem('userLoc')).coordinates);
+    // console.log(loc);
+   }
+   fetchLoc();
+  })
+
+  // console.log(loc);
 
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  const filteredItems = crispyItems.filter(item => {
-    const matchesCategory = 
-      (selectedCategory === 'Crispy' && item.category !== 'Salads') ||
-      (selectedCategory === 'Salads' && item.category === 'Salads');
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+
+  const fetchNearestStoreMenu = async (latitude, longitude) => {
+   try {
+     const token = await AsyncStorage.getItem('userToken');
+     const loginData = await AsyncStorage.getItem('logincre');
+     const parsedLoginData = loginData ? JSON.parse(loginData) : null;
+     const authToken = parsedLoginData?.token?.token || token;
+ 
+     const response = await axios.get("http://192.168.0.104:3500/api/user/nearest", {
+       params: { latitude, longitude },
+       headers: {
+         'Authorization': `Bearer ${authToken}`,
+         'Content-Type': 'application/json'
+       }
+     });
+
+     setNearestStoreId(response.data.storeId);
+     // await AsyncStorage.setItem('storeId', response.data.storeId);
+     // console.log('Store API Response:', response.data); // Add this for debugging
+ 
+     if (response.data && response.data.menu) {
+       const menu = response.data.menu.filter(item => item.category != "Fried");
+       // Cache the store data
+       await AsyncStorage.setItem('storeMenu', JSON.stringify(menu));
+       setMenuItems(JSON.stringify(menu))
+       // setMenuItems(JSON.stringify(response.data.menu));
+       // console.log(response.data.menu);
+     }
+   } catch (error) {
+     console.error('Error fetching store data:', error.response?.data || error.message);
+     // Rest of the error handling remains the same
+   }
+ };
+
+  console.log(menuItems);
+
+ //  const filteredItems = menuItems.filter(item => {
+ //   const matchesCategory = 
+ //     (selectedCategory === 'Crispy' && item.category !== 'Salads') ||
+ //     (selectedCategory === 'Salads' && item.category === 'Salads');
+ //   const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+ //   return matchesCategory && matchesSearch;
+ // });
 
   return (
     <View style={styles.container}>
+     {fetchNearestStoreMenu(loc.latitude,loc.longitude)}
       <LinearGradient
         colors={['#fff', '#fff5e6']}
         style={styles.header}
@@ -194,7 +246,7 @@ export default function CrispyHome() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.productsContainer}
       >
-        {filteredItems.map((item) => {
+        {menuItems ? menuItems.map((item) => {
           const isInCart = cartItems.find(cartItem => cartitem._id || item.id === item._id || item.id);
           const quantity = isInCart ? isInCart.quantity : 0;
           
@@ -208,7 +260,7 @@ export default function CrispyHome() {
               onAddToCart={() => addToCart(item)}
             />
           );
-        })}
+        }) : <Text>No Products Found</Text>}
       </ScrollView>
       </ScreenBackground>
     </View>
