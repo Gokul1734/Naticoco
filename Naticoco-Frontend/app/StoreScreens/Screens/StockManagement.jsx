@@ -8,81 +8,141 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const StockItem = ({ item, onUpdateStock, onUpdatePrice }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [stockValue, setStockValue] = useState(item.stock?.toString() || "0");
-  const [priceValue, setPriceValue] = useState(item.price?.toString() || "0");
+const StockItem = ({ item, onDeleteProduct }) => {
+ const [isEditing, setIsEditing] = useState(false);
+ const [isSaving, setIsSaving] = useState(false);
+ const [stockValue, setStockValue] = useState(item.stock?.toString() || "0");
+ const [priceValue, setPriceValue] = useState(item.price?.toString() || "0");
+ const [bestSeller, setBestSeller] = useState(item.bestSeller || false);
+ const [newArrival, setNewArrival] = useState(item.newArrival || false);
+ const [availability, setAvailability] = useState(item.availability || false);
 
-  return (
-    <MotiView
-      from={{ opacity: 0, translateY: 20 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'spring', duration: 1000 }}
-    >
-      <Card style={styles.stockCard}>
-        <Card.Content>
-          <View style={styles.stockHeader}>
-            <View>
-              <Text style={styles.itemName}>{item.itemName}</Text>
-              <Text style={styles.category}>{item.category}</Text>
-            </View>
-            <IconButton
-              icon={isEditing ? "check" : "pencil"}
-              size={20}
-              onPress={() => {
-                if (isEditing) {
-                  onUpdateStock(item._id || item.id, parseInt(stockValue));
-                  onUpdatePrice(item._id || item.id, parseFloat(priceValue));
-                }
-                setIsEditing(!isEditing);
-              }}
-            />
-          </View>
+ const handleSave = async () => {
+   try {
+     setIsSaving(true);
+     await axios.put(`http://192.168.29.165:3500/citystore/Updatemenu/${item._id}`, {
+       // stock: parseInt(stockValue), // Convert to integer
+       price: parseFloat(priceValue), // Convert to float
+       BestSeller: bestSeller,
+       newArrival: newArrival,
+       availability: availability,
+     });
+     setIsEditing(false); // Exit editing mode
+   } catch (error) {
+     console.error("Error updating item:", error);
+     Alert.alert("Error", "Failed to save changes");
+   } finally {
+     setIsSaving(false);
+     alert('Data Updated');
+   }
+ };
 
-          <View style={styles.stockDetails}>
-            <View style={styles.detailRow}>
-              <Text style={styles.label}>Stock:</Text>
-              {isEditing ? (
-                <TextInput
-                  value={stockValue}
-                  onChangeText={setStockValue}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  mode="outlined"
-                  dense
-                />
-              ) : (
-                <Text style={[
-                  styles.value,
-                  parseInt(stockValue) < 10 && styles.lowStock
-                ]}>
-                  {stockValue} pcs
-                </Text>
-              )}
-            </View>
+ const handleDelete = async () => {
+   Alert.alert(
+     "Delete Product",
+     `Are you sure you want to delete "${item.itemName}"?`,
+     [
+       { text: "Cancel", style: "cancel" },
+       {
+         text: "Delete",
+         style: "destructive",
+         onPress: async () => {
+           try {
+             await axios.delete(`http://192.168.29.165:3500/citystore/Deletemenu/${item._id}`);
+           } catch (error) {
+             console.error("Error deleting item:", error);
+             Alert.alert("Error", "Failed to delete product");
+           }
+         },
+       },
+     ]
+   );
+ };
 
-            <View style={styles.detailRow}>
-              <Text style={styles.label}>Price:</Text>
-              {isEditing ? (
-                <TextInput
-                  value={priceValue}
-                  onChangeText={setPriceValue}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  mode="outlined"
-                  dense
-                  left={<TextInput.Affix text="₹" />}
-                />
-              ) : (
-                <Text style={styles.value}>₹{priceValue}</Text>
-              )}
-            </View>
-          </View>
-        </Card.Content>
-      </Card>
-    </MotiView>
-  );
+ return (
+   <MotiView
+     from={{ opacity: 0, translateY: 20 }}
+     animate={{ opacity: 1, translateY: 0 }}
+     transition={{ type: "spring", duration: 1000 }}
+   >
+     <Card style={styles.stockCard}>
+       <Card.Content>
+         <View style={styles.stockHeader}>
+           <View>
+             <Text style={styles.itemName}>{item.itemName}</Text>
+             <Text style={styles.category}>{item.category}</Text>
+           </View>
+           <View style={styles.iconButtons}>
+             <IconButton
+               icon={isEditing ? "check" : "pencil"}
+               size={20}
+               disabled={isSaving}
+               onPress={isEditing ? handleSave : () => setIsEditing(true)}
+             />
+             <IconButton
+               icon="delete"
+               size={20}
+               color="red"
+               disabled={isSaving}
+               onPress={handleDelete}
+             />
+           </View>
+         </View>
+
+         <View style={styles.fieldContainer}>
+           <Text>Stock:</Text>
+           <TextInput
+             style={styles.input}
+             value={stockValue}
+             keyboardType="numeric"
+             editable={isEditing}
+             onChangeText={setStockValue}
+           />
+         </View>
+
+         <View style={styles.fieldContainer}>
+           <Text>Price:</Text>
+           <TextInput
+             style={styles.input}
+             value={priceValue}
+             keyboardType="numeric"
+             editable={isEditing}
+             onChangeText={setPriceValue}
+           />
+         </View>
+
+         <View style={styles.switchContainer}>
+           <Text>Best Seller:</Text>
+           <Switch
+             value={bestSeller}
+             onValueChange={(value) => setBestSeller(value)}
+             disabled={!isEditing}
+           />
+         </View>
+
+         <View style={styles.switchContainer}>
+           <Text>New Arrival:</Text>
+           <Switch
+             value={newArrival}
+             onValueChange={(value) => setNewArrival(value)}
+             disabled={!isEditing}
+           />
+         </View>
+
+         <View style={styles.switchContainer}>
+           <Text>Available:</Text>
+           <Switch
+             value={availability}
+             onValueChange={(value) => setAvailability(value)}
+             disabled={!isEditing}
+           />
+         </View>
+       </Card.Content>
+     </Card>
+   </MotiView>
+ );
 };
+
 
 export default function StockManagement({ navigation }) {
   const [stockItems, setStockItems] = useState([]);
@@ -144,7 +204,7 @@ export default function StockManagement({ navigation }) {
     description: '',
     price: '',
     category: '',
-    stock : 0,
+    stock : 20,
     subCategory: '',
     image: null,
     availability: true,
@@ -452,16 +512,41 @@ const styles = StyleSheet.create({
     padding: scale(20),
   },
   stockCard: {
-    marginBottom: verticalScale(20),
-    borderRadius: scale(15),
-    elevation: 2,
-  },
-  stockHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: verticalScale(10),
-  },
+   marginBottom: 10,
+ },
+ stockHeader: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+ },
+ itemName: {
+   fontSize: 18,
+   fontWeight: 'bold',
+ },
+ category: {
+   fontSize: 14,
+   color: 'gray',
+ },
+ fieldContainer: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+   marginVertical: 5,
+ },
+ switchContainer: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+   marginVertical: 5,
+ },
+ input: {
+   borderWidth: 1,
+   borderColor: 'gray',
+   borderRadius: 5,
+   padding: 5,
+   width: 100,
+   textAlign: 'right',
+ },
   itemName: {
     fontSize: moderateScale(16),
     fontWeight: 'bold',
@@ -556,4 +641,45 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  stockCard: {
+   marginBottom: 10,
+ },
+ stockHeader: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+ },
+ itemName: {
+   fontSize: 18,
+   fontWeight: 'bold',
+ },
+ category: {
+   fontSize: 14,
+   color: 'gray',
+ },
+ fieldContainer: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+   marginVertical: 5,
+ },
+ switchContainer: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+   marginVertical: 5,
+ },
+ input: {
+   borderWidth: 1,
+   borderColor: 'gray',
+   borderRadius: 5,
+   padding: 5,
+   width: 80,
+   textAlign: 'right',
+   height : 40
+ },
+ iconButtons: {
+   flexDirection: 'row',
+   alignItems: 'center',
+ },
 });
