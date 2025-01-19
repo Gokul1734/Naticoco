@@ -3,11 +3,11 @@ import axios from 'axios';
 import { Buffer } from 'buffer';
 
 function getImage(imag) {
- const img = String(imag).replace('/ImageStore/', '');
-  // console.log(imag);
+ const img = imag.split('/ImageStore/')[1];
+  console.log(imag);
   const [images, setImage] = useState(null);
   useEffect(() => {
-    axios.get(`http://192.168.83.227:3500/images/${img}`, {
+    axios.get(`http://192.168.29.242:3500/images/${img}`, {
       responseType:'arraybuffer'
     })
       .then(response => {

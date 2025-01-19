@@ -148,7 +148,7 @@ export default function OrderManagement({ navigation }) {
         return;
       }
   
-      const response = await axios.get(`http://192.168.0.104:3500/citystore/orders/${storeId}`);
+      const response = await axios.get(`http://192.168.29.242:3500/citystore/orders/${storeId}`);
       setOrders(response.data);
       setLoading(false);
     } catch (error) {
@@ -170,7 +170,7 @@ export default function OrderManagement({ navigation }) {
   const handleAcceptOrder = async (orderId) => {
     console.log('Accepting order:', orderId);
     try {
-      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+      await axios.post('http://192.168.29.242:3500/citystore/updateorder', {
         orderId: orderId,
         status: 'PREPARING'
       });
@@ -186,7 +186,7 @@ export default function OrderManagement({ navigation }) {
   
   const handleRejectOrder = async (orderId) => {
     try {
-      await axios.post('http://192.168.0.104:3500/citystore/updateorder', {
+      await axios.post('http://192.168.29.242:3500/citystore/updateorder', {
         orderId: orderId,
         status: 'REJECTED'
       });
@@ -224,7 +224,7 @@ export default function OrderManagement({ navigation }) {
       }
   
       // Make API call to mark the order as ready and assign a delivery person
-      const response = await axios.post('http://192.168.0.104:3500/api/orders/markreadyAndAssign', {
+      const response = await axios.post('http://192.168.29.242:3500/api/orders/markreadyAndAssign', {
         orderId,
         storeId,
       });
@@ -267,7 +267,7 @@ export default function OrderManagement({ navigation }) {
 
   const handleVerifyAndComplete = async (orderId, otp) => {
     try {
-      const response = await axios.post('http://192.168.0.104:3500/api/orders/verifyandcomplete', {
+      const response = await axios.post('http://192.168.29.242:3500/api/orders/verifyandcomplete', {
         orderId: orderId,
         otp: otp
       });
